@@ -1,0 +1,282 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Home - InnoMall{% endblock %}
+
+{# Include home.css & home.js only for this page #}
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('css/home.css') }}">
+{% endblock %}
+
+{% block javascripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Function to close all post menus
+        const closeAllPostMenus = () => {
+            document.querySelectorAll('.post-menu').forEach(menu => {
+                menu.classList.remove('visible');
+            });
+        };
+
+        // Function to close all comment menus
+        const closeAllCommentMenus = () => {
+            document.querySelectorAll('.comment-menu').forEach(menu => {
+                menu.style.display = 'none';
+            });
+        };
+
+        // Post options menu handling
+        document.querySelectorAll('.post-options').forEach(optionBtn => {
+            optionBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const menu = this.nextElementSibling;
+                
+                // Close all other menus before opening this one
+                closeAllPostMenus();
+                closeAllCommentMenus();
+                menu.classList.toggle('visible');
+            });
+        });
+
+        // Comment options menu handling
+        document.querySelectorAll('.comment-options').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const menu = this.nextElementSibling;
+                
+                // Close all other menus before opening this one
+                closeAllPostMenus();
+                closeAllCommentMenus();
+                menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+            });
+        });
+
+        // Reply options menu handling (if you have scomment-options class)
+        document.querySelectorAll('.scomment-options').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const menu = this.nextElementSibling;
+                
+                // Close all other menus before opening this one
+                closeAllPostMenus();
+                closeAllCommentMenus();
+                menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+            });
+        });
+
+        // Toggle reply form visibility
+       function toggleReplyForm(commentId) {
+    const form = document.getElementById(`reply-form-${commentId}`);
+    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+}
+
+        // Close all menus when clicking elsewhere
+        document.addEventListener('click', function() {
+            closeAllPostMenus();
+            closeAllCommentMenus();
+        });
+
+        // Prevent closing when clicking inside menus
+        document.querySelectorAll('.post-menu, .comment-menu').forEach(menu => {
+            menu.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+        });
+    });
+</script>
+{% endblock %}
+
+
+{% block content %}
+<div class="container">
+    <!-- Left Section: Chatbot Placeholder -->
+    <aside class="left-section">
+        Chatbot Section (Coming Soon)
+    </aside>
+
+    <!-- Middle Section: Posts -->
+  
+<div class="container">
+    <section class="middle-section">
+        {# Formulaire de question #}
+        
+    <div class="create-post">
+    <form action="{{ path('post_new') }}" method="POST">
+    <textarea name="content" placeholder="What's on your mind?" required></textarea>
+    <button  type="submit"class="post-btn">Post</button>
+     </form>
+</div>
+              <br/>
+              <br/>
+
+{% for post in posts %}
+<div class="post-card">
+    <div class="post-header">
+        <div class="user-info">
+            <span><i class="fas fa-user"></i></span>
+            <div class="user-details">
+                <span class="user-name">{{ post.utilisateur.nom }}</span>
+                <span class="post-time">{{ post.dateCreation|date('H:i') }}</span>
+            </div>
+        </div>
+  <span class="post-options">⋮</span>
+<div class="post-menu">
+  <a href="{{ path('app_home_page', {'edit': post.id}) }}" class="edit-post">
+                <i class="fas fa-edit" style="color: grey;"></i> Edit
+            </a>
+    <a href="{{ path('post_delete', {id: post.id}) }}" 
+       onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce post ?')">
+        <i class="fas fa-trash-alt" style="color: red;"></i> Delete
+    </a>
+</div>
+
+    </div>
+
+  {# ... form de edit ... #}
+    <div class="post-content">
+        {% if edit_post_id == post.id %}
+            <form method="POST">
+                <input type="hidden" name="post_id" value="{{ post.id }}">
+                <textarea name="content" class="edit-textarea">{{ post.contenu }}</textarea>
+                <div class="edit-actions">
+                    <button type="submit" class="save-btn">Save</button>
+                    <a href="{{ path('app_home_page') }}" class="cancel-btn">Cancel</a>
+                </div>
+            </form>
+        {% else %}
+            {{ post.contenu }}
+        {% endif %}
+    </div>
+
+{# ... reste de votre template inchangé ... #}
+
+    <div class="post-actions">
+        <button class="like-btn">Like</button>
+        <button class="comment-btn">Comment</button>
+    </div>
+
+   
+    <!-- Comment Section -->
+    <div class="comment-section">
+        {% for comment in post.commentaires %}
+        <div class="comment">
+            <span><i class="fas fa-user"></i></span>
+            <div class="comment-body">
+                <div class="comment-header">
+                    <span class="comment-user">{{ comment.utilisateur.nom }}</span>
+                    <span class="comment-time">{{ comment.dateCreation|date('H:i') }}</span>
+                    <span class="comment-options">⋮</span>
+                    <div class="comment-menu">
+                        <a href="{{ path('app_home_page', {'edit_comment': comment.id}) }}" class="edit-comment">
+                            <i class="fas fa-edit" style="color: grey;"></i> Edit
+                        </a>
+                        <a href="{{ path('comment_delete', {'id': comment.id}) }}" 
+                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce commentaire ?')">
+                            <i class="fas fa-trash-alt" style="color: red;"></i> Delete
+                        </a>
+                    </div>
+                </div>
+                
+                {% if edit_comment_id == comment.id %}
+                    <form method="POST" action="{{ path('app_home_page') }}" class="edit-comment-form">
+                        <input type="hidden" name="comment_id" value="{{ comment.id }}">
+                        <textarea name="comment_content" class="edit-comment-textarea">{{ comment.contenu }}</textarea>
+                        <div class="edit-comment-actions">
+                            <button type="submit" class="save-comment-btn">Save</button>
+                            <a href="{{ path('app_home_page') }}" class="cancel-comment-btn">Cancel</a>
+                        </div>
+                    </form>
+                {% else %}
+                    <div class="comment-text">{{ comment.contenu }}</div>
+                {% endif %}
+                
+               <div class="comment-actions">
+    <div class="comment-actions">
+    <button class="like-btn">Like</button>
+    <button class="reply-btn" onclick="toggleReplyForm({{ comment.id }})">Reply</button>
+    
+</div>
+
+<!-- Hidden reply form -->
+<div class="add-reply">
+<form action="{{ path('add_reply', {'id': comment.id}) }}" method="POST">
+    <input type="hidden" name="_token" value="{{ csrf_token('add_reply') }}">
+    <input type="text" name="reply_content" placeholder="Write a reply..." required>
+    <button type="submit" class="send-btn">➤</button>
+</form>
+</div>
+</div>
+                <!-- Reply Section -->
+                {% for reply in comment.sousCommentaires %}
+                <div class="reply">
+                    <span><i class="fas fa-user"></i></span>
+                    <div class="comment-body">
+                        <div class="comment-header">
+                            <span class="comment-user">{{ reply.utilisateur.nom }}</span>
+                            <span class="comment-time">{{ reply.dateCreation|date('H:i') }}</span>
+                            <span class="scomment-options">⋮</span>
+
+                              <div class="comment-menu">
+                        <a href="{{ path('app_home_page', {'edit_reply': reply.id}) }}" class="edit-comment">
+                            <i class="fas fa-edit" style="color: grey;"></i> Edit
+                        </a>
+                        <a href="{{ path('delete_reply', {'id': reply.id}) }}" 
+                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce sous commentaire ?')">
+                            <i class="fas fa-trash-alt" style="color: red;"></i> Delete
+                        </a>
+                    </div>
+                        
+                        </div>
+                              {% if edit_reply_id == reply.id %}
+                    <form method="POST" action="{{ path('app_home_page') }}" class="edit-comment-form">
+                        <input type="hidden" name="reply_id" value="{{ reply.id }}">
+                        <textarea name="reply_content" class="edit-comment-textarea">{{ reply.contenu }}</textarea>
+                        <div class="edit-comment-actions">
+                            <button type="submit" class="save-comment-btn">Save</button>
+                            <a href="{{ path('app_home_page') }}" class="cancel-comment-btn">Cancel</a>
+                        </div>
+                    </form>
+                {% else %}
+                    <div class="comment-text">{{ reply.contenu }}</div>
+                {% endif %}
+                        
+                    </div>
+                </div>
+                {% endfor %}
+                <!-- End Reply -->
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Add Comment Box -->
+   
+
+<div class="add-comment">
+    <form action="{{ path('post_add_comment', {'id': post.id}) }}" method="POST">
+        <input type="text" name="comment_content" placeholder="Write a comment..." required>
+        <button type="submit" class="send-btn">➤</button>
+    </form>
+</div>
+
+</div>
+{% endfor %}
+
+
+
+    </section>
+</div>
+
+
+
+    <!-- Right Section: Mall Map & ATMs -->
+    <aside class="right-section">
+        <div class="mall-map">
+            <img src="{{ asset('images/mall.jpg') }}" alt="Mall Map">
+        </div>
+        <div class="atm-section">
+            <h3>Active ATMs</h3>
+            <p>No active ATMs at the moment.</p>
+        </div>
+    </aside>
+</div>
+{% endblock %}
