@@ -6,6 +6,7 @@ use App\Repository\PostRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: PostRepository::class)]
 #[ORM\Table(name: "postes")] // Associer avec la table "postes" en base de données
@@ -21,6 +22,7 @@ class Post
     private Utilisateur $utilisateur;
 
     #[ORM\Column(type: 'text')]
+    #[Assert\NotBlank(message: "Post cannot be empty")]
     private string $contenu;
 
     #[ORM\Column(type: 'datetime')]

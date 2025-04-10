@@ -5,7 +5,7 @@ namespace App\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-
+use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity]
 #[ORM\Table(name: "commentaires")]
 class Commentaire
@@ -24,6 +24,7 @@ class Commentaire
     private Utilisateur $utilisateur;
 
     #[ORM\Column(type: 'text')]
+    #[Assert\NotBlank(message: "Comment cannot be empty")]
     private string $contenu;
 
     #[ORM\Column(type: 'datetime')]

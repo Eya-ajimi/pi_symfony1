@@ -1,0 +1,216 @@
+{% extends 'base.html.twig' %}
+{% block title %}SHOPS - InnoMall{% endblock %}
+{% block stylesheets %}
+   
+    <link rel="stylesheet" href="{{ asset('css/shops.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+{% endblock %}
+
+{% block content %}
+    <div class="shops-container">
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <h2><i class="fas fa-filter"></i> Filters</h2>
+            
+            <!-- Search Filter -->
+            <div class="search-filter">
+                <input type="text" placeholder="Search shops...">
+            </div>
+            
+            <!-- Category Filter -->
+            <div class="filter-group">
+                <h3><i class="fas fa-tags"></i> Categories</h3>
+                <ul class="filter-options">
+                    <li>
+                        <label>
+                            <input type="checkbox" checked> Clothing
+                        </label>
+                    </li>
+                    <li>
+                        <label>
+                            <input type="checkbox" checked> Coffee Shops
+                        </label>
+                    </li>
+                    <li>
+                        <label>
+                            <input type="checkbox" checked> Accessories
+                        </label>
+                    </li>
+                    <li>
+                        <label>
+                            <input type="checkbox"> Jewelry
+                        </label>
+                    </li>
+                    <li>
+                        <label>
+                            <input type="checkbox"> Electronics
+                        </label>
+                    </li>
+                </ul>
+            </div>
+            
+            <!-- Rating Filter -->
+            <div class="filter-group">
+                <h3><i class="fas fa-star"></i> Rating</h3>
+                <div class="rating-filter">
+                    <div class="rating-option">
+                        <label>
+                            <input type="radio" name="rating" value="5">
+                            <div class="rating-stars-filter">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </label>
+                    </div>
+                    <div class="rating-option">
+                        <label>
+                            <input type="radio" name="rating" value="4">
+                            <div class="rating-stars-filter">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="far fa-star"></i>
+                            </div>
+                        </label>
+                    </div>
+                    <div class="rating-option">
+                        <label>
+                            <input type="radio" name="rating" value="3">
+                            <div class="rating-stars-filter">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="far fa-star"></i>
+                                <i class="far fa-star"></i>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Price Range Filter -->
+          
+            
+            <!-- Open Now Filter -->
+            <div class="filter-group">
+                <h3><i class="fas fa-clock"></i> Availability</h3>
+                <ul class="filter-options">
+                    <li>
+                        <label>
+                            <input type="checkbox"> Open Now
+                        </label>
+                    </li>
+                    <li>
+                        <label>
+                            <input type="checkbox"> With Promotions
+                        </label>
+                    </li>
+                </ul>
+            </div>
+            
+            <!-- Reset Button -->
+            <button class="filter-reset">
+                <i class="fas fa-sync-alt"></i> Reset Filters
+            </button>
+        </div>
+        
+        
+
+        <!-- Shops Grid -->
+        <!-- Shops Grid -->
+        <div class="shops-grid">
+            {% for shopOwner in shopOwners %}
+                <div class="shop-card">
+                    <div class="shop-header">
+                        <h3>{{ shopOwner.nom|upper }} {{ shopOwner.prenom is defined ? shopOwner.prenom|upper : '' }}</h3>
+                        <div class="shop-rating">
+                            {% set averageRating = feedback_repo.getAverageRatingValue(shopOwner) %}
+                            {% set ratingCount = feedback_repo.countByShop(shopOwner) %}
+                            <div class="stars">
+                                {% for i in 1..5 %}
+                                    <i class="fas fa-star{% if i > averageRating %}-half-alt{% elseif i > averageRating and i - 1 < averageRating %}{{ '' }}{% else %}-alt{% endif %}"></i>
+                                {% endfor %}
+                            </div>
+                            <span class="rating-count">({{ ratingCount }} reviews)</span>
+                        </div>
+                    </div>
+                    <div class="shop-body">
+                        <p class="shop-description">
+                            {{ shopOwner.description ?? 'No description available' }}
+                        </p>
+                        
+                        <div class="shop-details">
+                            <div class="detail-item">
+                                <i class="fas fa-phone"></i>
+                                <span>{{ shopOwner.telephone ?? 'No phone' }} +216 55487955</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-clock"></i>
+                                <span>8 AM to 9 PM</span>
+                            </div>
+                        </div>
+                        
+                        <div class="shop-promo">
+                            <strong>Category:</strong> {{ shopOwner.categorie ? shopOwner.categorie.nom : 'Not specified' }}
+                        </div>
+                        
+                        <a href="#" class="shop-website" target="_blank">
+                            {{ shopOwner.website ?? '' }} www.{{shopOwner.nom}}.com
+                        </a>
+                        
+                        <!-- Rating Form -->
+                        <div class="rating-form">
+                            <h4>Rate this shop:</h4>
+                            {% if feedback_forms[shopOwner.id] is defined %}
+                                {{ form_start(feedback_forms[shopOwner.id], {
+                                    'attr': {
+                                        'class': 'rating-form',
+                                        'data-shop-id': shopOwner.id
+                                    }
+                                }) }}
+                                <div class="star-rating">
+                                    {{ form_widget(feedback_forms[shopOwner.id].rating, {
+                                        'attr': {
+                                            'class': 'star-input'
+                                        }
+                                    }) }}
+                                </div>
+                                {{ form_widget(feedback_forms[shopOwner.id]) }}
+                                <button type="submit" class="submit-rating">add Rating</button>
+                                {{ form_end(feedback_forms[shopOwner.id]) }}
+                            {% endif %}
+                        </div>
+                            <!-- View Product Button -->
+                <!-- View Product Button -->
+<div class="view-product-container">
+    <form action="{{ path('shop_products', {'shopId': shopOwner.id}) }}" method="GET">
+        <button type="submit" class="view-product-btn">View Products</button>
+    </form>
+</div>
+
+                    </div>
+                        
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+     <script>
+      
+
+        // Star rating interaction
+        document.querySelectorAll('.star-input input[type="radio"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                const stars = this.closest('.star-rating').querySelectorAll('label');
+                stars.forEach((star, index) => {
+                    star.querySelector('i').className = index < this.value ? 'fas fa-star' : 'far fa-star';
+                });
+            });
+        });
+    </script>
+{% endblock %}

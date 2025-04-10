@@ -3,7 +3,7 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-
+use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity]
 #[ORM\Table(name: "sous_commentaires")]
 class SousCommentaire
@@ -22,6 +22,7 @@ class SousCommentaire
     private Utilisateur $utilisateur;
 
     #[ORM\Column(type: 'text')]
+    #[Assert\NotBlank(message: "Post content cannot be empty")]
     private string $contenu;
 
     #[ORM\Column(type: 'datetime')]

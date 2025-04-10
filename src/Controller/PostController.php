@@ -39,7 +39,7 @@ class PostController extends AbstractController
        $post->setDateCreation(new \DateTime());
        
        // Utilisateur statique ID=1
-       $utilisateur = $utilisateurRepo->find(1);
+       $utilisateur = $utilisateurRepo->find(9);
        if (!$utilisateur) {
            throw $this->createNotFoundException('Utilisateur avec ID 1 non trouvé');
        }
@@ -93,7 +93,7 @@ public function addComment(
         $comment = new Commentaire();
         $comment->setContenu($content);
         $comment->setPost($post);
-        $comment->setUtilisateur($userRepo->find(3)); // Utilisateur statique (à remplacer par $this->getUser() plus tard)
+        $comment->setUtilisateur($userRepo->find(9)); // Utilisateur statique (à remplacer par $this->getUser() plus tard)
         $comment->setDateCreation(new \DateTime());
         
         $em->persist($comment);
@@ -139,7 +139,7 @@ public function addReply(
         $reply = new SousCommentaire();
         $reply->setContenu($content);
         $reply->setCommentaire($comment);
-        $reply->setUtilisateur($userRepo->find(1)); // Replace with current user
+        $reply->setUtilisateur($userRepo->find(9)); // Replace with current user
         $reply->setDateCreation(new \DateTime());
         
         $em->persist($reply);
