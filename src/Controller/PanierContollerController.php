@@ -1,0 +1,190 @@
+<?php
+
+namespace App\Controller;
+
+use App\Entity\Panier;
+use App\Entity\Utilisateur;
+use App\Repository\CommandeRepository;
+use App\Repository\PanierRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
+
+final class PanierContollerController extends AbstractController
+{
+    public function __construct(
+        private PanierRepository $panierRepository,
+        private EntityManagerInterface $entityManager,
+        private CommandeRepository $commandeRepository
+    ) {}
+
+    #[Route('/panier/contoller', name: 'app_show_panier')]
+    public function showPanier(): Response
+    {
+
+
+        $utilisateur = new Utilisateur();
+        $utilisateur->setId(7);
+
+        $commandeEnCours = $this->commandeRepository->findCommandeEnCours($utilisateur);
+
+        if (!$commandeEnCours) {
+            return $this->render('panier_contoller/index.html.twig', [
+                'panierList' => [],
+                'itemsNumber' => 0,
+                'totalCommande' => 0,
+            ]);
+        }
+        else{
+            $idCommandeEnCours = $commandeEnCours->getId();
+            $panierList = $this->panierRepository->getPanierDetails($idCommandeEnCours);
+
+            // Vérification des stocks et ajustement des quantités
+            foreach ($panierList as $key => $panierDetail) {
+                $panier = $panierDetail['panier'];
+                $produit = $panier->getIdProduit();
+                $quantitePanier = $panier->getQuantite();
+                $stockProduit = $produit->getStock();
+
+                if ($quantitePanier > $stockProduit) {
+                    if ($stockProduit == 0) {
+                        // Supprimer l'article du panier si le stock est épuisé
+                        $this->entityManager->remove($panier);
+                        unset($panierList[$key]);
+                    } else {
+                        // Mettre à jour la quantité dans le panier avec le stock disponible
+                        $panier->setQuantite($stockProduit);
+
+                        // Recalculer le prix total
+                        $prixUnitaire = $panierDetail['produitDetails']['prixOriginal'];
+                        if ($panierDetail['promotionDetails']['isActive']) {
+                            $prixUnitaire = $prixUnitaire - ($prixUnitaire * $panierDetail['promotionDetails']['discountPercentage'] / 100);
+                        }
+                        $panier->setPrix($prixUnitaire * $stockProduit);
+                    }
+                }
+            }
+
+            // Persister les changements en base de données
+            $this->entityManager->flush();
+
+            // Réindexer le tableau après les éventuelles suppressions
+            $panierList = array_values($panierList);
+            $itemsNumber = count($panierList);
+            $totalCommande = 0;
+            foreach ($panierList as $panier) {
+                $totalCommande += $panier['prixTotal'];
+            }
+
+            return $this->render('panier_contoller/index.html.twig', [
+                'panierList' => $panierList,
+                'itemsNumber' => $itemsNumber,
+                'totalCommande' => $totalCommande,
+            ]);
+        }
+
+    }
+
+    #[Route('/panier/addQuantite/{idCommande}/{idProduit}', name: 'app_add_quantite')]
+    public function addQuantite($idCommande, $idProduit): Response
+    {
+
+
+        $panierItem = $this->panierRepository->findBy([
+            'idCommande' => $idCommande,
+            'idProduit' => $idProduit
+        ]);
+
+        if (!$panierItem) {
+            throw $this->createNotFoundException('Panier item not found');
+        }
+
+        $newQuantite = $panierItem[0]->getQuantite() + 1;
+
+        if ($newQuantite > $panierItem[0]->getIdProduit()->getStock()) {
+            // Ajoutez un message flash pour informer l'utilisateur
+            $this->addFlash('error', 'La quantité demandée dépasse le stock disponible');
+            return $this->redirectToRoute('app_show_panier');
+        }
+
+        $panierItem[0]->setQuantite($newQuantite);
+
+        // Mise à jour du total de la commande
+        $newTotalCommande = $panierItem[0]->getIdCommande()->getTotal() + $panierItem[0]->getIdProduit()->getPrix();
+        $panierItem[0]->getIdCommande()->setTotal($newTotalCommande);
+
+        $this->entityManager->flush();
+
+        // Redirection vers la page du panier
+        return $this->redirectToRoute('app_show_panier');
+    }
+
+    #[Route('/panier/diminuerQuantite/{idCommande}/{idProduit}', name: 'app_diminuer_quantite')]
+    public function diminuerQuantite($idCommande, $idProduit): Response
+    {
+
+
+        $panierItem = $this->panierRepository->findBy([
+            'idCommande' => $idCommande,
+            'idProduit' => $idProduit
+        ]);
+        if (!$panierItem) {
+            throw $this->createNotFoundException('Panier item not found');
+        }
+
+        $newQuantite = $panierItem[0]->getQuantite() - 1;
+        if($newQuantite ==0){
+            return $this->redirectToRoute('app_show_panier');
+
+            //lahné nzid faza mte3 message snack bar
+        }
+
+
+        $panierItem[0]->setQuantite($newQuantite);
+
+        // Mise à jour du total de la commande
+        $newTotalCommande = $panierItem[0]->getIdCommande()->getTotal() - $panierItem[0]->getIdProduit()->getPrix();
+        $panierItem[0]->getIdCommande()->setTotal($newTotalCommande);
+
+        $this->entityManager->flush();
+
+        // Redirection vers la page du panier
+        return $this->redirectToRoute('app_show_panier');
+    }
+
+    #[Route('/panier/deletePanier/{idCommande}/{idProduit}', name: 'app_delete_item')]
+    public function deleteItem($idCommande, $idProduit): Response
+    {
+        // Récupérer l'item du panier
+        $panierItem = $this->panierRepository->findOneBy([
+            'idCommande' => $idCommande,
+            'idProduit' => $idProduit
+        ]);
+
+        if (!$panierItem) {
+            throw $this->createNotFoundException('Panier item not found');
+        }
+
+        // Calculer le nouveau total
+        $commande = $panierItem->getIdCommande();
+        $newTotalCommande = $commande->getTotal() - ($panierItem->getIdProduit()->getPrix() * $panierItem->getQuantite());
+        $commande->setTotal($newTotalCommande);
+
+        // Supprimer l'item du panier
+        $this->entityManager->remove($panierItem);
+        $this->entityManager->flush();
+
+        // Vérifier si le panier est maintenant vide
+        $count = $this->panierRepository->count(['idCommande' => $idCommande]);
+
+        if ($count === 0) {
+            // Supprimer la commande si le panier est vide
+            $this->entityManager->remove($commande);
+            $this->entityManager->flush();
+        }
+
+        return $this->redirectToRoute('app_show_panier');
+    }
+
+}
