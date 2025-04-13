@@ -21,11 +21,14 @@ class EventRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    public function findEventsByDate(string $date)
+    public function findEventsByDate(\DateTimeInterface $date)
     {
+        $dateStr = $date->format('Y-m-d');
+        
         return $this->createQueryBuilder('e')
-            ->where('e.dateDebut <= :date AND e.dateFin >= :date')
-            ->setParameter('date', $date)
+            ->where(':date >= e.dateDebut')
+            ->andWhere(':date <= e.dateFin')
+            ->setParameter('date', $dateStr)
             ->leftJoin('e.organisateur', 'o')
             ->addSelect('o')
             ->getQuery()

@@ -7,7 +7,8 @@
 
     {# Global Styles #}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
+    <link rel="stylesheet" href="/css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 
     {# Page-Specific Styles #}
     {% block stylesheets %}{% endblock %}
@@ -190,9 +191,12 @@
             <a href="{{ path('app_home_page') }}">Home</a>
             <a href="{{ path('app_shops') }}">Shops</a>
             <a href="{{ path('app_events') }}">Events</a>
-            <a href="#">Parking</a>
+            <a >Parking</a>
         </nav>
         <div class="user-icons">
+            <a href="{{ path('app_reclamation') }}" title="Submit a complaint">
+                <span><i class="fas fa-exclamation-circle"></i></span>
+            </a>
             <span><i class="fas fa-bell"></i></span>
             <span><i class="fas fa-shopping-cart"></i></span>
             <span><i class="fas fa-user"></i></span>

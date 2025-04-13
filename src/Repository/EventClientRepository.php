@@ -1,7 +1,9 @@
 <?php
 namespace App\Repository;
 
+use App\Entity\Event;
 use App\Entity\EventClient;
+use App\Entity\Utilisateur;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -12,16 +14,18 @@ class EventClientRepository extends ServiceEntityRepository
         parent::__construct($registry, EventClient::class);
     }
 
-    public function isParticipating(int $clientId, int $eventId): bool
+    public function isParticipating(int $userId, int $eventId): bool
     {
         $result = $this->createQueryBuilder('ec')
-            ->where('ec.client = :clientId AND ec.event = :eventId')
-            ->setParameter('clientId', $clientId)
+            ->select('COUNT(ec.idClient)')
+            ->where('ec.idClient = :userId')
+            ->andWhere('ec.idEvent = :eventId')
+            ->setParameter('userId', $userId)
             ->setParameter('eventId', $eventId)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getSingleScalarResult();
 
-        return $result !== null;
+        return $result > 0;
     }
 
     public function addParticipation(EventClient $eventClient): void

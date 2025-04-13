@@ -1,0 +1,88 @@
+/* public/css/reclamation.css */
+.reclamation-container {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 40px;
+    background-color: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    font-family: 'Poppins', sans-serif;
+}
+
+.reclamation-title {
+    text-align: center;
+    font-size: 28px;
+    font-weight: 600;
+    color: #2C3E50;
+    margin-bottom: 40px;
+    position: relative;
+}
+
+.reclamation-title::after {
+    content: '';
+    position: absolute;
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(to right, #F9A66A, #F9844A);
+    border-radius: 2px;
+}
+
+.reclamation-form .form-group {
+    margin-bottom: 25px;
+}
+
+.reclamation-form label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #4a5568;
+}
+
+.reclamation-form .form-control {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background-color: #f8fafc;
+    transition: all 0.3s ease;
+}
+
+.reclamation-form .form-control:focus {
+    border-color: #F9A66A;
+    box-shadow: 0 0 0 3px rgba(249, 166, 106, 0.2);
+    outline: none;
+}
+
+.reclamation-form textarea.form-control {
+    min-height: 180px;
+    resize: vertical;
+}
+
+.btn-submit {
+    width: 100%;
+    padding: 14px 28px;
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+    background: linear-gradient(to right, #F9A66A, #F9844A);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+@media (max-width: 768px) {
+    .reclamation-container {
+        margin: 20px;
+        padding: 30px 20px;
+    }
+}

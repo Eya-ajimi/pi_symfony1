@@ -11,23 +11,47 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
 class EventController extends AbstractController
 {
+
     #[Route('/events', name: 'app_events')]
     public function index(
         EventRepository $eventRepository,
-        Request $request
+        EventClientRepository $eventClientRepository, 
+        Request $request,
+        EntityManagerInterface $entityManager
     ): Response {
-        $date = $request->query->get('date');
+        // Static user with ID 9
+        $user = $entityManager->getReference(Utilisateur::class, 9);
         
+        $dateString = $request->query->get('date');
+        $date = null;
+        
+        if ($dateString) {
+            try {
+                $date = new \DateTime($dateString);
+            } catch (\Exception $e) {
+                $this->addFlash('error', 'Invalid date format');
+            }
+        }
+    
         $events = $date 
             ? $eventRepository->findEventsByDate($date)
             : $eventRepository->findAllEvents();
-
+    
+        // Precompute participation status for each event
+        $eventsWithParticipation = [];
+        foreach ($events as $event) {
+            $eventsWithParticipation[] = [
+                'event' => $event,
+                'isParticipating' => $eventClientRepository->isParticipating($user->getId(), $event->getId())
+            ];
+        }
+    
         return $this->render('event/index.html.twig', [
-            'events' => $events,
+            'eventsWithParticipation' => $eventsWithParticipation,
+            'user' => $user
         ]);
     }
 
@@ -35,9 +59,11 @@ class EventController extends AbstractController
     public function participate(
         Event $event,
         EventClientRepository $eventClientRepository,
-        #[CurrentUser] Utilisateur $user,
         EntityManagerInterface $entityManager
     ): Response {
+        // Static user with ID 9
+        $user = $entityManager->getReference(Utilisateur::class, 9);
+
         // Check if already participating
         if ($eventClientRepository->isParticipating($user->getId(), $event->getId())) {
             $this->addFlash('warning', 'You are already participating in this event.');
@@ -46,8 +72,8 @@ class EventController extends AbstractController
 
         // Create new participation
         $participation = new EventClient();
-        $participation->setClient($user);
-        $participation->setEvent($event);
+        $participation->setIdClient($user);
+        $participation->setIdEvent($event);
         $participation->setDate(date('Y-m-d'));
 
         $entityManager->persist($participation);
@@ -55,5 +81,84 @@ class EventController extends AbstractController
 
         $this->addFlash('success', 'You have successfully joined the event!');
         return $this->redirectToRoute('app_events');
+    }
+
+    #[Route('/events/decline/{id}', name: 'app_event_decline')]
+    public function decline(
+        Event $event,
+        EventClientRepository $eventClientRepository,
+        EntityManagerInterface $entityManager
+    ): Response {
+        // Static user with ID 9
+        $user = $entityManager->getReference(Utilisateur::class, 9);
+        
+        $participation = $eventClientRepository->findOneBy([
+            'idClient' => $user->getId(),
+            'idEvent' => $event->getId()
+        ]);
+        
+        if (!$participation) {
+            $this->addFlash('error', 'You are not participating in this event.');
+            return $this->redirectToRoute('app_events');
+        }
+
+        $entityManager->remove($participation);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'You have successfully declined participation.');
+        return $this->redirectToRoute('app_events');
+    }
+
+    #[Route('/event/qrcode/{id}', name: 'app_event_qrcode')]
+    public function generateQrCode(
+        Event $event,
+        EventClientRepository $eventClientRepository,
+        \Endroid\QrCode\Builder\BuilderInterface $customQrCodeBuilder,
+        EntityManagerInterface $entityManager
+    ): Response {
+        // Static user with ID 9
+        $user = $entityManager->getReference(Utilisateur::class, 9);
+        
+        // Verify user is participating
+        if (!$eventClientRepository->isParticipating($user->getId(), $event->getId())) {
+            throw $this->createNotFoundException('You are not participating in this event');
+        }
+
+        // Generate QR code content
+        $qrContent = json_encode([
+            'event_id' => $event->getId(),
+            'user_id' => $user->getId(),
+            'event_name' => $event->getDescription(),
+            'location' => $event->getEmplacement(),
+            'dates' => $event->getDateDebut() . ' to ' . $event->getDateFin()
+        ]);
+
+        $qrCode = $customQrCodeBuilder
+            ->data($qrContent)
+            ->size(300)
+            ->margin(20)
+            ->build();
+
+        return new Response($qrCode->getString(), 200, [
+            'Content-Type' => $qrCode->getMimeType()
+        ]);
+    }
+
+    #[Route('/event/qrcode/{id}/view', name: 'app_event_qrcode_view')]
+    public function viewQrCode(
+        Event $event,
+        EventClientRepository $eventClientRepository,
+        EntityManagerInterface $entityManager
+    ): Response {
+        // Static user with ID 9
+        $user = $entityManager->getReference(Utilisateur::class, 9);
+        
+        if (!$eventClientRepository->isParticipating($user->getId(), $event->getId())) {
+            throw $this->createNotFoundException('You are not participating in this event');
+        }
+
+        return $this->render('event/qrcode.html.twig', [
+            'event' => $event
+        ]);
     }
 }

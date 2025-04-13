@@ -1,112 +1,191 @@
-/* Event Cards */
+/* ========== MAIN CONTAINER ========== */
+.events-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 30px;
+}
+
+/* ========== EVENT CARDS ========== */
 .event-card {
-    background-color: #ADE2EE;
-    border: 1px solid #CCCCCC;
-    padding: 20px;
-    border-radius: 5px;
-    box-shadow: 0 5px 10px rgba(0,0,0,0.1);
-    transition: all 0.3s ease;
-    margin-bottom: 20px;
+    background: linear-gradient(135deg, #ADE2EE 0%, #C7E9F5 100%);
+    border: none;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 .event-card:hover {
-    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-    transform: translateY(-3px);
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
 }
 
+/* ========== CARD CONTENT ========== */
 .event-organizer {
-    font-size: 1.25rem;
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 10px;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #2C3E50;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.5);
 }
 
 .event-description {
-    color: #555;
-    margin-bottom: 15px;
-    line-height: 1.5;
+    color: #34495E;
+    margin-bottom: 20px;
+    line-height: 1.6;
+    flex-grow: 1;
+    font-size: 1rem;
 }
 
 .event-meta {
     display: flex;
     align-items: center;
-    color: #666;
-    margin-bottom: 8px;
-    font-size: 0.9rem;
+    color: #4A6278;
+    margin-bottom: 12px;
+    font-size: 0.95rem;
+    gap: 10px;
 }
 
 .event-meta i {
-    margin-right: 8px;
-    width: 16px;
-    text-align: center;
+    color: #3498DB;
+    font-size: 1.1rem;
+    min-width: 20px;
+}
+
+/* ========== BUTTONS ========== */
+.event-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 20px;
 }
 
 .event-button {
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    text-align: center;
+    padding: 12px 20px;
+    border-radius: 8px;
     text-decoration: none;
-    display: inline-block;
-    font-size: 14px;
-    font-weight: bold;
-    border-radius: 5px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-align: center;
+    font-size: 0.95rem;
+    border: none;
     cursor: pointer;
-    transition: background-color 0.3s;
-    width: 100%;
-    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
 }
 
-.event-button:hover {
-    background-color: #45a049;
+.event-button i {
+    font-size: 1.1rem;
 }
 
-/* Events container */
-.events-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
-    padding: 20px 0;
+.event-button.participate {
+    background: linear-gradient(to right, #4CAF50, #2E7D32);
+    color: white;
+    box-shadow: 0 4px 12px rgba(46, 125, 50, 0.2);
 }
 
-/* Search form styling */
+.event-button.participate:hover {
+    background: linear-gradient(to right, #43A047, #1B5E20);
+    transform: translateY(-2px);
+}
+
+.event-button.decline {
+    background: linear-gradient(to right, #F44336, #C62828);
+    color: white;
+    box-shadow: 0 4px 12px rgba(198, 40, 40, 0.2);
+}
+
+.event-button.decline:hover {
+    background: linear-gradient(to right, #E53935, #B71C1C);
+    transform: translateY(-2px);
+}
+
+.event-button.qr-code {
+    background: linear-gradient(to right, #2196F3, #1565C0);
+    color: white;
+    box-shadow: 0 4px 12px rgba(21, 101, 192, 0.2);
+}
+
+.event-button.qr-code:hover {
+    background: linear-gradient(to right, #1E88E5, #0D47A1);
+    transform: translateY(-2px);
+}
+
+/* ========== SEARCH FORM ========== */
 .event-search-form {
     display: flex;
-    gap: 10px;
+    gap: 15px;
     justify-content: center;
-    margin-bottom: 30px;
-    align-items: center;
+    margin: 40px auto;
+    max-width: 800px;
+    padding: 0 20px;
 }
 
 .event-search-form input[type="date"] {
-    padding: 8px 12px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    font-size: 14px;
+    padding: 12px 15px;
+    border: 2px solid #E0E0E0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s;
+    background: white;
+}
+
+.event-search-form input[type="date"]:focus {
+    border-color: #3498DB;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
 }
 
 .event-search-form button {
-    padding: 8px 16px;
-    background-color: #ffb177;
+    padding: 12px 24px;
+    background: linear-gradient(to right, #FFB177, #FF8A4F);
     color: white;
     border: none;
-    border-radius: 5px;
-    font-weight: bold;
+    border-radius: 8px;
+    font-weight: 600;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: all 0.3s;
+    box-shadow: 0 4px 12px rgba(255, 138, 79, 0.3);
 }
 
 .event-search-form button:hover {
-    background-color: #ff9e5a;
+    background: linear-gradient(to right, #FF9E5A, #FF7733);
+    transform: translateY(-2px);
 }
 
 .event-search-form a.clear-btn {
-    color: #666;
+    color: #7F8C8D;
     text-decoration: none;
-    padding: 8px 12px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    transition: all 0.3s;
+    font-weight: 500;
+    background: #ECF0F1;
 }
 
 .event-search-form a.clear-btn:hover {
-    color: #333;
+    color: #34495E;
+    background: #DFE6E9;
+}
+
+/* ========== RESPONSIVE ADJUSTMENTS ========== */
+@media (max-width: 768px) {
+    .events-container {
+        grid-template-columns: 1fr;
+        padding: 20px;
+    }
+    
+    .event-search-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
 }

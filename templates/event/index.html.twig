@@ -1,4 +1,3 @@
-{# templates/event/index.html.twig #}
 {% extends 'base.html.twig' %}
 
 {% block title %}Events - InnoMall{% endblock %}
@@ -17,6 +16,7 @@
                 name="date" 
                 value="{{ app.request.query.get('date') }}"
                 class="event-date-input"
+                required
             >
             <button type="submit" class="event-search-button">
                 Search
@@ -29,17 +29,26 @@
         </form>
     </div>
 
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-error mb-4">{{ message }}</div>
+    {% endfor %}
+
     <div class="events-container">
-        {% for event in events %}
+        {% for item in eventsWithParticipation %}
+            {% set event = item.event %}
+            {% set isParticipating = item.isParticipating %}
+            
             <div class="event-card">
                 <h3 class="event-organizer">
-                    {{ event.organisateur.nom }} {{ event.organisateur.prenom }}
+                    {{ event.organisateur ? event.organisateur.nom ~ ' ' ~ event.organisateur.prenom : 'Unknown Organizer' }}
                 </h3>
                 <p class="event-description">{{ event.description }}</p>
                 
                 <div class="event-meta">
                     <i class="far fa-calendar-alt"></i>
-                    <span>{{ event.dateDebut }} to {{ event.dateFin }}</span>
+                    <span>
+                        {{ event.dateDebut|date('Y-m-d') }} to {{ event.dateFin|date('Y-m-d') }}
+                    </span>
                 </div>
                 
                 <div class="event-meta">
@@ -47,18 +56,32 @@
                     <span>{{ event.emplacement }}</span>
                 </div>
 
-                {% if is_granted('ROLE_CLIENT') %}
-                    <a 
-                        href="{{ path('app_event_participate', {id: event.id}) }}" 
-                        class="event-button"
-                    >
+                {% if not isParticipating %}
+                    <a href="{{ path('app_event_participate', {id: event.id}) }}" 
+                    class="event-button participate">
                         Participate
+                    </a>
+                {% else %}
+                    <a href="{{ path('app_event_decline', {id: event.id}) }}" 
+                    class="event-button decline">
+                        Decline Participation
+                    </a>
+                    
+                    <a href="{{ path('app_event_qrcode', {id: event.id}) }}" 
+                    class="event-button qr-code" target="_blank">
+                        View QR Code
                     </a>
                 {% endif %}
             </div>
         {% else %}
             <div class="col-span-3 text-center py-8">
-                <p class="text-gray-500">No events found.</p>
+                <p class="text-gray-500">
+                    {% if app.request.query.get('date') %}
+                        No events found for the selected date.
+                    {% else %}
+                        No events available at the moment.
+                    {% endif %}
+                </p>
             </div>
         {% endfor %}
     </div>

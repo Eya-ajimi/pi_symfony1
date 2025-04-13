@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Enum\RoleEnum;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 
@@ -70,14 +72,21 @@ class Utilisateur implements UserInterface
     #[ORM\JoinColumn(name: "id_categorie", referencedColumnName: "id_categorie")]
     private ?Categorie $categorie = null;
 
+    /**
+     * @var Collection<int, EventClient>
+     */
+    #[ORM\OneToMany(targetEntity: EventClient::class, mappedBy: 'idClient')]
+    private Collection $eventClients;
+
     public function __construct()
     {
         $this->dateInscription = new \DateTime();
+        $this->eventClients = new ArrayCollection();
     }
 
     // Getters and Setters
     public function getId(): ?int { return $this->id; }
-
+    public function setId(int $id): self { $this->id = $id; return $this; }
     public function getNom(): string { return $this->nom; }
     public function setNom(string $nom): self { $this->nom = $nom; return $this; }
 
@@ -148,4 +157,34 @@ class Utilisateur implements UserInterface
     public function getPassword(): string { return $this->motDePasse; }
     public function getSalt(): ?string { return null; }
     public function getUsername(): string { return $this->email; }
+
+    /**
+     * @return Collection<int, EventClient>
+     */
+    public function getEventClients(): Collection
+    {
+        return $this->eventClients;
+    }
+
+    public function addEventClient(EventClient $eventClient): static
+    {
+        if (!$this->eventClients->contains($eventClient)) {
+            $this->eventClients->add($eventClient);
+            $eventClient->setIdClient($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEventClient(EventClient $eventClient): static
+    {
+        if ($this->eventClients->removeElement($eventClient)) {
+            // set the owning side to null (unless already changed)
+            if ($eventClient->getIdClient() === $this) {
+                $eventClient->setIdClient(null);
+            }
+        }
+
+        return $this;
+    }
 }
