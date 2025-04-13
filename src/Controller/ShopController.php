@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\FormFactoryInterface;
 
 class ShopController extends AbstractController
 {
@@ -18,32 +19,44 @@ class ShopController extends AbstractController
     public function index(
         UtilisateurRepository $utilisateurRepository,
         FeedbackRepository $feedbackRepository,
-        Request $request
+        Request $request,
+        FormFactoryInterface $formFactory
     ): Response {
-        // Get all shop owners
         $shopOwners = $utilisateurRepository->findAllShopOwners();
-        
-        // Get fixed user (ID = 9)
         $fixedUser = $utilisateurRepository->find(9);
-        
-        // Prepare feedback forms for each shop
+
         $feedbackForms = [];
+       
+        
         if ($fixedUser) {
+            
+            $isRatedList = [];
             foreach ($shopOwners as $shop) {
                 $existingFeedback = $feedbackRepository->findOneByUserAndShop($fixedUser, $shop);
                 $feedback = $existingFeedback ?? new Feedback();
-                
-                $feedbackForms[$shop->getId()] = $this->createForm(FeedbackType::class, $feedback, [
-                    'action' => $this->generateUrl('rate_shop', ['shopId' => $shop->getId()])
-                ])->createView();
+            
+                $feedbackForms[$shop->getId()] = $formFactory->createNamed(
+                    'feedback_' . $shop->getId(),
+                    FeedbackType::class,
+                    $feedback,
+                    ['action' => $this->generateUrl('rate_shop', ['shopId' => $shop->getId()])]
+                )->createView();
+            
+                // Track whether this shop is already rated by the user
+                $isRatedList[$shop->getId()] = $existingFeedback !== null;
             }
+            
         }
 
         return $this->render('shops/shops.html.twig', [
             'shopOwners' => $shopOwners,
             'feedback_forms' => $feedbackForms,
             'feedback_repo' => $feedbackRepository,
+            'isRatedList' => $isRatedList,
+            'fixedUser' => $fixedUser,
         ]);
+        
+        
     }
 
     #[Route('/shop/rate/{shopId}', name: 'rate_shop', methods: ['POST'])]
@@ -52,49 +65,71 @@ class ShopController extends AbstractController
         int $shopId,
         UtilisateurRepository $utilisateurRepository,
         FeedbackRepository $feedbackRepository,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        FormFactoryInterface $formFactory
     ): Response {
-        // Get fixed user (ID = 9)
         $fixedUser = $utilisateurRepository->find(9);
         if (!$fixedUser) {
-            $this->addFlash('error', 'System user not configured!');
+            $this->addFlash('error', 'User not found.');
             return $this->redirectToRoute('app_shops');
         }
-    
-        // Validate shop owner
+
         $shop = $utilisateurRepository->find($shopId);
         if (!$shop || $shop->getRole() !== 'SHOPOWNER') {
-            $this->addFlash('error', 'Invalid shop selected!');
+            $this->addFlash('error', 'Invalid shop selected.');
             return $this->redirectToRoute('app_shops');
         }
-    
-        // Handle feedback submission
+
         $existingFeedback = $feedbackRepository->findOneByUserAndShop($fixedUser, $shop);
         $feedback = $existingFeedback ?? new Feedback();
-        
-        $form = $this->createForm(FeedbackType::class, $feedback);
+
+        $form = $formFactory->createNamed(
+            'feedback_' . $shopId,
+            FeedbackType::class,
+            $feedback
+        );
+
         $form->handleRequest($request);
-    
+
         if ($form->isSubmitted() && $form->isValid()) {
-            try {
-                // Set fixed user and shop relationship
-                $feedback->setUser($fixedUser);
-                $feedback->setShop($shop);
-                $feedback->setCreatedAt(new \DateTime());
-    
-                // Persist to database
-                $entityManager->persist($feedback);
-                $entityManager->flush();
-    
-                $this->addFlash('success', 'Rating submitted successfully!');
-            } catch (\Exception $e) {
-                $this->addFlash('error', 'Error saving rating: ' . $e->getMessage());
-            }
+            $feedback->setUser($fixedUser);
+            $feedback->setShop($shop);
+            $feedback->setCreatedAt(new \DateTime());
+
+            $entityManager->persist($feedback);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Rating submitted successfully!');
         } else {
             $this->addFlash('error', 'Invalid rating submission!');
         }
-    
+
         return $this->redirectToRoute('app_shops');
     }
-    
+
+    #[Route('/shop/delete-rating/{shopId}', name: 'delete_rating', methods: ['POST'])]
+    public function deleteRating(
+        int $shopId,
+        UtilisateurRepository $utilisateurRepository,
+        FeedbackRepository $feedbackRepository,
+        EntityManagerInterface $entityManager
+    ): Response {
+        $user = $utilisateurRepository->find(9);
+        $shop = $utilisateurRepository->find($shopId);
+
+        if ($user && $shop) {
+            $rating = $feedbackRepository->findOneByUserAndShop($user, $shop);
+            if ($rating) {
+                $entityManager->remove($rating);
+                $entityManager->flush();
+                $this->addFlash('success', 'Rating deleted.');
+            } else {
+                $this->addFlash('error', 'No rating found to delete.');
+            }
+        } else {
+            $this->addFlash('error', 'Invalid user or shop.');
+        }
+
+        return $this->redirectToRoute('app_shops');
+    }
 }

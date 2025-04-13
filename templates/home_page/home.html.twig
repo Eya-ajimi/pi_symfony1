@@ -5,6 +5,9 @@
 {# Include home.css & home.js only for this page #}
 {% block stylesheets %}
     <link rel="stylesheet" href="{{ asset('css/home.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+     
+     
 {% endblock %}
 
 {% block javascripts %}
@@ -97,14 +100,44 @@
   
 <div class="container">
     <section class="middle-section">
-        {# Formulaire de question #}
         
-    <div class="create-post">
-    <form action="{{ path('post_new') }}" method="POST">
-    <textarea name="content" placeholder="What's on your mind?" required></textarea>
-    <button  type="submit"class="post-btn">Post</button>
-     </form>
+        
+    {# Formulaire de question #}
+<div class="create-post">
+    {{ form_start(postForm, {
+        'action': path('app_home_page'),
+        'attr': {
+            'class': 'post-form',
+            'novalidate': 'novalidate'
+        }
+    }) }}
+
+    <div class="form-group input-wrapper">
+        {{ form_widget(postForm.contenu, {
+            'attr': {
+                'class': 'custom-textarea-rect',
+                
+            }
+        }) }}
+
+        <button type="submit" class="post-btn">Post</button>
+
+        {% for error in postForm.contenu.vars.errors %}
+            <div class="tooltip-error">{{ error.message }}</div>
+        {% endfor %}
+    </div>
+
+    {{ form_end(postForm) }}
+
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger mt-2">{{ message }}</div>
+    {% endfor %}
 </div>
+
+
+
+
+
               <br/>
               <br/>
 
@@ -247,16 +280,30 @@
         </div>
         {% endfor %}
     </div>
-
-    <!-- Add Comment Box -->
-   
-
+  <!-- Add Comment Box -->
 <div class="add-comment">
-    <form action="{{ path('post_add_comment', {'id': post.id}) }}" method="POST">
-        <input type="text" name="comment_content" placeholder="Write a comment..." required>
+    {{ form_start(commentForms[post.id], { 'attr': {'class': 'comment-form', 'novalidate': 'novalidate'} }) }}
+
+    <div class="input-wrapper">
+        {{ form_widget(commentForms[post.id].contenu, {'attr': {
+            'class': 'custom-textarea',
+            'data-error-target': 'input' 
+        }}) }}
         <button type="submit" class="send-btn">➤</button>
-    </form>
+
+        {% for error in commentForms[post.id].contenu.vars.errors %}
+            <div class="tooltip-error">{{ error.message }}</div>
+        {% endfor %}
+    </div>
+
+    <input type="hidden" name="comment_post_id" value="{{ post.id }}">
+
+    {{ form_end(commentForms[post.id]) }}
 </div>
+
+
+
+
 
 </div>
 {% endfor %}
@@ -273,10 +320,39 @@
         <div class="mall-map">
             <img src="{{ asset('logo/mall.jpg') }}" alt="Mall Map">
         </div>
-        <div class="atm-section">
-            <h3>Active ATMs</h3>
-            <p>No active ATMs at the moment.</p>
-        </div>
+             
+<div class="atm-section">
+    <h3><i class="fas fa-money-check-alt me-2 text-primary"></i>ATM Status Dashboard</h3>
+
+    {% if atms is not empty %}
+        <table class="atm-table">
+            <thead>
+                <tr>
+                    <th><i class="fas fa-building-columns me-1"></i>Bank Name</th>
+                    <th><i class="fas fa-signal me-1"></i>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for atm in atms %}
+                    <tr>
+                        <td>{{ atm.bankName|capitalize }}</td>
+                        <td>
+                            <span class="status-badge {{ atm.status == 'active' ? 'status-active' : 'status-inactive' }}">
+                                <i class="fas {{ atm.status == 'active' ? 'fa-check-circle' : 'fa-times-circle' }} me-1"></i>
+                                {{ atm.status }}
+                            </span>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p class="text-muted mt-3">No ATMs found.</p>
+    {% endif %}
+</div>
+
+
+
     </aside>
 </div>
 {% endblock %}

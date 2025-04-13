@@ -9,17 +9,23 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Validator\Constraints\Regex;
 
 class CommentType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('contenu', TextType::class, [  // Changed from 'content' to 'contenu'
+            ->add('contenu', TextType::class, [
                 'label' => false,
-                'attr' => ['placeholder' => 'Write a comment...'],
+                'attr' => ['placeholder' => 'Write a comment...', 'rows' => 2],
                 'constraints' => [
-                    new NotBlank(['message' => 'Comment cannot be empty']),
+                    new NotBlank(['message' => '']),
+                    new Regex([
+                        'pattern' => '/\b(shit|fuck|asshole|bitch|dumb|ass|pussy|putain|con|drugs|saloup)\b/i',
+                        'match' => false,
+                        'message' => 'Your comment contains inappropriate language'
+                    ])
                 ]
             ]);
     }

@@ -1,0 +1,19 @@
+.logo img {
+    height: 70px; /* bigger logo */
+    object-fit: contain;
+}
+
+.search-bar {
+    width: 200px; /* narrower */
+    height: 36px;
+    padding: 4px 10px;
+}
+.search-bar input {
+    font-size: 14px;
+    width: 130px;
+}
+
+body {
+    padding-top: 90px; /* match header height */
+}
+

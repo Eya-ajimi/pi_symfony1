@@ -120,8 +120,6 @@
         </div>
         
         
-
-        <!-- Shops Grid -->
         <!-- Shops Grid -->
         <div class="shops-grid">
             {% for shopOwner in shopOwners %}
@@ -164,28 +162,57 @@
                         </a>
                         
                         <!-- Rating Form -->
-                        <div class="rating-form">
-                            <h4>Rate this shop:</h4>
-                            {% if feedback_forms[shopOwner.id] is defined %}
-                                {{ form_start(feedback_forms[shopOwner.id], {
-                                    'attr': {
-                                        'class': 'rating-form',
-                                        'data-shop-id': shopOwner.id
-                                    }
-                                }) }}
-                                <div class="star-rating">
-                                    {{ form_widget(feedback_forms[shopOwner.id].rating, {
-                                        'attr': {
-                                            'class': 'star-input'
-                                        }
-                                    }) }}
-                                </div>
-                                {{ form_widget(feedback_forms[shopOwner.id]) }}
-                                <button type="submit" class="submit-rating">add Rating</button>
-                                {{ form_end(feedback_forms[shopOwner.id]) }}
-                            {% endif %}
-                        </div>
-                            <!-- View Product Button -->
+                           <div class="rating-form">
+                          <h4>Rate this shop:</h4>
+
+            {% set rating = feedback_repo.findOneByUserAndShop(fixedUser, shopOwner) %}
+
+                 {% if rating %}
+            <div class="star-rating">
+            {% for i in 1..5 %}
+                {% if i <= rating.rating %}
+                    <span class="star"><i class="fas fa-star" style="color: gold;"></i></span> {# Empty star ☆ #}
+                {% else %}
+                    <span class="star"><i class="fas fa-star" style="color: rgb(241, 238, 238);"></i></span> {# Filled star ★ #}
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        <form method="post" action="{{ path('delete_rating', {'shopId': shopOwner.id}) }}" style="display:inline;">
+            <button type="submit" class="delete-btn" title="Delete Rating" style="background-color:white; border:none">
+              <i class="fas fa-trash" style="color: rgb(238, 58, 58); background-color:white;"></i>
+            </button>
+        </form>
+
+    {% else %}
+        
+
+       {% if feedback_forms[shopOwner.id] is defined %}
+    {{ form_start(feedback_forms[shopOwner.id]) }}
+    {# Render the rating field manually, but suppress the default widget #}
+{{ form_label(feedback_forms[shopOwner.id].rating, null, {'label_attr': {'style': 'display:none;'}}) }}
+
+<div class="star-rating">
+    {% for i in 5..1 %}
+        <input type="radio"
+               id="star{{ i }}-{{ shopOwner.id }}"
+               name="{{ feedback_forms[shopOwner.id].rating.vars.full_name }}"
+               value="{{ i }}" style="display:left; size:10px" >
+        <label for="star{{ i }}-{{ shopOwner.id }}">&#9733;</label>
+    {% endfor %}
+</div>
+
+    <button type="submit" class="submit-rating">Add Rating</button>
+    {{ form_end(feedback_forms[shopOwner.id], {'render_rest': true}) }}
+    {% endif %}
+
+    {% endif %}
+</div>
+
+
+
+
+                            
                 <!-- View Product Button -->
 <div class="view-product-container">
     <form action="{{ path('shop_products', {'shopId': shopOwner.id}) }}" method="GET">

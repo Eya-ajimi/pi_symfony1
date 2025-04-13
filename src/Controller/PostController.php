@@ -20,36 +20,7 @@ class PostController extends AbstractController
 {
 
    // src/Controller/PostController.php
-   #[Route('/new', name: 'post_new', methods: ['POST'])]
-   public function newPost(
-       Request $request,
-       EntityManagerInterface $em,
-       UtilisateurRepository $utilisateurRepo
-   ): Response {
-       // Récupère le contenu du formulaire
-       $content = $request->request->get('content');
-       
-       if (empty($content)) {
-           return new Response("Le contenu ne peut pas être vide", 400);
-       }
-
-       // Crée le nouveau post
-       $post = new Post();
-       $post->setContenu($content);
-       $post->setDateCreation(new \DateTime());
-       
-       // Utilisateur statique ID=1
-       $utilisateur = $utilisateurRepo->find(9);
-       if (!$utilisateur) {
-           throw $this->createNotFoundException('Utilisateur avec ID 1 non trouvé');
-       }
-       $post->setUtilisateur($utilisateur);
-       
-       $em->persist($post);
-       $em->flush();
-       
-       return $this->redirectToRoute('app_home_page');
-   }
+   
 
 
 
@@ -80,30 +51,8 @@ public function deletePost(Post $post, EntityManagerInterface $em): Response
 }
 #ajouter comment
 
-#[Route('/post/{id}/add-comment', name: 'post_add_comment', methods: ['POST'])]
-public function addComment(
-    Post $post,
-    Request $request,
-    EntityManagerInterface $em,
-    UtilisateurRepository $userRepo
-): Response {
-    $content = $request->request->get('comment_content');
-    
-    if (!empty($content)) {
-        $comment = new Commentaire();
-        $comment->setContenu($content);
-        $comment->setPost($post);
-        $comment->setUtilisateur($userRepo->find(9)); // Utilisateur statique (à remplacer par $this->getUser() plus tard)
-        $comment->setDateCreation(new \DateTime());
-        
-        $em->persist($comment);
-        $em->flush();
-        
-        $this->addFlash('success', 'Commentaire ajouté !');
-    }
-    
-    return $this->redirectToRoute('app_home_page');
-}
+
+
     
 
 
