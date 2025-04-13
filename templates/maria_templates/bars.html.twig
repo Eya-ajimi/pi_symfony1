@@ -1,0 +1,197 @@
+<div class=" left_col menu_fixed">
+	<div class="left_col scroll-view">
+		<div class="navbar nav_title" style="border: 0; background-color: transparent; padding: 0.5rem 1rem 1rem 1rem;">
+			<a href="{{ path('dashboard') }}" class="site_title" style="display: flex; align-items: center; text-decoration: none; gap: 0.5rem;">
+				<img src="{{ asset('images/logo_test.png') }}" alt="Logo" style="width: 40px; height: auto;">
+				<span style="color: #000; font-family: 'Segoe UI', sans-serif; font-size: 1.5rem; font-weight: 300; letter-spacing: 0.5px;">Innomall</span>
+			</a>
+		</div>
+		<div class="clearfix"></div>
+		<!-- Sidebar Menu -->
+		<div id="sidebar-menu" class="main_menu_side hidden-print main_menu mt-4">
+			<div class="menu_section">
+				<ul class="nav side-menu">
+					<li class="{{ app.request.get('_route') == 'dashboard' ? 'active' : '' }}">
+						<a href="{{ path('dashboard') }}">
+							<i class="fas fa-tachometer-alt"></i>
+							<span>Dashboard</span>
+						</a>
+					</li>
+					<li class="{{ app.request.get('_route') == 'products' ? 'active' : '' }}">
+						<a href="{{ path('products') }}">
+							<i class="fas fa-box"></i>
+							<span>Products</span>
+						</a>
+					</li>
+					<li class="{{ app.request.get('_route') == 'discounts' ? 'active' : '' }}">
+						<a
+							href="{{ path('discounts') }}">
+							<!-- Fixed the path here -->
+							<i class="fas fa-percent"></i>
+							<span>Discounts</span>
+						</a>
+					</li>
+					<li
+						class="{{ app.request.get('_route') == 'schedule' ? 'active' : '' }}">
+						<!-- Added appropriate route -->
+						<a
+							href="{{ path('schedule') }}">
+							<!-- Fixed the path -->
+							<i class="fas fa-clock"></i>
+							<!-- Changed to more appropriate icon -->
+							<span>schedule</span>
+						</a>
+					</li>
+					<li class="{{ app.request.get('_route') == 'events' ? 'active' : '' }}">
+						<a
+							href="{{ path('events') }}">
+							<!-- Fixed the path -->
+							<i class="fas fa-calendar-alt"></i>
+							<span>Events</span>
+						</a>
+					</li>
+					<li
+						class="{{ app.request.get('_route') == 'orders' ? 'active' : '' }}">
+						<!-- Added appropriate route -->
+						<a
+							href="{{ path('commands') }}">
+							<!-- Fixed the path -->
+							<i class="fas fa-shopping-cart"></i>
+							<!-- Changed to more appropriate icon -->
+							<span>Commandes</span>
+						</a>
+					</li>
+					<li
+						class="{{ app.request.get('_route') == 'profile' ? 'active' : '' }}">
+						<!-- Added appropriate route -->
+						<a
+							href="{{ path('profile') }}">
+							<!-- Fixed the path -->
+							<i class="fas fa-user"></i>
+							<!-- Changed to more appropriate icon -->
+							<span>Profile</span>
+						</a>
+					</li>
+
+				</ul>
+			</div>
+			<div class="sidebar-footer-update">
+				<ul>
+					<!-- Added proper list container -->
+					<li>
+						<a
+							href="{{ path('products') }}">
+							<!-- Fixed path to logout -->
+							<i class="fas fa-sign-out-alt"></i>
+							<span>Logout</span>
+						</a>
+					</li>
+				</ul>
+			</div>
+		</div>
+
+		<!-- Updated Footer with Logout Only -->
+
+	</div>
+</div>
+
+<!-- Top Navigation -->
+<div class="top_nav">
+	<div class="nav_menu">
+		<div class="nav toggle">
+			<a id="menu_toggle" class="menu_toggle">
+				<i class="fa fa-bars"></i>
+			</a>
+		</div>
+		<nav class="nav navbar-nav">
+
+			<ul class="navbar-right">
+				<li class="nav-item dropdown">
+					<a href="javascript:;" class="user-profile dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+						<img src="{{ asset('images/user.jpg') }}" alt="">Admin User
+						<span class=" fa fa-angle-down"></span>
+					</a>
+					<div class="dropdown-menu dropdown-usermenu pull-right">
+						<a class="dropdown-item" href="{{ path('products') }}">
+							<i class="fa fa-user pull-right"></i>
+							Profile
+						</a>
+						<a class="dropdown-item" href="{{ path('products') }}">
+							<i class="fa fa-cog pull-right"></i>
+							Settings
+						</a>
+						<a class="dropdown-item" href="{{ path('products') }}">
+							<i class="fa fa-key pull-right"></i>
+							Change Password
+						</a>
+						<div class="dropdown-divider"></div>
+						<a class="dropdown-item" href="{{ path('products') }}">
+							<i class="fa fa-sign-out-alt pull-right"></i>
+							{{ "backend.global.logout"|trans }}
+						</a>
+					</div>
+				</li>
+
+				<!-- Notifications -->
+				<li role="presentation" class="nav-item dropdown">
+					<a href="javascript:;" class="dropdown-toggle info-number" data-toggle="dropdown" aria-expanded="false">
+						<i class="fa fa-bell"></i>
+						<span class="badge bg-green">6</span>
+					</a>
+					<ul class="dropdown-menu list-unstyled msg_list" role="menu">
+						<li class="nav-item">
+							<a class="dropdown-item">
+								<span class="image"><img src="{{ asset('images/user.png') }}" alt="Profile Image"/></span>
+								<span>
+									<span>John Smith</span>
+									<span class="time">3 mins ago</span>
+								</span>
+								<span class="message">
+									New order placed #12345
+								</span>
+							</a>
+						</li>
+						<li class="nav-item">
+							<div class="text-center">
+								<a class="dropdown-item">
+									<strong>See All Alerts</strong>
+									<i class="fa fa-angle-right"></i>
+								</a>
+							</div>
+						</li>
+					</ul>
+				</li>
+			</ul>
+		</nav>
+	</div>
+</div>
+
+
+<!-- Main Content -->
+{# <div
+	class="right_col" role="main">
+	<!-- Flash Messages -->
+	{% for message in app.flashes("error") %}
+		<div class="alert alert-danger alert-dismissible fade show" role="alert">
+			<i class="fa fa-exclamation-triangle mr-2"></i>
+			<strong>{{ "backend.global.error"|trans }}</strong>
+			{{ message|trans }}
+			<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+				<span aria-hidden="true">×</span>
+			</button>
+		</div>
+	{% endfor %}
+
+	{% for message in app.flashes("success") %}
+		<div class="alert alert-success alert-dismissible fade show" role="alert">
+			<i class="fa fa-check-circle mr-2"></i>
+			<strong>{{ "backend.global.success"|trans }}</strong>
+			{{ message|trans }}
+			<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+				<span aria-hidden="true">×</span>
+			</button>
+		</div>
+	{% endfor %}
+
+	{% block contenpage %}{% endblock %}
+</div> #}

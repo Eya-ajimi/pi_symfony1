@@ -1,0 +1,21 @@
+{% extends "maria_templates/base.html.twig" %}
+
+{% block title %}Product Management{% endblock %}
+
+{% block body %}
+    <h1>Product Management</h1>
+    <div class="row">
+        {% for i in 1..6 %}
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <img src="https://via.placeholder.com/150" class="card-img-top" alt="Product {{ i }}">
+                <div class="card-body">
+                    <h5 class="card-title">Product {{ i }}</h5>
+                    <p class="card-text">${{ random(10, 100) }}</p>
+                    <a href="#" class="btn btn-primary">View Details</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% endblock %}
