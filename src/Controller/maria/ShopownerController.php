@@ -1,13 +1,13 @@
 <?php
 // src/Controller/AdminController.php
-namespace App\Controller;
+namespace App\Controller\maria;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-class AdminController extends AbstractController
-{   
+class ShopownerController extends AbstractController
+{
     //Main
 
     #[Route('/admindashboard', name: 'dashboard')]
@@ -32,7 +32,7 @@ class AdminController extends AbstractController
         return $this->render('maria_templates/discounts.html.twig');
     }
 
-   
+
     //Schedule 
 
     #[Route('/schedule', name: 'schedule')]
@@ -43,11 +43,11 @@ class AdminController extends AbstractController
 
     //events 
 
-     #[Route('/events', name: 'events')]
-     public function events(): Response
-     {
-         return $this->render('maria_templates/events.html.twig');
-     }
+    #[Route('/events', name: 'events')]
+    public function events(): Response
+    {
+        return $this->render('maria_templates/events.html.twig');
+    }
 
     //Schedule 
 
@@ -56,13 +56,13 @@ class AdminController extends AbstractController
     {
         return $this->render('maria_templates/commands.html.twig');
     }
-     //Profile 
+    //Profile 
 
-     #[Route('/profile', name: 'profile')]
-     public function profile(): Response
-     {
-         return $this->render('maria_templates/profile.html.twig');
-     }
+    #[Route('/profile', name: 'profile')]
+    public function profile(): Response
+    {
+        return $this->render('maria_templates/profile.html.twig');
+    }
 
 
 }
