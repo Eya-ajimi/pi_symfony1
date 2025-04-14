@@ -1,0 +1,27 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Client Dashboard{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="alert alert-warning">
+        Bienvenue dans l'espace CLIENT
+    </div>
+    
+    <div class="card">
+        <div class="card-header bg-warning text-white">
+            <h2>Tableau de bord Client</h2>
+        </div>
+        <div class="card-body">
+            <p>Vous êtes connecté en tant que client</p>
+            <p>Email: {{ app.user.email }}</p>
+            <p>Rôle: {{ app.user.role.value }}</p>
+            <p>Points: {{ app.user.points }}</p>
+            
+            <a href="{{ path('app_logout') }}" class="btn btn-danger">
+                Déconnexion
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

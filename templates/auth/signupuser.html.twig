@@ -1,0 +1,153 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Sign Up as User{% endblock %}
+
+{% block content %}
+  <div class="page-header align-items-start min-vh-50 pt-5 pb-11 m-3 border-radius-lg" style="background-image: url('https://raw.githubusercontent.com/creativetimofficial/public-assets/master/argon-dashboard-pro/assets/img/signup-cover.jpg'); background-position: top;">
+    <span class="mask bg-gradient-dark opacity-6"></span>
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-lg-5 text-center mx-auto">
+          <h1 class="text-white mb-2 mt-5">Welcome!</h1>
+          <p class="text-lead text-white">Create your account to start exploring.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="container">
+    <div class="row mt-lg-n10 mt-md-n11 mt-n10 justify-content-center">
+      <div class="col-xl-4 col-lg-5 col-md-7 mx-auto">
+        <div class="card z-index-0">
+          <div class="card-header text-center pt-4">
+            <h5>Register with</h5>
+          </div>
+          <div class="row px-xl-5 px-sm-4 px-3">
+            <div class="col-3 ms-auto px-1">
+              <a class="btn btn-outline-light w-100" href="javascript:;">
+                <svg width="24px" height="32px" viewBox="0 0 64 64" version="1.1">
+                  <!-- Facebook SVG icon -->
+                </svg>
+              </a>
+            </div>
+            <div class="col-3 px-1">
+              <a class="btn btn-outline-light w-100" href="javascript:;">
+                <svg width="24px" height="32px" viewBox="0 0 64 64" version="1.1">
+                  <!-- Apple SVG icon -->
+                </svg>
+              </a>
+            </div>
+            <div class="col-3 me-auto px-1">
+              <a class="btn btn-outline-light w-100" href="javascript:;">
+                <svg width="24px" height="32px" viewBox="0 0 64 64" version="1.1">
+                  <!-- Google SVG icon -->
+                </svg>
+              </a>
+            </div>
+            <div class="mt-2 position-relative text-center">
+              <p class="text-sm font-weight-bold mb-2 text-secondary text-border d-inline z-index-2 bg-white px-3">
+                or
+              </p>
+            </div>
+          </div>
+          <div class="card-body">
+              {{ form_start(registrationForm, {'attr': {'class': 'text-start','novalidate': 'novalidate'}}) }}
+                <div class="mb-3">
+                  {{ form_label(registrationForm.nom, 'Nom', {'label_attr': {'class': 'form-label'}}) }}
+                  {{ form_widget(registrationForm.nom, {
+                    'attr': {
+                      'class': 'form-control' ~ (registrationForm.nom.vars.valid ? '' : ' is-invalid'),
+                      'placeholder': 'Votre nom'
+                    }
+                  }) }}
+                  <div class="invalid-feedback">
+                    {{ form_errors(registrationForm.nom) }}
+                  </div>
+                </div>
+                <div class="mb-3">
+                  {{ form_label(registrationForm.prenom, 'Prénom', {'label_attr': {'class': 'form-label'}}) }}
+                  {{ form_widget(registrationForm.prenom, {
+                    'attr': {
+                      'class': 'form-control' ~ (registrationForm.prenom.vars.valid ? '' : ' is-invalid'),
+                      'placeholder': 'Votre prénom'
+                    }
+                  }) }}
+                  <div class="invalid-feedback">
+                    {{ form_errors(registrationForm.prenom) }}
+                  </div>
+                </div>
+                <div class="mb-3">
+                  {{ form_label(registrationForm.email, 'Email', {'label_attr': {'class': 'form-label'}}) }}
+                  {{ form_widget(registrationForm.email, {
+                    'attr': {
+                      'class': 'form-control' ~ (registrationForm.email.vars.valid ? '' : ' is-invalid'),
+                      'placeholder': 'Votre email'
+                    }
+                  }) }}
+                  <div class="invalid-feedback">
+                    {{ form_errors(registrationForm.email) }}
+                  </div>
+                </div>
+                <div class="mb-3">
+                  {{ form_label(registrationForm.adresse, 'Adresse', {'label_attr': {'class': 'form-label'}}) }}
+                  {{ form_widget(registrationForm.adresse, {
+                    'attr': {
+                      'class': 'form-control' ~ (registrationForm.adresse.vars.valid ? '' : ' is-invalid'),
+                      'placeholder': 'Votre adresse'
+                    }
+                  }) }}
+                  <div class="invalid-feedback">
+                    {{ form_errors(registrationForm.adresse) }}
+                  </div>
+                </div>
+                <div class="mb-3">
+                    {{ form_label(registrationForm.telephone, 'Téléphone', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(registrationForm.telephone, {
+                        'attr': {
+                            'class': 'form-control' ~ (registrationForm.telephone.vars.valid ? '' : ' is-invalid'),
+                            'placeholder': 'Votre téléphone (8 chiffres)',
+                            'inputmode': 'numeric'  # Shows numeric keyboard on mobile
+                        }
+                    }) }}
+                    <div class="invalid-feedback">
+                        {% if registrationForm.telephone.vars.errors|length > 0 %}
+                            {{ registrationForm.telephone.vars.errors[0].message }}
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="mb-3">
+                  {{ form_label(registrationForm.plainPassword, 'Mot de passe', {'label_attr': {'class': 'form-label'}}) }}
+                  {{ form_widget(registrationForm.plainPassword, {
+                    'attr': {
+                      'class': 'form-control' ~ (registrationForm.plainPassword.vars.valid ? '' : ' is-invalid'),
+                      'placeholder': 'Votre mot de passe'
+                    }
+                  }) }}
+                  <div class="invalid-feedback">
+                    {{ form_errors(registrationForm.plainPassword) }}
+                  </div>
+                </div>
+                <div class="form-check form-check-info text-start ps-0 mb-3">
+                  {{ form_widget(registrationForm.agreeTerms, {
+                    'attr': {
+                      'class': 'form-check-input mt-1 ms-auto' ~ (registrationForm.agreeTerms.vars.valid ? '' : ' is-invalid')
+                    }
+                  }) }}
+                  {{ form_label(registrationForm.agreeTerms, 'J\'accepte les <a href="#" class="text-dark font-weight-bolder">conditions générales</a>', {
+                    'label_html': true,
+                    'label_attr': {'class': 'form-check-label'}
+                  }) }}
+                  <div class="invalid-feedback">
+                    {{ form_errors(registrationForm.agreeTerms) }}
+                  </div>
+                </div>
+                <div class="text-center">
+                  <button type="submit" class="btn bg-gradient-dark w-100 my-4 mb-2">S'inscrire</button>
+                </div>
+                <p class="text-sm mt-3 mb-0">Vous avez déjà un compte ? <a href="{{ path('app_login') }}" class="text-dark font-weight-bolder">Connectez-vous</a></p>
+              {{ form_end(registrationForm) }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,164 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Sign Up as Shop Owner{% endblock %}
+
+{% block content %}
+  <div class="page-header align-items-start min-vh-50 pt-5 pb-11 m-3 border-radius-lg" style="background-image: url('https://raw.githubusercontent.com/creativetimofficial/public-assets/master/argon-dashboard-pro/assets/img/signup-cover.jpg'); background-position: top;">
+    <span class="mask bg-gradient-dark opacity-6"></span>
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-lg-5 text-center mx-auto">
+          <h1 class="text-white mb-2 mt-5">Welcome Shop Owner!</h1>
+          <p class="text-lead text-white">Register your shop to start managing your business.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="container">
+    <div class="row mt-lg-n10 mt-md-n11 mt-n10 justify-content-center">
+      <div class="col-xl-4 col-lg-5 col-md-7 mx-auto">
+        <div class="card z-index-0">
+          <div class="card-header text-center pt-4">
+            <h5>Register your shop</h5>
+          </div>
+          <div class="row px-xl-5 px-sm-4 px-3">
+            <div class="col-4 px-1">
+              <a class="btn btn-outline-dark w-100 social-btn" href="#">
+                <i class="fab fa-facebook-f"></i>
+              </a>
+            </div>
+            <div class="col-4 px-1">
+              <a class="btn btn-outline-dark w-100 social-btn" href="#">
+                <i class="fab fa-apple"></i>
+              </a>
+            </div>
+            <div class="col-4 px-1">
+              <a class="btn btn-outline-dark w-100 social-btn" href="#">
+                <i class="fab fa-google"></i>
+              </a>
+            </div>
+            <div class="mt-2 position-relative text-center">
+              <p class="text-sm font-weight-bold mb-2 text-secondary text-border d-inline z-index-2 bg-white px-3">
+                ou
+              </p>
+            </div>
+          </div>
+          <div class="card-body">
+            {{ form_start(form, {'attr': {'class': 'text-start', 'novalidate': 'novalidate'}}) }}
+              <input type="hidden" name="role" value="SHOPOWNER">
+              
+              <!-- Shop Name -->
+              <div class="mb-3">
+                {{ form_label(form.nom, 'Nom du magasin', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.nom, {
+                  'attr': {
+                    'class': 'form-control' ~ (form.nom.vars.valid ? '' : ' is-invalid'),
+                    'placeholder': 'Nom de votre magasin'
+                  }
+                }) }}
+                <div class="invalid-feedback">
+                  {% if form.nom.vars.errors|length > 0 %}
+                    {{ form.nom.vars.errors[0].message }}
+                  {% endif %}
+                </div>
+              </div>
+              
+              <!-- Category -->
+              <div class="mb-3">
+                {{ form_label(form.categorie, 'Catégorie', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.categorie, {
+                  'attr': {
+                    'class': 'form-select' ~ (form.categorie.vars.valid ? '' : ' is-invalid')
+                  }
+                }) }}
+                <div class="invalid-feedback">
+                  {% if form.categorie.vars.errors|length > 0 %}
+                    {{ form.categorie.vars.errors[0].message }}
+                  {% endif %}
+                </div>
+              </div>
+              
+              <!-- Description -->
+              <div class="mb-3">
+                {{ form_label(form.description, 'Description du magasin', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.description, {
+                  'attr': {
+                    'class': 'form-control' ~ (form.description.vars.valid ? '' : ' is-invalid'),
+                    'rows': 3,
+                    'placeholder': 'Décrivez votre magasin...'
+                  }
+                }) }}
+                <div class="invalid-feedback">
+                  {% if form.description.vars.errors|length > 0 %}
+                    {{ form.description.vars.errors[0].message }}
+                  {% endif %}
+                </div>
+                <small class="form-text text-muted">Minimum 20 caractères</small>
+              </div>
+              
+              <!-- Email -->
+              <div class="mb-3">
+                {{ form_label(form.email, 'Email', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.email, {
+                  'attr': {
+                    'class': 'form-control' ~ (form.email.vars.valid ? '' : ' is-invalid'),
+                    'placeholder': 'votre@email.com'
+                  }
+                }) }}
+                <div class="invalid-feedback">
+                  {% if form.email.vars.errors|length > 0 %}
+                    {{ form.email.vars.errors[0].message }}
+                  {% endif %}
+                </div>
+              </div>
+              
+              <!-- Password -->
+              <div class="mb-3">
+                {{ form_label(form.plainPassword, 'Mot de passe', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.plainPassword, {
+                  'attr': {
+                    'class': 'form-control' ~ (form.plainPassword.vars.valid ? '' : ' is-invalid'),
+                    'placeholder': '••••••••'
+                  }
+                }) }}
+                <div class="invalid-feedback">
+                  {% if form.plainPassword.vars.errors|length > 0 %}
+                    {{ form.plainPassword.vars.errors[0].message }}
+                  {% endif %}
+                </div>  
+              </div>
+              
+              <!-- Terms and Conditions -->
+              <div class="form-check form-check-info text-start ps-0 mb-3">
+                {{ form_widget(form.agreeTerms, {
+                  'attr': {
+                    'class': 'form-check-input mt-1 ms-auto' ~ (form.agreeTerms.vars.valid ? '' : ' is-invalid')
+                  }
+                }) }}
+                {{ form_label(form.agreeTerms, 'J\'accepte les <a href="#" class="text-dark font-weight-bolder">conditions générales</a>', {
+                  'label_html': true,
+                  'label_attr': {'class': 'form-check-label'}
+                }) }}
+                <div class="invalid-feedback">
+                  {% if form.agreeTerms.vars.errors|length > 0 %}
+                    {{ form.agreeTerms.vars.errors[0].message }}
+                  {% endif %}
+                </div>
+              </div>
+              
+              <!-- Submit Button -->
+              <div class="text-center">
+                {{ form_widget(form.submit) }}
+              </div>
+              
+              <p class="text-sm mt-3 mb-0">
+                Vous avez déjà un compte? 
+                <a href="{{ path('app_login') }}" class="text-dark font-weight-bolder">Se connecter</a>
+              </p>
+            {{ form_end(form) }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
