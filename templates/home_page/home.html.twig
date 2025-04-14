@@ -102,13 +102,14 @@
     <section class="middle-section">
         
         
-    {# Formulaire de question #}
+ {# Post Creation Form #}
 <div class="create-post">
     {{ form_start(postForm, {
         'action': path('app_home_page'),
         'attr': {
             'class': 'post-form',
-            'novalidate': 'novalidate'
+            'novalidate': 'novalidate',
+            'name': 'post_form'
         }
     }) }}
 
@@ -116,12 +117,12 @@
         {{ form_widget(postForm.contenu, {
             'attr': {
                 'class': 'custom-textarea-rect',
-                
             }
         }) }}
 
         <button type="submit" class="post-btn">Post</button>
 
+        {# Display post form validation errors here #}
         {% for error in postForm.contenu.vars.errors %}
             <div class="tooltip-error">{{ error.message }}</div>
         {% endfor %}
@@ -129,14 +130,8 @@
 
     {{ form_end(postForm) }}
 
-    {% for message in app.flashes('error') %}
-        <div class="alert alert-danger mt-2">{{ message }}</div>
-    {% endfor %}
+    
 </div>
-
-
-
-
 
               <br/>
               <br/>
@@ -231,12 +226,23 @@
 
 <!-- Hidden reply form -->
 <div class="add-reply">
-<form action="{{ path('add_reply', {'id': comment.id}) }}" method="POST">
-    <input type="hidden" name="_token" value="{{ csrf_token('add_reply') }}">
-    <input type="text" name="reply_content" placeholder="Write a reply..." required>
-    <button type="submit" class="send-btn">➤</button>
-</form>
+    {{ form_start(replyForms[comment.id], { 'attr': {'class': 'reply-form', 'novalidate': 'novalidate'} }) }}
+    <div class="input-wrapper" style="width:450px">
+        {{ form_widget(replyForms[comment.id].contenu, {'attr': {
+            'class': 'custom-textarea',
+            'data-error-target': 'input'
+        }}) }}
+        <button type="submit" class="send-btn" >➤</button>
+
+        {% for error in replyForms[comment.id].contenu.vars.errors %}
+            <div class="tooltip-error">{{ error.message }}</div>
+        {% endfor %}
+    </div>
+
+    <input type="hidden" name="reply_comment_id" value="{{ comment.id }}">
+    {{ form_end(replyForms[comment.id]) }}
 </div>
+
 </div>
                 <!-- Reply Section -->
                 {% for reply in comment.sousCommentaires %}
@@ -329,7 +335,8 @@
             <thead>
                 <tr>
                     <th><i class="fas fa-building-columns me-1"></i>Bank Name</th>
-                    <th><i class="fas fa-signal me-1"></i>Status</th>
+                    <th><i class="fas fa-map-marker-alt me-1"></i>
+Status</th>
                 </tr>
             </thead>
             <tbody>

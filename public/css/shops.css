@@ -77,7 +77,27 @@ body {
 }
 
 
-/*stars*/
+/*erro*/
+.tooltip-error {
+    position: absolute;
+    bottom: 100%;
+    left: 10px;
+    transform: translateY(-5px);
+    background-color: #E63946;
+    color: white;
+    padding: 6px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 9999;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    animation: fadeIn 0.3s ease-in-out;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to   { opacity: 1; transform: translateY(-5px); }
+  }
 
 
 /* Optional: Customize browser tooltip look? You can use a tooltip library if needed. */

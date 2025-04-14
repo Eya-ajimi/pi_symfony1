@@ -126,16 +126,23 @@
                 <div class="shop-card">
                     <div class="shop-header">
                         <h3>{{ shopOwner.nom|upper }} {{ shopOwner.prenom is defined ? shopOwner.prenom|upper : '' }}</h3>
-                        <div class="shop-rating">
-                            {% set averageRating = feedback_repo.getAverageRatingValue(shopOwner) %}
-                            {% set ratingCount = feedback_repo.countByShop(shopOwner) %}
-                            <div class="stars">
-                                {% for i in 1..5 %}
-                                    <i class="fas fa-star{% if i > averageRating %}-half-alt{% elseif i > averageRating and i - 1 < averageRating %}{{ '' }}{% else %}-alt{% endif %}"></i>
-                                {% endfor %}
-                            </div>
-                            <span class="rating-count">({{ ratingCount }} reviews)</span>
-                        </div>
+                       <div class="shop-rating">
+    {% set averageRating = feedback_repo.getAverageRatingValue(shopOwner) %}
+    {% set ratingCount = feedback_repo.countByShop(shopOwner) %}
+    <div class="stars">
+        {% for i in 1..5 %}
+            {% if i <= averageRating %}
+                <i class="fas fa-star"></i> {# full star #}
+            {% elseif i - 0.5 <= averageRating %}
+                <i class="fas fa-star-half-alt"></i> {# half star #}
+            {% else %}
+                <i class="far fa-star"></i> {# empty star #}
+            {% endif %}
+        {% endfor %}
+    </div>
+    <span class="rating-count">({{ ratingCount }} reviews)</span>
+</div>
+
                     </div>
                     <div class="shop-body">
                         <p class="shop-description">
@@ -161,54 +168,69 @@
                             {{ shopOwner.website ?? '' }} www.{{shopOwner.nom}}.com
                         </a>
                         
-                        <!-- Rating Form -->
-                           <div class="rating-form">
-                          <h4>Rate this shop:</h4>
+           <!-- Rating Form -->
+<div class="rating-form">
+    <h4>Rate this shop:</h4>
 
-            {% set rating = feedback_repo.findOneByUserAndShop(fixedUser, shopOwner) %}
+    {% set rating = feedback_repo.findOneByUserAndShop(fixedUser, shopOwner) %}
 
-                 {% if rating %}
-            <div class="star-rating">
+    {% if rating %}
+        <div class="star-rating">
             {% for i in 1..5 %}
                 {% if i <= rating.rating %}
-                    <span class="star"><i class="fas fa-star" style="color: gold;"></i></span> {# Empty star ☆ #}
+                    <span class="star"><i class="fas fa-star" style="color: gold;"></i></span>
                 {% else %}
-                    <span class="star"><i class="fas fa-star" style="color: rgb(241, 238, 238);"></i></span> {# Filled star ★ #}
+                    <span class="star"><i class="fas fa-star" style="color: rgb(241, 238, 238);"></i></span>
                 {% endif %}
             {% endfor %}
         </div>
 
         <form method="post" action="{{ path('delete_rating', {'shopId': shopOwner.id}) }}" style="display:inline;">
             <button type="submit" class="delete-btn" title="Delete Rating" style="background-color:white; border:none">
-              <i class="fas fa-trash" style="color: rgb(238, 58, 58); background-color:white;"></i>
+                <i class="fas fa-trash" style="color: rgb(238, 58, 58); background-color:white;"></i>
             </button>
         </form>
 
     {% else %}
-        
 
-       {% if feedback_forms[shopOwner.id] is defined %}
-    {{ form_start(feedback_forms[shopOwner.id]) }}
-    {# Render the rating field manually, but suppress the default widget #}
-{{ form_label(feedback_forms[shopOwner.id].rating, null, {'label_attr': {'style': 'display:none;'}}) }}
+     {% if feedback_forms[shopOwner.id] is defined %}
+    {{ form_start(feedback_forms[shopOwner.id], {
+        'attr': {'novalidate': 'novalidate'},
+        'name': 'feedback_form_' ~ shopOwner.id
+    }) }}
 
-<div class="star-rating">
-    {% for i in 5..1 %}
-        <input type="radio"
-               id="star{{ i }}-{{ shopOwner.id }}"
-               name="{{ feedback_forms[shopOwner.id].rating.vars.full_name }}"
-               value="{{ i }}" style="display:left; size:10px" >
-        <label for="star{{ i }}-{{ shopOwner.id }}">&#9733;</label>
-    {% endfor %}
-</div>
+    {# Hide label visually #}
+    {{ form_label(feedback_forms[shopOwner.id].rating, null, {'label_attr': {'style': 'display:none;'}}) }}
+
+    <div class="star-rating">
+        {% for i in 1..5 %}
+            <input type="radio"
+                   id="star{{ i }}-{{ shopOwner.id }}"
+                   name="{{ feedback_forms[shopOwner.id].rating.vars.full_name }}"
+                   value="{{ i }}"
+                   {% if feedback_forms[shopOwner.id].rating.vars.value == i %} checked {% endif %}>
+            <label for="star{{ i }}-{{ shopOwner.id }}">&#9733;</label>
+        {% endfor %}
+    </div>
+
+    
+     {# Show global errors (like missing rating if not submitted) #}
+ {% if feedback_forms[shopOwner.id].rating.vars.errors|length > 0 %}
+    <div class="tooltip-error" style="border: 2px solid red;">
+        {{ form_errors(feedback_forms[shopOwner.id].rating) }}
+    </div>
+{% endif %}
+
 
     <button type="submit" class="submit-rating">Add Rating</button>
     {{ form_end(feedback_forms[shopOwner.id], {'render_rest': true}) }}
-    {% endif %}
+{% endif %}
+
+
 
     {% endif %}
+   
 </div>
-
 
 
 

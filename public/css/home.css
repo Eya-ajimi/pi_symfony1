@@ -345,6 +345,30 @@
 }
 
 
+
+
+.tooltip-error {
+    position: absolute;
+    bottom: 100%;
+    left: 10px;
+    transform: translateY(-5px);
+    background-color: #E63946;
+    color: white;
+    padding: 6px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 5;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    animation: fadeIn 0.3s ease-in-out;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to   { opacity: 1; transform: translateY(-5px); }
+  }
+  
+
 /***edit+supprimer psot*****/
 .post-menu {
     display: none; /* Caché par défaut */
@@ -601,10 +625,12 @@
 }
 
 .status-active {
-    background-color: #27ae60; /* Green */
+    background-color: #3990b5; /* Green */
 }
 
 .status-inactive {
-    background-color: #c0392b; /* Red */
+    background-color: #df9a54; /* Red */
 }
+
+
 
