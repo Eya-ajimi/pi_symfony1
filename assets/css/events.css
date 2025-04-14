@@ -177,6 +177,17 @@
     background: #DFE6E9;
 }
 
+.text-red-500 {
+    color: #ef4444;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+}
+.event-button.decline.disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
 /* ========== RESPONSIVE ADJUSTMENTS ========== */
 @media (max-width: 768px) {
     .events-container {

@@ -93,6 +93,10 @@
             transform: translateY(-2px);
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
+        .invalid-feedback {
+            color: red;
+            font-size: 0.875em;
+        }
 
         @media (max-width: 768px) {
             .reclamation-container {
@@ -103,34 +107,27 @@
     </style>
 
     <div class="reclamation-container">
-        <h1 class="reclamation-title">Submit a Complaint</h1>
-        
+        <h1 class="reclamation-title">Soumettre une réclamation</h1>
+        {{ form_start(form, {'attr': {'class': 'reclamation-form', 'novalidate': 'novalidate'}}) }}
         {{ form_start(form, {'attr': {'class': 'reclamation-form'}}) }}
             <div class="form-group">
                 {{ form_label(form.description) }}
-                {{ form_widget(form.description, {
-                    'attr': {
-                        'class': 'form-control',
-                        'placeholder': 'Please describe your complaint in detail...'
-                    }
-                }) }}
+                {{ form_widget(form.description, {'attr': {'class': 'form-control'}}) }}
+                <div class="invalid-feedback">
+                    {{ form_errors(form.description) }}
+                </div>
             </div>
-            
+
             <div class="form-group">
                 {{ form_label(form.nomshop) }}
-                {{ form_widget(form.nomshop, {
-                    'attr': {
-                        'class': 'form-control',
-                        'placeholder': 'Enter the shop name'
-                    }
-                }) }}
+                {{ form_widget(form.nomshop, {'attr': {'class': 'form-control'}}) }}
+                <div class="invalid-feedback">
+                    {{ form_errors(form.nomshop) }}
+                </div>
             </div>
             
             <div class="form-group">
-                {{ form_widget(form.submit, {
-                    'attr': {'class': 'btn-submit'},
-                    'label': 'Submit Complaint'
-                }) }}
+                {{ form_widget(form.submit) }}
             </div>
         {{ form_end(form) }}
     </div>

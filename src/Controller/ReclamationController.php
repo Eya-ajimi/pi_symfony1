@@ -4,12 +4,15 @@ namespace App\Controller;
 
 use App\Entity\Reclamation;
 use App\Entity\Utilisateur;
-use App\Form\ReclamationType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Validator\Constraints\NotBlank;
 
 class ReclamationController extends AbstractController
 {
@@ -17,7 +20,39 @@ class ReclamationController extends AbstractController
     public function index(Request $request, EntityManagerInterface $entityManager): Response
     {
         $reclamation = new Reclamation();
-        $form = $this->createForm(ReclamationType::class, $reclamation);
+        
+        // Create form using createFormBuilder
+        $form = $this->createFormBuilder($reclamation)
+            ->add('description', TextareaType::class, [
+                'label' => 'Complaint Details',
+                'constraints' => [
+                    new NotBlank([
+                        'message' => 'The description field cannot be empty'
+                    ])
+                ],
+                'attr' => [
+                    'class' => 'form-control',
+                    'placeholder' => 'Please describe your complaint in detail...',
+                    'rows' => 5
+                ]
+            ])
+            ->add('nomshop', TextType::class, [
+                'label' => 'Shop Name',
+                'constraints' => [
+                    new NotBlank([
+                        'message' => 'The shop name field cannot be empty'
+                    ])
+                ],
+                'attr' => [
+                    'class' => 'form-control',
+                    'placeholder' => 'Enter the shop name'
+                ]
+            ])
+            ->add('submit', SubmitType::class, [
+                'label' => 'Submit Complaint',
+                'attr' => ['class' => 'btn-submit']
+            ])
+            ->getForm();
         
         $form->handleRequest($request);
         

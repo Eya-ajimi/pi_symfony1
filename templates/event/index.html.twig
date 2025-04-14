@@ -5,18 +5,30 @@
 {% block stylesheets %}
     {{ parent() }}
     <link rel="stylesheet" href="{{ asset('css/events.css') }}">
+    <style>
+        .event-button.disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        .text-red-500 {
+            color: #ef4444;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
 <div class="container mx-auto px-4 py-8">
     <div class="event-search-form">
-        <form method="get" action="{{ path('app_events') }}">
+        <form method="get" action="{{ path('app_events') }}" novalidate>
             <input 
                 type="date" 
                 name="date" 
                 value="{{ app.request.query.get('date') }}"
                 class="event-date-input"
-                required
             >
             <button type="submit" class="event-search-button">
                 Search
@@ -27,16 +39,24 @@
                 </a>
             {% endif %}
         </form>
+    
+        {# Display date validation errors #}
+        {% for flash in app.flashes('error') %}
+            <div class="text-red-500 mt-2">{{ flash }}</div>
+        {% endfor %}
     </div>
-
-    {% for message in app.flashes('error') %}
-        <div class="alert alert-error mb-4">{{ message }}</div>
-    {% endfor %}
 
     <div class="events-container">
         {% for item in eventsWithParticipation %}
             {% set event = item.event %}
             {% set isParticipating = item.isParticipating %}
+            
+            {# Calculate time remaining for decline restriction #}
+            {% set now = date() %}
+            {% set eventStart = date(event.dateDebut) %}
+            {% set timeLeft = eventStart.diff(now) %}
+            {% set hoursLeft = (timeLeft.days * 24) + timeLeft.h %}
+            {% set canDecline = not (hoursLeft < 24 and eventStart > now) %}
             
             <div class="event-card">
                 <h3 class="event-organizer">
@@ -47,7 +67,7 @@
                 <div class="event-meta">
                     <i class="far fa-calendar-alt"></i>
                     <span>
-                        {{ event.dateDebut|date('Y-m-d') }} to {{ event.dateFin|date('Y-m-d') }}
+                        {{ event.dateDebut|date('Y-m-d H:i') }} to {{ event.dateFin|date('Y-m-d H:i') }}
                     </span>
                 </div>
                 
@@ -62,10 +82,16 @@
                         Participate
                     </a>
                 {% else %}
-                    <a href="{{ path('app_event_decline', {id: event.id}) }}" 
-                    class="event-button decline">
-                        Decline Participation
-                    </a>
+                    {% if canDecline %}
+                        <a href="{{ path('app_event_decline', {id: event.id}) }}" 
+                        class="event-button decline">
+                            Decline Participation
+                        </a>
+                    {% else %}
+                        <span class="event-button disabled" title="Cannot decline within 24 hours of event start">
+                            Decline Participation (Disabled)
+                        </span>
+                    {% endif %}
                     
                     <a href="{{ path('app_event_qrcode', {id: event.id}) }}" 
                     class="event-button qr-code" target="_blank">

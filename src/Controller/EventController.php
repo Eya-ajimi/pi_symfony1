@@ -28,6 +28,20 @@ class EventController extends AbstractController
         $dateString = $request->query->get('date');
         $date = null;
         
+        if ($request->isMethod('GET') && $request->query->has('date')) {
+            if (empty($dateString)) {
+                $this->addFlash('error', 'Veuillez sélectionner une date.');
+                return $this->redirectToRoute('app_events');
+            }
+            
+            try {
+                $date = new \DateTime($dateString);
+            } catch (\Exception $e) {
+                $this->addFlash('error', 'Format de date invalide');
+                return $this->redirectToRoute('app_events');
+            }
+        }
+
         if ($dateString) {
             try {
                 $date = new \DateTime($dateString);
@@ -99,6 +113,24 @@ class EventController extends AbstractController
         
         if (!$participation) {
             $this->addFlash('error', 'You are not participating in this event.');
+            return $this->redirectToRoute('app_events');
+        }
+
+        // Convert string dates to DateTime objects
+        try {
+            $eventStart = new \DateTime($event->getDateDebut());
+            $now = new \DateTime();
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Invalid date format in event data');
+            return $this->redirectToRoute('app_events');
+        }
+
+        // Check if event starts within 24 hours
+        $interval = $now->diff($eventStart);
+        $hoursUntilEvent = ($interval->days * 24) + $interval->h;
+
+        if ($hoursUntilEvent < 24 && $eventStart > $now) {
+            $this->addFlash('error', 'You cannot decline participation within 24 hours of the event start time.');
             return $this->redirectToRoute('app_events');
         }
 
