@@ -1,6 +1,20 @@
 {% extends "maria_templates/base.html.twig" %}
 {% block title %}Edit Event{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .invalid-feedback {
+            color: #dc3545;
+            font-size: 0.875em;
+            margin-top: 0.25rem;
+        }
+        .is-invalid {
+            border-color: #dc3545;
+        }
+    </style>
+{% endblock %}
+
 {% block body %}
 <div class="content-container">
     <div class="content-card">
@@ -9,8 +23,47 @@
             <div class="col-md-10 col-lg-8">
                 <div class="card shadow-sm border-0">
                     <div class="card-body">
-                        {{ form_start(form) }}
-                            {{ form_widget(form) }}
+                        {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
+                            <div class="mb-3">
+                                {{ form_label(form.nomOrganisateur, 'Shop Name', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.nomOrganisateur, {'attr': {'class': 'form-control' ~ (form.nomOrganisateur.vars.valid ? '' : ' is-invalid')}}) }}
+                                <div class="invalid-feedback">
+                                    {{ form_errors(form.nomOrganisateur) }}
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                {{ form_label(form.description, 'Description', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.description, {'attr': {'class': 'form-control' ~ (form.description.vars.valid ? '' : ' is-invalid'), 'rows': 5}}) }}
+                                <div class="invalid-feedback">
+                                    {{ form_errors(form.description) }}
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                {{ form_label(form.dateDebut, 'Start Date', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.dateDebut, {'attr': {'class': 'form-control' ~ (form.dateDebut.vars.valid ? '' : ' is-invalid')}}) }}
+                                <div class="invalid-feedback">
+                                    {{ form_errors(form.dateDebut) }}
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                {{ form_label(form.dateFin, 'End Date', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.dateFin, {'attr': {'class': 'form-control' ~ (form.dateFin.vars.valid ? '' : ' is-invalid')}}) }}
+                                <div class="invalid-feedback">
+                                    {{ form_errors(form.dateFin) }}
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                {{ form_label(form.emplacement, 'Location', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.emplacement, {'attr': {'class': 'form-control' ~ (form.emplacement.vars.valid ? '' : ' is-invalid')}}) }}
+                                <div class="invalid-feedback">
+                                    {{ form_errors(form.emplacement) }}
+                                </div>
+                            </div>
+
                             <div class="d-flex justify-content-between mt-3">
                                 <button type="submit" class="btn btn-success">Update</button>
                                 <a href="{{ path('events') }}" class="btn btn-outline-secondary">Cancel</a>

@@ -49,31 +49,36 @@ class ShopownerController extends AbstractController
     #[Route('/events', name: 'events')]
     public function events(EntityManagerInterface $entityManager, Request $request): Response
     {
-        // Get the static user (ID=8)
         $user = $entityManager->getRepository(Utilisateur::class)->find(8);
         
         if (!$user) {
             throw $this->createNotFoundException('User not found');
         }
         
-        // Create new event
         $event = new Event();
         $event->setOrganisateur($user);
-        $event->setNomOrganisateur($user->getNom()); // Set default organizer name
+        $event->setNomOrganisateur($user->getNom());
         
         $form = $this->createForm(EventType::class, $event);
-        
         $form->handleRequest($request);
         
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($event);
-            $entityManager->flush();
-            
-            $this->addFlash('success', 'Event created successfully!');
-            return $this->redirectToRoute('events');
+        if ($form->isSubmitted()) {
+            if ($form->isValid()) {
+                // Ensure dates are properly formatted before persisting
+                $event->setDateDebut($form->get('dateDebut')->getData());
+                $event->setDateFin($form->get('dateFin')->getData());
+                
+                $entityManager->persist($event);
+                $entityManager->flush();
+                
+                $this->addFlash('success', 'Event created successfully!');
+                return $this->redirectToRoute('events');
+            } else {
+                // Add error flash message if form is invalid
+                $this->addFlash('error', 'Please correct the errors in the form.');
+            }
         }
         
-        // Get all events for this organizer
         $events = $entityManager->getRepository(Event::class)->findBy(['organisateur' => $user]);
         
         return $this->render('maria_templates/events.html.twig', [

@@ -26,10 +26,10 @@ class Event
     private string $description;
 
     #[ORM\Column(name: "dateDebut", type: "string", length: 10)]
-    private string $dateDebut;
+    private ?string $dateDebut = null;
 
     #[ORM\Column(name: "dateFin", type: "string", length: 10)]
-    private string $dateFin;
+    private ?string $dateFin = null;
 
     #[ORM\Column(type: "string", length: 50)]
     private string $emplacement;
@@ -55,33 +55,46 @@ class Event
         return $this; 
     }
 
-    public function getDateDebut(): DateTimeImmutable
+    public function getDateDebut(): ?DateTimeImmutable
     {
-        return DateTimeImmutable::createFromFormat('Y-m-d', $this->dateDebut);
+        return $this->dateDebut ? DateTimeImmutable::createFromFormat('Y-m-d', $this->dateDebut) : null;
     }
 
-    public function setDateDebut(DateTimeImmutable $date): self
+    public function setDateDebut(DateTimeImmutable|string|null $date): self
     {
-        $this->dateDebut = $date->format('Y-m-d');
+        if ($date instanceof DateTimeImmutable) {
+            $this->dateDebut = $date->format('Y-m-d');
+        } elseif (is_string($date) && !empty($date)) {
+            $this->dateDebut = $date;
+        } else {
+            $this->dateDebut = null;
+        }
         return $this;
     }
 
-    public function getDateFin(): DateTimeImmutable
+    public function getDateFin(): ?DateTimeImmutable
     {
-        return DateTimeImmutable::createFromFormat('Y-m-d', $this->dateFin);
+        return $this->dateFin ? DateTimeImmutable::createFromFormat('Y-m-d', $this->dateFin) : null;
     }
 
-    public function setDateFin(DateTimeImmutable $date): self
+    public function setDateFin(DateTimeImmutable|string|null $date): self
     {
-        $this->dateFin = $date->format('Y-m-d');
+        if ($date instanceof DateTimeImmutable) {
+            $this->dateFin = $date->format('Y-m-d');
+        } elseif (is_string($date) && !empty($date)) {
+            $this->dateFin = $date;
+        } else {
+            $this->dateFin = null;
+        }
         return $this;
     }
-    public function getDateDebutString(): string
+
+    public function getDateDebutString(): ?string
     {
         return $this->dateDebut;
     }
 
-    public function getDateFinString(): string
+    public function getDateFinString(): ?string
     {
         return $this->dateFin;
     }
