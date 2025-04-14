@@ -1,0 +1,60 @@
+/* Match dashboard layout */
+.content-container {
+    padding: 2rem;
+}
+
+.content-card {
+    background-color: #fff;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+    margin-bottom: 2rem;
+}
+
+.event-card {
+    border: none;
+    border-radius: 12px;
+    background-color: #fdfdfd;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.07);
+    transition: all 0.25s ease;
+}
+
+.event-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.card-title {
+    font-size: 1.2rem;
+    color: #2C3E50;
+    font-weight: bold;
+}
+
+.btn {
+    font-weight: 500;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.btn-success:hover {
+    background-color: #218838;
+    transform: scale(1.03);
+}
+
+.btn-outline-primary:hover,
+.btn-outline-danger:hover,
+.btn-outline-secondary:hover {
+    transform: scale(1.03);
+    opacity: 0.9;
+}
+
+h2 {
+    font-size: 1.5rem;
+    color: #2C3E50;
+    font-weight: 700;
+}

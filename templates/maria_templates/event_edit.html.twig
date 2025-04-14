@@ -1,0 +1,25 @@
+{% extends "maria_templates/base.html.twig" %}
+{% block title %}Edit Event{% endblock %}
+
+{% block body %}
+<div class="content-container">
+    <div class="content-card">
+        <h2 class="mb-4">Edit Event</h2>
+        <div class="row justify-content-center">
+            <div class="col-md-10 col-lg-8">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        {{ form_start(form) }}
+                            {{ form_widget(form) }}
+                            <div class="d-flex justify-content-between mt-3">
+                                <button type="submit" class="btn btn-success">Update</button>
+                                <a href="{{ path('events') }}" class="btn btn-outline-secondary">Cancel</a>
+                            </div>
+                        {{ form_end(form) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
