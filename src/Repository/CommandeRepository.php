@@ -23,26 +23,26 @@ class CommandeRepository extends ServiceEntityRepository
         ]);
     }
 
-    public function createNewCommande(Utilisateur $client): Commande
+    public function findTodayPaidOrdersByShop(int $shopId)
     {
-        $commande = new Commande();
-        $commande->setIdClient($client);
-        $commande->setDateCommande(new \DateTime());
-        $commande->setStatut(StatutCommande::enCours);
-        $commande->setTotal(0);
-
-        $this->getEntityManager()->persist($commande);
-        $this->getEntityManager()->flush();
-
-        return $commande;
+        $today = (new \DateTime())->format('Y-m-d');
+        return $this->createQueryBuilder('c')
+            ->innerJoin('c.paniers', 'p') // Seulement les commandes avec paniers
+            ->innerJoin('p.idProduit', 'prod') // Jointure avec produit
+            ->addSelect('p') // Charge les paniers
+            ->addSelect('prod') // Charge les produits
+            ->where('c.statut = :statut')
+            ->andWhere('p.statut = :statut') // Ajout de la condition sur le statut du panier
+            ->andWhere('c.dateCommande = :today')
+            ->andWhere('prod.shopId = :shopId') // Filtre par shop
+            ->setParameter('statut', StatutCommande::payee)
+            ->setParameter('today', $today)
+            ->setParameter('shopId', $shopId) // Utilisation du paramètre shopId au lieu d'une valeur codée en dur
+            ->getQuery()
+            ->getResult();
     }
 
-    public function updateTotal(Commande $commande, float $montant): void
-    {
-        $commande->setTotal($commande->getTotal() + $montant);
-        $this->getEntityManager()->persist($commande);
-        $this->getEntityManager()->flush();
-    }
+
 
 
 

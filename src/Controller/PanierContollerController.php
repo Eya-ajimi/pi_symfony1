@@ -2,10 +2,13 @@
 
 namespace App\Controller;
 
+use App\Entity\Commande;
 use App\Entity\Panier;
 use App\Entity\Utilisateur;
+use App\Enums\StatutCommande;
 use App\Repository\CommandeRepository;
 use App\Repository\PanierRepository;
+use App\Repository\ProduitRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -28,7 +31,6 @@ final class PanierContollerController extends AbstractController
         $utilisateur->setId(7);
 
         $commandeEnCours = $this->commandeRepository->findCommandeEnCours($utilisateur);
-
         if (!$commandeEnCours) {
             return $this->render('panier_contoller/index.html.twig', [
                 'panierList' => [],
@@ -184,6 +186,81 @@ final class PanierContollerController extends AbstractController
             $this->entityManager->flush();
         }
 
+        return $this->redirectToRoute('app_show_panier');
+    }
+
+
+    #[Route('/panier/ajouterPanier/{idProduit}', name: 'app_add_item')]
+    public function addItem($idProduit, ProduitRepository $produitRepository): Response
+    {
+        // Récupération du produit
+        $produit = $produitRepository->find($idProduit);
+
+        if (!$produit) {
+            throw $this->createNotFoundException('Produit non trouvé');
+        }
+
+        // Vérification du stock
+        if ($produit->getStock() == 0) {
+            $this->addFlash('error', 'Ce produit est hors stock');
+            return $this->redirectToRoute('app_show_panier');
+        //snack bar here
+
+        }
+
+        // Récupération de l'utilisateur (à remplacer par le vrai utilisateur connecté)
+        $utilisateur = new Utilisateur();
+        $utilisateur->setId(7);
+
+        // Recherche de la commande en cours
+        $commandeEnCours = $this->commandeRepository->findCommandeEnCours($utilisateur);
+
+        // Si pas de commande en cours, on en crée une nouvelle
+        if (!$commandeEnCours) {
+            $commandeEnCours = new Commande();
+            $commandeEnCours->setIdClient($utilisateur);
+            $commandeEnCours->setDateCommande(new \DateTime());
+            $commandeEnCours->setStatut(StatutCommande::enCours);
+            $commandeEnCours->setTotal(0);
+
+            $this->entityManager->persist($commandeEnCours);
+            $this->entityManager->flush();
+        }
+
+        // Vérification si le produit est déjà dans le panier
+        $panierExist = $this->panierRepository->findOneBy([
+            'idCommande' => $commandeEnCours->getId(),
+            'idProduit' => $produit->getId()
+        ]);
+
+        if ($panierExist) {
+            $this->addFlash('warning', 'Ce produit est déjà dans votre panier');
+            return $this->redirectToRoute('app_show_panier');
+            //houni snack bar mte3 bech n9oulou rahou
+        }
+
+        // Création d'un nouveau panier
+        $panier = new Panier();
+        $panier->setIdCommande($commandeEnCours);
+        $panier->setIdProduit($produit);
+        $panier->setQuantite(1);
+        $panier->setStatut(StatutCommande::enCours);
+        $this->entityManager->persist($panier);
+
+        // Calcul du prix (avec promotion si applicable)
+        $prix = $produit->getPrix();
+        if ($produit->getPromotionId() && $produit->getPromotionId()->getDiscountPercentage() > 0) {
+            $prix = $prix * (1 - ($produit->getPromotionId()->getDiscountPercentage() / 100));
+        }
+
+
+
+        // Mise à jour du total de la commande
+        $commandeEnCours->setTotal($commandeEnCours->getTotal() + $prix);
+
+        $this->entityManager->flush();
+
+        $this->addFlash('success', 'Produit ajouté au panier avec succès');
         return $this->redirectToRoute('app_show_panier');
     }
 

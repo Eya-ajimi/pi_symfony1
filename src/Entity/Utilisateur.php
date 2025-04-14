@@ -24,15 +24,15 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $email = null;
 
     /**
-     * @var list<string> The user roles
+     * @var list<Role> The user roles
      */
     #[ORM\Column(type: "string",enumType: Role::class)]
-    private String $role;
+    private Role $role;
 
     /**
      * @var string The hashed password
      */
-    #[ORM\Column]
+    #[ORM\Column(name: "mot_de_passe")]
     private ?string $password = null;
 
     /**
@@ -52,6 +52,12 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
      */
     #[ORM\OneToMany(targetEntity: Commande::class, mappedBy: 'idClient')]
     private Collection $commandes;
+
+    #[ORM\Column(length: 255)]
+    private ?string $nom = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $prenom = null;
 
     public function __construct()
     {
@@ -243,6 +249,30 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
                 $commande->setIdClient(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getNom(): ?string
+    {
+        return $this->nom;
+    }
+
+    public function setNom(string $nom): static
+    {
+        $this->nom = $nom;
+
+        return $this;
+    }
+
+    public function getPrenom(): ?string
+    {
+        return $this->prenom;
+    }
+
+    public function setPrenom(string $prenom): static
+    {
+        $this->prenom = $prenom;
 
         return $this;
     }
