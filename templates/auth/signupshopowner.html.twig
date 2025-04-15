@@ -3,7 +3,7 @@
 {% block title %}Sign Up as Shop Owner{% endblock %}
 
 {% block content %}
-  <div class="page-header align-items-start min-vh-50 pt-5 pb-11 m-3 border-radius-lg" style="background-image: url('https://raw.githubusercontent.com/creativetimofficial/public-assets/master/argon-dashboard-pro/assets/img/signup-cover.jpg'); background-position: top;">
+  <div class="page-header align-items-start min-vh-50 pt-5 pb-11 m-3 border-radius-lg" style="background-image: url('{{ asset('images/back.jpg') }}'); background-size: cover; background-position: center;">
     <span class="mask bg-gradient-dark opacity-6"></span>
     <div class="container">
       <div class="row justify-content-center">
@@ -14,42 +14,50 @@
       </div>
     </div>
   </div>
+
   <div class="container">
+  
     <div class="row mt-lg-n10 mt-md-n11 mt-n10 justify-content-center">
       <div class="col-xl-4 col-lg-5 col-md-7 mx-auto">
-        <div class="card z-index-0">
-          <div class="card-header text-center pt-4">
-            <h5>Register your shop</h5>
+        <div class="card border-0 shadow-lg rounded-4 animate-card" style="background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);">
+          
+          <div class="card-header text-white text-center py-4 rounded-top-4" style="background: rgba(0, 0, 0, 0.6);">
+            <h4 class="mb-0 fw-bold text-white">
+              <i class="fas fa-store me-2 text-white"></i>Register your shop
+            </h4>
           </div>
-          <div class="row px-xl-5 px-sm-4 px-3">
-            <div class="col-4 px-1">
-              <a class="btn btn-outline-dark w-100 social-btn" href="#">
-                <i class="fab fa-facebook-f"></i>
+
+          <!-- Social Icons Row -->
+          <div class="row px-xl-5 px-sm-4 px-3 pt-3 text-center">
+            <div class="col-3 ms-auto px-1">
+              <a class="btn btn-outline-light w-100" href="javascript:;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="32" viewBox="0 0 320 512" fill="currentColor">
+                  <path d="M279.14 288l14.22-92.66h-88.91V127.22c0-25.35 12.42-50.06 52.24-50.06H293V6.26S259.5 0 225.36 0C141.09 0 89.09 54.42 89.09 153.12V195.3H0v92.66h89.09V512h107.8V288z"/>
+                </svg>
               </a>
             </div>
-            <div class="col-4 px-1">
-              <a class="btn btn-outline-dark w-100 social-btn" href="#">
-                <i class="fab fa-apple"></i>
+            <div class="col-3 px-1">
+              <a class="btn btn-outline-light w-100" href="javascript:;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="32" viewBox="0 0 384 512" fill="currentColor">
+                  <path d="M318.7 268c-1.1-88.1 72.5-130.1 75.9-132.2-41.4-60.4-105.8-68.6-128.8-69.5-54.9-5.6-107.1 32.3-135 32.3-27.7 0-69-31.5-113.5-30.7C1.2 68.6-21.7 133.2 1.2 194.8c27.3 74.9 100.5 198.2 182.4 195.2 45-1.6 77.9-30.4 112.3-30.4 34.1 0 62.4 30.4 112.3 30.4 57.4 0 93.7-74.7 102.7-89.6-0.7-0.3-92.3-35.4-91.2-132.4zM256.5 0c-45.3 2.7-97.4 31.1-129.1 68.1-28.3 33.1-52.9 85.7-43.6 135.6 50.6 3.9 104.4-30.3 134.3-67.4 24.9-30.4 43.8-80.7 38.4-126.3z"/>
+                </svg>
               </a>
             </div>
-            <div class="col-4 px-1">
-              <a class="btn btn-outline-dark w-100 social-btn" href="#">
-                <i class="fab fa-google"></i>
+            <div class="col-3 me-auto px-1">
+              <a class="btn btn-outline-light w-100" href="javascript:;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="32" viewBox="0 0 488 512" fill="currentColor">
+                  <path d="M488 261.8C488 403.3 391.1 512 248 512 110.8 512 0 401.2 0 264S110.8 16 248 16c66.3 0 121.7 24.3 164.1 64.3l-66.6 64.3C319 111.4 285.3 96 248 96c-86.1 0-156 71.6-156 168s69.9 168 156 168c74.3 0 124.3-42.7 133.3-102.7H248v-82.9h240c2.2 13.1 3.3 26.6 3.3 41.1z"/>
+                </svg>
               </a>
-            </div>
-            <div class="mt-2 position-relative text-center">
-              <p class="text-sm font-weight-bold mb-2 text-secondary text-border d-inline z-index-2 bg-white px-3">
-                ou
-              </p>
             </div>
           </div>
-          <div class="card-body">
+
+          <div class="card-body px-4 py-4">
             {{ form_start(form, {'attr': {'class': 'text-start', 'novalidate': 'novalidate'}}) }}
               <input type="hidden" name="role" value="SHOPOWNER">
-              
-              <!-- Shop Name -->
+
               <div class="mb-3">
-                {{ form_label(form.nom, 'Nom du magasin', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_label(form.nom, 'Nom du magasin', {'label_attr': {'class': 'form-label text-dark'}}) }}
                 {{ form_widget(form.nom, {
                   'attr': {
                     'class': 'form-control' ~ (form.nom.vars.valid ? '' : ' is-invalid'),
@@ -62,10 +70,9 @@
                   {% endif %}
                 </div>
               </div>
-              
-              <!-- Category -->
+
               <div class="mb-3">
-                {{ form_label(form.categorie, 'Catégorie', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_label(form.categorie, 'Catégorie', {'label_attr': {'class': 'form-label text-dark'}}) }}
                 {{ form_widget(form.categorie, {
                   'attr': {
                     'class': 'form-select' ~ (form.categorie.vars.valid ? '' : ' is-invalid')
@@ -77,10 +84,9 @@
                   {% endif %}
                 </div>
               </div>
-              
-              <!-- Description -->
+
               <div class="mb-3">
-                {{ form_label(form.description, 'Description du magasin', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_label(form.description, 'Description du magasin', {'label_attr': {'class': 'form-label text-dark'}}) }}
                 {{ form_widget(form.description, {
                   'attr': {
                     'class': 'form-control' ~ (form.description.vars.valid ? '' : ' is-invalid'),
@@ -93,12 +99,11 @@
                     {{ form.description.vars.errors[0].message }}
                   {% endif %}
                 </div>
-                <small class="form-text text-muted">Minimum 20 caractères</small>
+                
               </div>
-              
-              <!-- Email -->
+
               <div class="mb-3">
-                {{ form_label(form.email, 'Email', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_label(form.email, 'Email', {'label_attr': {'class': 'form-label text-dark'}}) }}
                 {{ form_widget(form.email, {
                   'attr': {
                     'class': 'form-control' ~ (form.email.vars.valid ? '' : ' is-invalid'),
@@ -111,10 +116,9 @@
                   {% endif %}
                 </div>
               </div>
-              
-              <!-- Password -->
+
               <div class="mb-3">
-                {{ form_label(form.plainPassword, 'Mot de passe', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_label(form.plainPassword, 'Mot de passe', {'label_attr': {'class': 'form-label text-dark'}}) }}
                 {{ form_widget(form.plainPassword, {
                   'attr': {
                     'class': 'form-control' ~ (form.plainPassword.vars.valid ? '' : ' is-invalid'),
@@ -125,19 +129,18 @@
                   {% if form.plainPassword.vars.errors|length > 0 %}
                     {{ form.plainPassword.vars.errors[0].message }}
                   {% endif %}
-                </div>  
+                </div>
               </div>
-              
-              <!-- Terms and Conditions -->
+
               <div class="form-check form-check-info text-start ps-0 mb-3">
                 {{ form_widget(form.agreeTerms, {
                   'attr': {
                     'class': 'form-check-input mt-1 ms-auto' ~ (form.agreeTerms.vars.valid ? '' : ' is-invalid')
                   }
                 }) }}
-                {{ form_label(form.agreeTerms, 'J\'accepte les <a href="#" class="text-dark font-weight-bolder">conditions générales</a>', {
+                {{ form_label(form.agreeTerms, 'J\'accepte les <a href="#" class="text-dark fw-bold">conditions générales</a>', {
                   'label_html': true,
-                  'label_attr': {'class': 'form-check-label'}
+                  'label_attr': {'class': 'form-check-label text-dark'}
                 }) }}
                 <div class="invalid-feedback">
                   {% if form.agreeTerms.vars.errors|length > 0 %}
@@ -145,20 +148,41 @@
                   {% endif %}
                 </div>
               </div>
-              
-              <!-- Submit Button -->
+
               <div class="text-center">
-                {{ form_widget(form.submit) }}
+                {{ form_widget(form.submit, { 'attr': { 'class': 'btn btn-dark w-100 fw-bold' } }) }}
               </div>
-              
-              <p class="text-sm mt-3 mb-0">
+
+              <p class="text-sm mt-3 mb-0 text-white text-center">
                 Vous avez déjà un compte? 
-                <a href="{{ path('app_login') }}" class="text-dark font-weight-bolder">Se connecter</a>
+                <a href="{{ path('app_login') }}" class="text-white fw-bold">Se connecter</a>
               </p>
+
             {{ form_end(form) }}
           </div>
         </div>
       </div>
     </div>
   </div>
+{% endblock %}
+
+{% block stylesheets %}
+  {{ parent() }}
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <style>
+    @keyframes fadeSlideCard {
+      0% {
+        opacity: 0;
+        transform: translateY(40px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .animate-card {
+      animation: fadeSlideCard 0.9s ease-out forwards;
+      opacity: 0;
+    }
+  </style>
 {% endblock %}
