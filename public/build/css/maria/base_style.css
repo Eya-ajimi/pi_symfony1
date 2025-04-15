@@ -20,7 +20,7 @@
 /* Base Styles */
 body {
   font-family: 'Segoe UI', Arial, sans-serif;
-  background: #F5F7FF;
+  background: #435bbc;
   color: var(--text-dark);
   overflow-x: hidden;
   margin: 0;
@@ -462,7 +462,7 @@ a:focus {
   display: flex;
   align-items: center;
   padding: 10px 10px;
-  color: var(--text-light) !important;
+  color: var(--text-light);
   background: var(--primary-purple) !important;
   border-radius: 8px;
   transition: all var(--transition-speed) ease;
@@ -474,14 +474,18 @@ a:focus {
   margin-right: 10px;
   /* Made consistent with menu icons */
   transition: all var(--transition-speed) ease;
+
 }
 
 .sidebar-footer-update li a:hover {
-  background: var(--primary-yellow) !important;
-  color: var(--primary-yellow) !important;
+  background: var(--text-dark);
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, .1);
+  color: var(--text-dark);
 }
+
+
+
 
 .sidebar-footer-update li a:hover i {
   transform: scale(1.1);

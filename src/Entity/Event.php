@@ -35,31 +35,52 @@ class Event
     private string $emplacement;
 
     // Getters and Setters
-    public function getId(): ?int { return $this->id; }
-    
-    public function getOrganisateur(): Utilisateur { return $this->organisateur; }
-    public function setOrganisateur(Utilisateur $organisateur): self { 
-        $this->organisateur = $organisateur; 
-        return $this; 
+    public function getId(): ?int
+    {
+        return $this->id;
     }
 
-    public function getNomOrganisateur(): string { return $this->nomOrganisateur; }
-    public function setNomOrganisateur(string $nomOrganisateur): self { 
-        $this->nomOrganisateur = $nomOrganisateur; 
-        return $this; 
+    public function getOrganisateur(): Utilisateur
+    {
+        return $this->organisateur;
+    }
+    public function setOrganisateur(Utilisateur $organisateur): self
+    {
+        $this->organisateur = $organisateur;
+        return $this;
     }
 
-    public function getDescription(): string { return $this->description; }
-    public function setDescription(string $description): self { 
-        $this->description = $description; 
-        return $this; 
+    public function getNomOrganisateur(): string
+    {
+        return $this->nomOrganisateur;
     }
+    public function setNomOrganisateur(string $nomOrganisateur): self
+    {
+        $this->nomOrganisateur = $nomOrganisateur;
+        return $this;
+    }
+
+    public function getDescription(): string
+    {
+        return $this->description;
+    }
+    public function setDescription(string $description): self
+    {
+        $this->description = $description;
+        return $this;
+    }
+
+  
 
     public function getDateDebut(): ?DateTimeImmutable
     {
-        return $this->dateDebut ? DateTimeImmutable::createFromFormat('Y-m-d', $this->dateDebut) : null;
+        if (empty($this->dateDebut)) {
+            return null;
+        }
+        
+        $date = DateTimeImmutable::createFromFormat('Y-m-d', $this->dateDebut);
+        return $date === false ? null : $date;
     }
-
     public function setDateDebut(DateTimeImmutable|string|null $date): self
     {
         if ($date instanceof DateTimeImmutable) {
@@ -74,9 +95,13 @@ class Event
 
     public function getDateFin(): ?DateTimeImmutable
     {
-        return $this->dateFin ? DateTimeImmutable::createFromFormat('Y-m-d', $this->dateFin) : null;
+        if (empty($this->dateFin)) {
+            return null;
+        }
+        
+        $date = DateTimeImmutable::createFromFormat('Y-m-d', $this->dateFin);
+        return $date === false ? null : $date;
     }
-
     public function setDateFin(DateTimeImmutable|string|null $date): self
     {
         if ($date instanceof DateTimeImmutable) {
@@ -98,9 +123,13 @@ class Event
     {
         return $this->dateFin;
     }
-    public function getEmplacement(): string { return $this->emplacement; }
-    public function setEmplacement(string $emplacement): self { 
-        $this->emplacement = $emplacement; 
-        return $this; 
+    public function getEmplacement(): string
+    {
+        return $this->emplacement;
+    }
+    public function setEmplacement(string $emplacement): self
+    {
+        $this->emplacement = $emplacement;
+        return $this;
     }
 }

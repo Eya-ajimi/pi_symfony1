@@ -1,24 +1,114 @@
 {% extends "maria_templates/base.html.twig" %}
 
-
-{% block title %}System Settings
-{% endblock %}
-
 {% block body %}
-	<h1>System Settings</h1>
-	<div class="card">
-		<div class="card-body">
-			<form>
-				<div class="mb-3">
-					<label class="form-label">Site Title</label>
-					<input type="text" class="form-control" value="My Admin Panel">
-				</div>
-				<div class="mb-3 form-check">
-					<input type="checkbox" class="form-check-input" id="maintenance">
-					<label class="form-check-label" for="maintenance">Maintenance Mode</label>
-				</div>
-				<button type="submit" class="btn btn-primary">Save Settings</button>
-			</form>
+	<div class="discount-container">
+		<div class="discount-header">
+			<h1>
+				<i class="fas fa-tag"></i>
+				Shop Discounts</h1>
+			<div class="addbutton-container">
+				<button id="addProductBtn" class="btn btn-add" onclick="openAddModal()">
+					<i class="fas fa-plus"></i>
+					Add New Discount
+				</button>
+			</div>
 		</div>
+
+		<!-- Status Filter (No form submission) -->
+		<div class="filter-bar">
+			<div class="filter-group">
+				<select name="status" id="statusFilter">
+					<option value="">All Discounts</option>
+					<option value="active">Active</option>
+					<option value="upcoming">Upcoming</option>
+					<option value="expired">Expired</option>
+				</select>
+			</div>
+			<button id="clearFilterBtn">
+				<i class="fas fa-times"></i>
+				Clear Filter
+			</button>
+		</div>
+
+		{% if discounts|length > 0 %}
+			<table class="discount-table">
+				<thead>
+					<tr>
+						<th>Discount</th>
+						<th>Duration</th>
+						<th>Status</th>
+						<th>Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for discount in discounts %}
+						{% set now = "now"|date('Y-m-d') %}
+						{% set status = discount.startDate|date('Y-m-d') > now ? 'upcoming' : 
+                                    discount.endDate|date('Y-m-d') < now ? 'expired' : 'active' %}
+
+						<tr data-status="{{ status }}">
+							<td>{{ discount.discountPercentage }}% OFF</td>
+							<td>
+								{{ discount.startDate|date('M d, Y') }}
+								-
+								{{ discount.endDate|date('M d, Y') }}
+							</td>
+							<td>
+								<span class="status-{{ status }}">
+									{{ status|capitalize }}
+								</span>
+							</td>
+							<td>
+								<a href="{{ path('discount_edit', {id: discount.id}) }}" class="btn btn-sm">
+									<i class="fas fa-edit"></i>
+								</a>
+								<a href="{{ path('discount_delete', {id: discount.id}) }}" class="btn btn-sm btn-danger">
+									<i class="fas fa-trash"></i>
+								</a>
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		{% else %}
+			<div class="empty-state">
+				<i class="fas fa-tag fa-3x"></i>
+				<h3>No discounts found</h3>
+				<a href="{{ path('discount_new') }}" class="btn btn-purple">
+					<i class="fas fa-plus"></i>
+					Create First Discount
+				</a>
+			</div>
+		{% endif %}
 	</div>
+
+	<!-- JavaScript for Client-Side Filtering -->
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+const statusFilter = document.getElementById('statusFilter');
+const clearFilterBtn = document.getElementById('clearFilterBtn');
+const discountRows = document.querySelectorAll('tbody tr');
+
+// Filter discounts when dropdown changes
+statusFilter.addEventListener('change', function () {
+const selectedStatus = this.value;
+
+discountRows.forEach(row => {
+const rowStatus = row.getAttribute('data-status');
+
+if (! selectedStatus || rowStatus === selectedStatus) {
+row.style.display = ''; // Show
+} else {
+row.style.display = 'none'; // Hide
+}
+});
+});
+
+// Clear filter button
+clearFilterBtn.addEventListener('click', function () {
+statusFilter.value = '';
+discountRows.forEach(row => row.style.display = '');
+});
+});
+	</script>
 {% endblock %}
