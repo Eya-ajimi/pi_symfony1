@@ -1,0 +1,47 @@
+{# templates/maria_templates/edit_schedule_modal.html.twig #}
+<div class="modal-content">
+    <div class="modal-header">
+        <h3>Edit Schedule</h3>
+        <span class="close-modal" onclick="closeModal('editScheduleModal')">&times;</span>
+    </div>
+    <div class="modal-body">
+        {{ form_start(form, {
+            'attr': {
+                'id': 'editScheduleForm',
+                'action': path('schedule_edit', {'id': schedule.id}),
+                'class': 'ajax-form'
+            }
+        }) }}
+            <div class="form-group">
+                <label>Day of Week</label>
+                <input type="text" class="form-control" value="{{ schedule.dayOfWeek.value }}" readonly>
+                {{ form_widget(form.dayOfWeek, {'attr': {'class': 'd-none'}}) }}
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form_label(form.openingTime) }}
+                    {{ form_widget(form.openingTime, {'attr': {'class': 'form-control time-input'}}) }}
+                </div>
+                
+                <div class="form-group">
+                    {{ form_label(form.closingTime) }}
+                    {{ form_widget(form.closingTime, {'attr': {'class': 'form-control time-input'}}) }}
+                </div>
+            </div>
+            
+            <div class="form-group closed-toggle">
+                <label class="checkbox-container">
+                    {{ form_widget(form.isClosed, {'attr': {'class': 'form-check-input'}}) }}
+                    <span class="checkmark"></span>
+                    Closed on this day
+                </label>
+            </div>
+            
+            <div class="form-actions">
+                <button type="button" class="btn-cancel" onclick="closeModal('editScheduleModal')">Cancel</button>
+                <button type="submit" class="btn-submit">Update Schedule</button>
+            </div>
+        {{ form_end(form) }}
+    </div>
+</div>

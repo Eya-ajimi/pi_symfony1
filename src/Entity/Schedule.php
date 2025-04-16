@@ -30,8 +30,8 @@ class Schedule
     private \DateTimeInterface $closingTime;
 
     #[ORM\ManyToOne(targetEntity: Utilisateur::class)]
-    #[ORM\JoinColumn(name: 'ShopId', referencedColumnName: 'id')]
-    private ?Utilisateur $shopId = null;
+    #[ORM\JoinColumn(name: "shopId", referencedColumnName: "id", nullable: false)]
+    private ?Utilisateur $shop = null;
 
     // Getters and Setters
     public function getId(): ?int
@@ -74,12 +74,12 @@ class Schedule
 
     public function getUtilisateur(): ?Utilisateur
     {
-        return $this->utilisateur;
+        return $this->shop;
     }
 
     public function setUtilisateur(?Utilisateur $utilisateur): self
     {
-        $this->utilisateur = $utilisateur;
+        $this->shop = $utilisateur;
         return $this;
     }
 }

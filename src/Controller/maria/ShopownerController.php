@@ -9,6 +9,8 @@ use App\Repository\UtilisateurRepository;
 use App\Repository\ProduitRepository;
 use App\Repository\LikedProductRepository;
 use App\Repository\ScheduledEventRepository;
+use App\Repository\ScheduleRepository;
+
 use App\Repository\DiscountRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -26,6 +28,8 @@ use App\Form\EventType;
 use App\Form\maria\ProductType;
 use App\Form\maria\EditProductType;
 use App\Form\maria\DiscountType;
+use App\Form\maria\ScheduleType;
+;
 
 
 class ShopownerController extends AbstractController
@@ -87,7 +91,7 @@ class ShopownerController extends AbstractController
             if (!$shop) {
                 throw $this->createNotFoundException('Shop owner not found');
             }
-            $product->setShop($shop);
+            $product->setUtilisateur($shop);
 
             // Handle file upload
             $imageFile = $form->get('image_url')->getData();
@@ -208,7 +212,7 @@ class ShopownerController extends AbstractController
 
         // Create new discount form for the "Add" modal
         $discount = new Discount();
-        $discount->setShop($shop);
+        $discount->setUtilisateur($shop);
         $addForm = $this->createForm(DiscountType::class, $discount);
 
         // Get existing discounts
@@ -232,7 +236,7 @@ class ShopownerController extends AbstractController
     {
         $shop = $em->getRepository(Utilisateur::class)->find(8);
         $discount = new Discount();
-        $discount->setShop($shop);
+        $discount->setUtilisateur($shop);
 
         $form = $this->createForm(DiscountType::class, $discount);
         $form->handleRequest($request);
@@ -287,19 +291,144 @@ class ShopownerController extends AbstractController
     }
     //Schedule 
 
-    // src/Controller/ShopController.php
+
+
     #[Route('/schedule', name: 'schedule')]
-    public function schedule(ScheduleRepository $scheduleRepo): Response
-    {
-        $schedules = $scheduleRepo->findBy(['shopId' => 8], ['dayOfWeek' => 'ASC']);
+    public function schedule(
+        ScheduleRepository $scheduleRepo,
+        EntityManagerInterface $em
+    ): Response {
+        $shop = $em->getRepository(Utilisateur::class)->find(8);
+        if (!$shop) {
+            throw $this->createNotFoundException('Shop with ID 8 not found');
+        }
+
+        $schedules = $scheduleRepo->findBy(['shop' => $shop], ['dayOfWeek' => 'ASC']);
+
+        // Create edit forms for each schedule
+        $editForms = [];
+        foreach ($schedules as $schedule) {
+            $editForms[$schedule->getId()] = $this->createForm(ScheduleType::class, $schedule, [
+                'is_closed' => $schedule->getOpeningTime() == $schedule->getClosingTime(),
+                'action' => $this->generateUrl('schedule_edit', ['id' => $schedule->getId()])
+            ])->createView();
+        }
+
+        // Create add form
+        $newSchedule = new Schedule();
+        $newSchedule->setUtilisateur($shop);
+        $addForm = $this->createForm(ScheduleType::class, $newSchedule);
 
         return $this->render('maria_templates/schedule.html.twig', [
-            'schedules' => $schedules
+            'schedules' => $schedules,
+            'addForm' => $addForm->createView(),
+            'editForms' => $editForms
         ]);
     }
 
+    #[Route('/schedule/new', name: 'schedule_new', methods: ['POST'])]
+    public function newSchedule(
 
+        Request $request,
+        EntityManagerInterface $em,
+        UtilisateurRepository $utilisateurRepo
+    ): Response {
+        $current_user = 8;
+        $shop = $utilisateurRepo->findutilisateurbyid($current_user);
+        if (!$shop) {
+            throw $this->createNotFoundException('Shop with ID 8 not found');
+        }
 
+        $schedule = new Schedule();
+        $schedule->setUtilisateur($shop);
+
+        $form = $this->createForm(ScheduleType::class, $schedule);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            // Handle closed days
+            if ($form->get('isClosed')->getData()) {
+                $schedule->setOpeningTime(new \DateTime('00:00:00'));
+                $schedule->setClosingTime(new \DateTime('00:00:00'));
+            }
+
+            $em->persist($schedule);
+            $em->flush();
+
+            $this->addFlash('success', 'Schedule added successfully!');
+            return $this->redirectToRoute('schedule');
+        }
+
+        // Handle form errors
+        foreach ($form->getErrors(true) as $error) {
+            $this->addFlash('error', $error->getMessage());
+        }
+        return $this->redirectToRoute('schedule');
+    }
+
+    #[Route('/schedule/edit/{id}', name: 'schedule_edit', methods: ['POST'])]
+    public function editSchedule(
+        int $id,
+        Request $request,
+        EntityManagerInterface $em,
+        ScheduleRepository $scheduleRepo
+    ): Response {
+
+        $schedule = $scheduleRepo->find($id);
+        if (!$schedule) {
+            throw $this->createNotFoundException('Schedule not found');
+        }
+
+        $form = $this->createForm(ScheduleType::class, $schedule, [
+            'is_closed' => $schedule->getOpeningTime()->format('H:i') === '00:00' &&
+                $schedule->getClosingTime()->format('H:i') === '00:00'
+        ]);
+
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $isClosed = $form->get('isClosed')->getData();
+            if (!$form->isValid()) {
+                // Return form with errors
+                return $this->render('your_template.html.twig', [
+                    'form' => $form->createView()
+                ]);
+            }
+            if ($isClosed) {
+                $schedule->setOpeningTime(new \DateTime('00:00:00'));
+                $schedule->setClosingTime(new \DateTime('00:00:00'));
+            }
+
+            $em->flush();
+            return $this->redirectToRoute('schedule');
+        }
+
+        foreach ($form->getErrors(true) as $error) {
+            $this->addFlash('error', $error->getMessage());
+        }
+        return $this->redirectToRoute('schedule');
+    }
+    #[Route('/schedule/delete/{id}', name: 'schedule_delete', methods: ['POST'])]
+    public function deleteSchedule(
+        int $id,
+        EntityManagerInterface $em,
+        ScheduleRepository $scheduleRepo
+    ): Response {
+        $schedule = $scheduleRepo->find($id);
+        if (!$schedule) {
+            throw $this->createNotFoundException('Schedule not found');
+        }
+
+        // Verify schedule belongs to shop ID 8
+        if ($schedule->getUtilisateur()->getId() !== 8) {
+            throw $this->createAccessDeniedException('You can only delete schedules for your shop');
+        }
+
+        $em->remove($schedule);
+        $em->flush();
+
+        $this->addFlash('success', 'Schedule deleted successfully!');
+        return $this->redirectToRoute('schedule');
+    }
     // Partie Oussema
 
     // Events - Keep only this one version

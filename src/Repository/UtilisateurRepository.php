@@ -26,4 +26,13 @@ class UtilisateurRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+    public function findutilisateurbyid(int $id): ?Utilisateur
+    {
+        return $this->createQueryBuilder('u')
+            ->where('u.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+    
 }

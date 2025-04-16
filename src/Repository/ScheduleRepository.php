@@ -17,8 +17,9 @@ class ScheduleRepository extends ServiceEntityRepository
 
     public function findByShopId(int $shopId): array
     {
-        return $this->createQueryBuilder('u')
-            ->andWhere('<u class="utilisateur"></u> = :shopId')
+        return $this->createQueryBuilder('s')
+            ->innerJoin('s.utilisateur', 'u')
+            ->andWhere('u.id = :shopId')
             ->setParameter('shopId', $shopId)
             ->orderBy('s.dayOfWeek', 'ASC')
             ->getQuery()
