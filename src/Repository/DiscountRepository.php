@@ -31,29 +31,17 @@ class DiscountRepository extends ServiceEntityRepository
             $this->getEntityManager()->flush();
         }
     }
-
     public function findActiveDiscountsForShop(int $shopId): array
-    {
-        $today = new \DateTime();
-        return $this->createQueryBuilder('d')
-            ->andWhere('d.shop = :shopId')
-            ->andWhere('d.startDate <= :today')
-            ->andWhere('d.endDate >= :today')
-            ->setParameter('shopId', $shopId)
-            ->setParameter('today', $today->format('Y-m-d'))
-            ->getQuery()
-            ->getResult();
-    }
+{
+    $today = new \DateTime();
+    return $this->createQueryBuilder('d')
+        ->andWhere('IDENTITY(d.shop) = :shopId') // Query by the shop's ID
+        ->andWhere('d.startDate <= :today')
+        ->andWhere('d.endDate >= :today')
+        ->setParameter('shopId', $shopId)
+        ->setParameter('today', $today->format('Y-m-d'))
+        ->getQuery()
+        ->getResult();
+}
 
-    public function findActiveDiscountsByShop(Utilisateur $shop): array
-    {
-        return $this->createQueryBuilder('d')
-            ->where('d.shop = :shop')
-            ->andWhere('d.endDate >= :today')
-            ->setParameter('shop', $shop)
-            ->setParameter('today', new \DateTime())
-            ->orderBy('d.discountPercentage', 'DESC')
-            ->getQuery()
-            ->getResult();
-    }
 }

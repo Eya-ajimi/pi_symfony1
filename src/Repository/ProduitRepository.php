@@ -43,7 +43,7 @@ class ProduitRepository extends ServiceEntityRepository
     public function findByShopId(int $shopId): array
     {
         return $this->createQueryBuilder('p')
-            ->join('p.shop', 's')
+            ->join('p.shopId', 's')
             ->andWhere('s.id = :shopId')
             ->setParameter('shopId', $shopId)
             ->getQuery()
@@ -51,7 +51,7 @@ class ProduitRepository extends ServiceEntityRepository
     }
 
     // Find a single product by ID
-    public function findOneById(int $id): ?Produit
+    public function findProduit(int $id): ?Produit
     {
         return $this->find($id);
     }
@@ -69,7 +69,7 @@ class ProduitRepository extends ServiceEntityRepository
     {
         // First get products by shop
         $products = $this->createQueryBuilder('p')
-            ->join('p.shop', 's')
+            ->join('p.shopId', 's')
             ->where('s.id = :shopId')
             ->setParameter('shopId', $shopId)
             ->getQuery()
@@ -121,4 +121,7 @@ class ProduitRepository extends ServiceEntityRepository
         }
     }
     
+
+    //HOUSSEM
+
 }

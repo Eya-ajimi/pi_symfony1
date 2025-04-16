@@ -30,7 +30,7 @@
 		<div class="product-grid">
 			{% for p in products %}
 				<div class="product-card" data-product-name="{{ p.nom }}" data-product-description="{{ p.description|default('') }}" data-product-id="{{ p.id }}">
-					{% if p.discount %}
+					{% if p.promotionId %}
 						<div class="discount-badge">{{p.getDiscountPercentage()}}% OFF</div>
 					{% endif %}
 
@@ -48,7 +48,7 @@
 
 						<div class="product-pricing">
 							<div class="price-container">
-								{% if p.discount %}
+								{% if p.promotionId %}
 									<span class="original-price">{{ p.prix }}
 										DT</span>
 									<span class="discounted-price">{{ p.getDiscountedPrice() }}

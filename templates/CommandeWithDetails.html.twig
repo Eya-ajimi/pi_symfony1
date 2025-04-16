@@ -1,0 +1,192 @@
+{% extends "maria_templates/base.html.twig" %}
+{% block title %}commands
+{% endblock %}
+
+{% block body %}
+ <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e6f2f8;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            display: flex;
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section {
+            flex: 1;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .info-row {
+            display: flex;
+            margin-bottom: 10px;
+        }
+
+        .info-label {
+            font-weight: bold;
+            width: 150px;
+        }
+
+        .paniers-section {
+            background-color: #d9edf7;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .paniers-section h2 {
+            margin-top: 0;
+            color: #31708f;
+        }
+
+        .panier-items {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .panier-item {
+            background-color: white;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+        }
+
+        .panier-item p {
+            margin: 5px 0;
+        }
+
+        .total {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .confirm-btn {
+            background-color: #e6b949;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background-color 0.3s;
+        }
+
+        .confirm-btn:hover {
+            background-color: #d1a73e;
+        }
+
+        .back-link {
+            display: flex;
+            align-items: center;
+            margin-top: 15px;
+        }
+
+        .back-link a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            background-color: #f0f0f0;
+            border-radius: 50%;
+            margin-right: 8px;
+            text-decoration: none;
+            color: #555;
+            font-weight: bold;
+        }
+
+        .back-link a:hover {
+            background-color: #e0e0e0;
+        }
+
+        .back-link span {
+            color: #555;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+        }
+    </style>
+<div class="container">
+    <!-- Section 1: Détails de la commande -->
+    <div class="section">
+        <div class="card">
+            <h2>Détails de la Commande #{{ commande.ticketNumber }}</h2>
+
+            <div class="info-row">
+                <div class="info-label">Client:</div>
+                <div>{{ commande.client.nom }} {{ commande.client.prenom }}</div>
+            </div>
+
+            <div class="info-row">
+                <div class="info-label">Date:</div>
+                <div>{{ commande.dateCommande|date('d/m/Y') }}</div>
+            </div>
+
+            <div class="info-row">
+                <div class="info-label">Statut:</div>
+                <div>{{ commande.statut }}</div>
+            </div>
+
+            <div class="total">Total Commande: {{ commande.total }} DT</div>
+
+
+            <a href="{{ path('app_commande_confirm', {
+                'commandeId': commande.id,
+                'shopId':commande.shopId}) }}"
+               class="confirm-btn">
+                confirmer
+            </a>
+
+            <div class="back-link">
+                <a href="{{ path('app_show_commande_payee') }}">&leftarrow;</a>
+                <span>Back to shop</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 2: Détails des paniers -->
+    <div class="section">
+        <div class="paniers-section">
+            <h2>Détails des Paniers</h2>
+
+            <div class="panier-items">
+                {% for panier in commande.paniers %}
+                    <div class="panier-item">
+                        <p><strong>Produit:</strong> {{ panier.produit.nom }}</p>
+                        <p><strong>Quantité:</strong> {{ panier.quantite }}</p>
+                        <p><strong>Prix:</strong> {{ panier.produit.prix }} DT</p>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="total">Total Commande: {{ commande.total }} DT</div>
+        </div>
+    </div>
+</div>
+{% endblock %}

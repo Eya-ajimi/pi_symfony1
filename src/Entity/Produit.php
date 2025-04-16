@@ -5,6 +5,8 @@ namespace App\Entity;
 use App\Repository\ProduitRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 #[ORM\Entity(repositoryClass: ProduitRepository::class)]
 class Produit
@@ -16,7 +18,7 @@ class Produit
 
     #[ORM\ManyToOne(targetEntity: Utilisateur::class)]
     #[ORM\JoinColumn(name: 'shopId', referencedColumnName: 'id')]
-    private ?Utilisateur $shop = null;
+    private ?Utilisateur $shopId = null;
 
     #[ORM\Column(length: 255)]
     private ?string $nom = null;
@@ -24,9 +26,10 @@ class Produit
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
 
+
     #[ORM\ManyToOne(targetEntity: Discount::class)]
     #[ORM\JoinColumn(name: "promotionId", referencedColumnName: "id")]
-    private ?Discount $discount = null;
+    private ?Discount $promotionId = null;  
 
     #[ORM\Column]
     private ?int $stock = null;
@@ -46,15 +49,15 @@ class Produit
         return $this->id;
     }
 
-    public function getShop(): ?Utilisateur
+    public function getShopId(): ?Utilisateur
     {
-        return $this->shop;
+        return $this->shopId;
     }
 
-    public function setShop(?Utilisateur $shop): static
+    // In Produit.php - This is WRONG// In Produit.php
+    public function setShopId(?Utilisateur $shopId): static
     {
-        $this->shop = $shop;
-
+        $this->shopId = $shopId;  // Correct - sets the property
         return $this;
     }
 
@@ -82,14 +85,14 @@ class Produit
         return $this;
     }
 
-    public function getDiscount(): ?Discount
+    public function getPromotionId(): ?Discount
     {
-        return $this->discount;
+        return $this->promotionId;
     }
 
-    public function setDiscount(?Discount $discount): static
+    public function setPromotionId(?Discount $discount): static
     {
-        $this->discount = $discount;
+        $this->promotionId = $discount;
 
         return $this;
     }
@@ -137,8 +140,8 @@ class Produit
     public function getDiscountPercentage(): ?float
     {
         try {
-            return $this->discount && $this->discount->getId()
-                ? (float) $this->discount->getDiscountPercentage()
+            return $this->promotionId && $this->promotionId->getId()
+                ? (float) $this->promotionId->getDiscountPercentage()
                 : null;
         } catch (\Doctrine\ORM\EntityNotFoundException $e) {
             return null;
@@ -169,6 +172,49 @@ class Produit
     public function setLikeCount(int $likeCount): self
     {
         $this->likeCount = $likeCount;
+        return $this;
+    }
+
+
+
+
+    // PARTIE HOUSSEM 
+
+
+    /**
+     * @var Collection<int, Panier>
+     */
+    #[ORM\OneToMany(targetEntity: Panier::class, mappedBy: 'idProduit')]
+    private Collection $paniers;
+
+
+    /**
+     * @return Collection<int, Panier>
+     */
+    public function getPaniers(): Collection
+    {
+        return $this->paniers;
+    }
+
+    public function addPanier(Panier $panier): static
+    {
+        if (!$this->paniers->contains($panier)) {
+            $this->paniers->add($panier);
+            $panier->setIdProduit($this);
+        }
+
+        return $this;
+    }
+
+    public function removePanier(Panier $panier): static
+    {
+        if ($this->paniers->removeElement($panier)) {
+            // set the owning side to null (unless already changed)
+            if ($panier->getIdProduit() === $this) {
+                $panier->setIdProduit(null);
+            }
+        }
+
         return $this;
     }
 }

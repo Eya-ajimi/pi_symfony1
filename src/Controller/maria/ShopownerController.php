@@ -10,7 +10,8 @@ use App\Repository\ProduitRepository;
 use App\Repository\LikedProductRepository;
 use App\Repository\ScheduledEventRepository;
 use App\Repository\ScheduleRepository;
-
+use App\Repository\CommandeRepository;
+use App\Repository\PanierRepository;
 use App\Repository\DiscountRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -21,6 +22,8 @@ use App\Entity\Discount;
 use App\Entity\Event;
 use App\Entity\Schedule;
 use App\Entity\Utilisateur;
+use App\Entity\Commande;
+use App\Entity\Panier;
 use App\Entity\LikedProduct;
 
 
@@ -65,8 +68,8 @@ class ShopownerController extends AbstractController
         // Create dummy edit form (will be populated via JavaScript)
         $editProduct = new Produit();
         $editForm = $this->createForm(EditProductType::class, $editProduct, [
-            'shop' => $user,
-            'discounts' => $discounts
+            'shopId' => $user,
+            'promotionId' => $discounts
         ]);
 
         return $this->render('maria_templates/products.html.twig', [
@@ -91,8 +94,7 @@ class ShopownerController extends AbstractController
             if (!$shop) {
                 throw $this->createNotFoundException('Shop owner not found');
             }
-            $product->setUtilisateur($shop);
-
+            $product->setShopId($shop);  // This will now work correctly
             // Handle file upload
             $imageFile = $form->get('image_url')->getData();
             if ($imageFile) {
@@ -155,10 +157,12 @@ class ShopownerController extends AbstractController
 
         $shop = $utilisateurRepo->find(8); // Static shop ID 8
         $discounts = $discountRepo->findBy(['shop' => $shop]);
+        $count = $discountRepo->count(['shop' => $shop]);
+        dump($count);
 
         $form = $this->createForm(EditProductType::class, $product, [
-            'shop' => $shop,
-            'discounts' => $discounts,
+            'shopId' => $shop,
+            'promotionId' => $discounts,
             'action' => $this->generateUrl('product_edit', ['id' => $id])
         ]);
 
@@ -212,7 +216,9 @@ class ShopownerController extends AbstractController
 
         // Create new discount form for the "Add" modal
         $discount = new Discount();
-        $discount->setUtilisateur($shop);
+        $discount->setShop
+
+        ($shop);
         $addForm = $this->createForm(DiscountType::class, $discount);
 
         // Get existing discounts
@@ -236,7 +242,7 @@ class ShopownerController extends AbstractController
     {
         $shop = $em->getRepository(Utilisateur::class)->find(8);
         $discount = new Discount();
-        $discount->setUtilisateur($shop);
+        $discount->setPromotionId($shop);
 
         $form = $this->createForm(DiscountType::class, $discount);
         $form->handleRequest($request);
@@ -520,11 +526,27 @@ class ShopownerController extends AbstractController
     //Commands 
 
     #[Route('/commands', name: 'commands')]
-    public function commands(): Response
+    public function commands(CommandeRepository $commandeRepository): Response
     {
-        return $this->render('maria_templates/commands.html.twig');
-    }
+        $shopOwnerId = 8; // Static ID (or fetch dynamically)
+        $todayCommands = $commandeRepository->findTodayPaidOrdersByShop($shopOwnerId);
 
+        $result = [];
+        foreach ($todayCommands as $commande) {
+            $result[] = [
+                'numeroTicket' => $commande->getPaniers()->first()?->getNumeroTicket(),
+                'commandeId' => $commande->getId(),
+                'date' => $commande->getDateCommande()->format('d-m-y'),
+                'total' => $commande->getTotal(),
+                'client' => $commande->getIdClient()->getNom() . " " . $commande->getIdClient()->getPrenom(),
+            ];
+        }
+
+        return $this->render('maria_templates/commands.html.twig', [
+            'commands' => $result,
+            'utilisateurId' => $shopOwnerId, // ✅ Now passed to Twig
+        ]);
+    }
     //Profile 
 
     #[Route('/profile', name: 'profile')]

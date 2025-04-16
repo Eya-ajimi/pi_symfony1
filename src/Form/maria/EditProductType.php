@@ -29,12 +29,13 @@ class EditProductType extends AbstractType
             ])
             ->add('stock', NumberType::class)
             // ... other fields ...
-            ->add('discount', EntityType::class, [
+            // In EditProductType.php
+            ->add('promotionId', EntityType::class, [  // Changed from 'discount' to 'promotionId'
                 'class' => Discount::class,
                 'choice_label' => function (Discount $discount) {
                     return $discount->getDiscountPercentage() . '%';
                 },
-                'choices' => $options['discounts'] ?? [], // Safe access with null coalescing
+                'choices' => $options['promotionId'] ?? [],
                 'required' => false,
                 'placeholder' => 'No discount'
             ])
@@ -55,8 +56,8 @@ class EditProductType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Produit::class,
-            'shop' => null,
-            'discounts' => [] // Add this default value
+            'shopId' => null,
+            'promotionId' => [] // Add this default value
         ]);
     }
 }
