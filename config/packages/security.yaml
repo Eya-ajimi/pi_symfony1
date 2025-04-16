@@ -45,6 +45,8 @@ security:
                 samesite: lax
 
     access_control:
+    - { path: ^/landing, roles: PUBLIC_ACCESS } 
+    - { path: ^/choose-role, roles: PUBLIC_ACCESS }   
     - { path: ^/admin, roles: ROLE_ADMIN }
     - { path: ^/shopowner, roles: ROLE_SHOPOWNER }
     - { path: ^/client, roles: ROLE_CLIENT }

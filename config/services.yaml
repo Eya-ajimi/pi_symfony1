@@ -9,8 +9,15 @@ services:
     _defaults:
         autowire: true      # Active l'injection automatique des dépendances
         autoconfigure: true # Active la configuration automatique des tags
-        public: false       # Rend les services privés par défaut
+        public: false       # Rend les services privés par défaut                                                   
+    
 
+     #App\Entity\User:
+    #     class: App\Entity\User
+    #     autowire: true            
+    App\EventListener\NoCacheListener:
+        tags:
+            - { name: kernel.event_listener, event: kernel.response, method: onKernelResponse }  
     # Charge automatiquement tous les services du dossier src/
     App\:
         resource: '../src/'
@@ -49,3 +56,4 @@ when@test:
         test.App\Security\AppAuthenticator:
             parent: 'App\Security\AppAuthenticator'
             public: true
+#          

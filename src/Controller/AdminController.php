@@ -1,5 +1,5 @@
 <?php
-/// src/Controller/AdminController.php
+
 namespace App\Controller;
 
 use App\Entity\Utilisateur;
@@ -25,19 +25,39 @@ class AdminController extends AbstractController
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
         
         $utilisateurs = $utilisateurRepo->findAll();
+
+        // Statistiques
+        $nombreTotal = count($utilisateurs);
+        $nombreActifs = count(array_filter($utilisateurs, fn($u) => $u->isActive()));
+        $nombreInactifs = $nombreTotal - $nombreActifs;
+
+        $nombreClients = count(array_filter($utilisateurs, fn($u) => $u->getRole() === Role::CLIENT));
+        $nombreCommercants = count(array_filter($utilisateurs, fn($u) => $u->getRole() === Role::SHOPOWNER));
+        $nombreAdmins = count(array_filter($utilisateurs, fn($u) => $u->getRole() === Role::ADMIN));
         
         return $this->render('dashboard.html.twig', [
-            'utilisateurs' => $utilisateurs
+            'utilisateurs' => $utilisateurs,
+            'nombreTotal' => $nombreTotal,
+            'nombreActifs' => $nombreActifs,
+            'nombreInactifs' => $nombreInactifs,
+            'nombreClients' => $nombreClients,
+            'nombreCommercants' => $nombreCommercants,
+            'nombreAdmins' => $nombreAdmins,
         ]);
     }
 
-    #[Route('/admin/utilisateur/delete/{id}', name: 'admin_delete_user')]
-    public function deleteUser(Utilisateur $utilisateur, EntityManagerInterface $em): Response
+    #[Route('/admin/utilisateur/delete/{id}', name: 'admin_delete_user', methods: ['POST'])]
+    public function deleteUser(Utilisateur $utilisateur, EntityManagerInterface $em, Request $request): Response
     {
-        $em->remove($utilisateur);
-        $em->flush();
-        
-        $this->addFlash('success', 'Utilisateur supprimé avec succès');
+        $submittedToken = $request->request->get('_token');
+
+        if ($this->isCsrfTokenValid('delete' . $utilisateur->getId(), $submittedToken)) {
+            $em->remove($utilisateur);
+            $em->flush();
+
+            $this->addFlash('success', 'Utilisateur supprimé avec succès');
+        }
+
         return $this->redirectToRoute('admin_dashboard');
     }
 
@@ -49,7 +69,6 @@ class AdminController extends AbstractController
         CategorieRepository $categorieRepository
     ): Response
     {
-        // Extract data from the entity before creating the form
         $userData = [
             'email' => $utilisateur->getEmail(),
             'nom' => $utilisateur->getNom(),
@@ -62,37 +81,28 @@ class AdminController extends AbstractController
             'statut' => $utilisateur->getStatut()
         ];
         
-        // Create form with entity as data
         $formBuilder = $this->createFormBuilder($utilisateur);
         
-        // Common fields for all users
         $formBuilder->add('email', EmailType::class, [
             'label' => 'Email',
             'attr' => ['class' => 'form-control'],
             'data' => $userData['email']
         ]);
         
-        // Role-specific fields
         if ($utilisateur->getRole() === Role::SHOPOWNER) {
-            // SHOPOWNER fields
             $formBuilder->add('nom', TextType::class, [
                 'label' => 'Nom du magasin',
                 'attr' => ['class' => 'form-control'],
                 'data' => $userData['nom']
             ]);
-            
-            // Handle categorie as an entity type
+
             $formBuilder->add('categorie', ChoiceType::class, [
                 'label' => 'Catégorie',
                 'attr' => ['class' => 'form-select'],
                 'required' => false,
                 'choices' => $categorieRepository->findAll(),
-                'choice_label' => function(Categorie $categorie) {
-                    return $categorie->getNom();
-                },
-                'choice_value' => function(?Categorie $categorie) {
-                    return $categorie ? $categorie->getIdCategorie() : '';
-                },
+                'choice_label' => fn(Categorie $categorie) => $categorie->getNom(),
+                'choice_value' => fn(?Categorie $categorie) => $categorie ? $categorie->getIdCategorie() : '',
                 'placeholder' => 'Choisir une catégorie',
                 'data' => $userData['categorie']
             ]);
@@ -103,9 +113,7 @@ class AdminController extends AbstractController
                 'required' => false,
                 'data' => $userData['description']
             ]);
-            
         } else {
-            // CLIENT fields
             $formBuilder->add('nom', TextType::class, [
                 'label' => 'Nom',
                 'attr' => ['class' => 'form-control'],
@@ -131,7 +139,6 @@ class AdminController extends AbstractController
             ]);
         }
         
-        // Add role and status fields for admins only
         if ($this->isGranted('ROLE_ADMIN')) {
             $formBuilder->add('role', ChoiceType::class, [
                 'label' => 'Rôle',
@@ -155,15 +162,12 @@ class AdminController extends AbstractController
             ]);
         }
         
-        // Add save button
         $formBuilder->add('save', SubmitType::class, [
             'label' => 'Enregistrer',
-            'attr' => ['class' => 'btn btn-primary mt-3']
+            'attr' => ['class' => 'btn btn-primary mt-3 btn-fixed']
         ]);
         
         $form = $formBuilder->getForm();
-        
-        // Handle form submission
         $form->handleRequest($request);
         
         if ($form->isSubmitted() && $form->isValid()) {
