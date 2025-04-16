@@ -29,13 +29,14 @@ final class PanierContollerController extends AbstractController
 
         $utilisateur = new Utilisateur();
         $utilisateur->setId(7);
-
+        $clientId=$utilisateur->getId();
         $commandeEnCours = $this->commandeRepository->findCommandeEnCours($utilisateur);
         if (!$commandeEnCours) {
             return $this->render('panier_contoller/index.html.twig', [
                 'panierList' => [],
                 'itemsNumber' => 0,
                 'totalCommande' => 0,
+                'clientId' => 0,
             ]);
         }
         else{
@@ -83,16 +84,14 @@ final class PanierContollerController extends AbstractController
                 'panierList' => $panierList,
                 'itemsNumber' => $itemsNumber,
                 'totalCommande' => $totalCommande,
+                'clientId' => $clientId,
             ]);
         }
 
     }
 
     #[Route('/panier/addQuantite/{idCommande}/{idProduit}', name: 'app_add_quantite')]
-    public function addQuantite($idCommande, $idProduit): Response
-    {
-
-
+    public function addQuantite($idCommande, $idProduit): Response {
         $panierItem = $this->panierRepository->findBy([
             'idCommande' => $idCommande,
             'idProduit' => $idProduit
@@ -105,8 +104,8 @@ final class PanierContollerController extends AbstractController
         $newQuantite = $panierItem[0]->getQuantite() + 1;
 
         if ($newQuantite > $panierItem[0]->getIdProduit()->getStock()) {
-            // Ajoutez un message flash pour informer l'utilisateur
-            $this->addFlash('error', 'La quantité demandée dépasse le stock disponible');
+            // Ajout d'un message flash pour informer l'utilisateur
+            $this->addFlash('error', 'La quantité demandée dépasse le stock disponible!');
             return $this->redirectToRoute('app_show_panier');
         }
 
@@ -118,30 +117,31 @@ final class PanierContollerController extends AbstractController
 
         $this->entityManager->flush();
 
+        // Ajout d'un message flash pour confirmer l'action
+        $this->addFlash('success', 'Quantité augmentée avec succès!');
+
         // Redirection vers la page du panier
         return $this->redirectToRoute('app_show_panier');
     }
 
     #[Route('/panier/diminuerQuantite/{idCommande}/{idProduit}', name: 'app_diminuer_quantite')]
-    public function diminuerQuantite($idCommande, $idProduit): Response
-    {
-
-
+    public function diminuerQuantite($idCommande, $idProduit): Response {
         $panierItem = $this->panierRepository->findBy([
             'idCommande' => $idCommande,
             'idProduit' => $idProduit
         ]);
+
         if (!$panierItem) {
             throw $this->createNotFoundException('Panier item not found');
         }
 
         $newQuantite = $panierItem[0]->getQuantite() - 1;
-        if($newQuantite ==0){
+
+        if($newQuantite == 0){
+            // Ajout d'un message flash pour informer l'utilisateur
+            $this->addFlash('warning', 'La quantité minimum est atteinte. Pour supprimer l\'article, cliquez sur la croix.');
             return $this->redirectToRoute('app_show_panier');
-
-            //lahné nzid faza mte3 message snack bar
         }
-
 
         $panierItem[0]->setQuantite($newQuantite);
 
@@ -151,10 +151,12 @@ final class PanierContollerController extends AbstractController
 
         $this->entityManager->flush();
 
+        // Ajout d'un message flash pour confirmer l'action
+        $this->addFlash('success', 'Quantité diminuée avec succès!');
+
         // Redirection vers la page du panier
         return $this->redirectToRoute('app_show_panier');
     }
-
     #[Route('/panier/deletePanier/{idCommande}/{idProduit}', name: 'app_delete_item')]
     public function deleteItem($idCommande, $idProduit): Response
     {

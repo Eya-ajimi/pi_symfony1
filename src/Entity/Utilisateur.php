@@ -59,6 +59,15 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 255)]
     private ?string $prenom = null;
 
+    #[ORM\Column]
+    private ?int $balance = null;
+
+    #[ORM\Column(name: "numeroTicket")]
+    private ?int $numeroTicket = null;
+
+    #[ORM\Column]
+    private ?int $points = null;
+
     public function __construct()
     {
         $this->produits = new ArrayCollection();
@@ -273,6 +282,42 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPrenom(string $prenom): static
     {
         $this->prenom = $prenom;
+
+        return $this;
+    }
+
+    public function getBalance(): ?int
+    {
+        return $this->balance;
+    }
+
+    public function setBalance(int $balance): static
+    {
+        $this->balance = $balance;
+
+        return $this;
+    }
+
+    public function getNumeroTicket(): ?int
+    {
+        return $this->numeroTicket;
+    }
+
+    public function setNumeroTicket(int $numeroTicket): static
+    {
+        $this->numeroTicket = $numeroTicket;
+
+        return $this;
+    }
+
+    public function getPoints(): ?int
+    {
+        return $this->points;
+    }
+
+    public function setPoints(int $points): static
+    {
+        $this->points = $points;
 
         return $this;
     }

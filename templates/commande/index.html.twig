@@ -126,6 +126,7 @@
         <table>
             <thead>
             <tr>
+                <th>Numero ticket</th>
                 <th>Client</th>
                 <th>Date</th>
                 <th>Total</th>
@@ -136,6 +137,7 @@
             {% if commandes is defined and commandes|length > 0 %}
                 {% for commande in commandes %}
                     <tr>
+                        <td>{{ commande.numeroTicket }}</td>
                         <td>{{ commande.client }}</td>
                         <td>{{ commande.date }}</td>
                         <td>{{ commande.total }} DT</td>
