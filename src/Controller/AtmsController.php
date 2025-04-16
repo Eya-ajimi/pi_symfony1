@@ -72,7 +72,7 @@ public function editAtm(
 
     $atms = $atmRepository->findAll();
 
-    return $this->render('admin/dashboard.html.twig', [
+    return $this->render('backend/atms.html.twig', [
         'atmForm' => $form->createView(),
         'atms' => $atms,
         'editingAtmId' => $atm->getId(), // FIXED: use the correct key

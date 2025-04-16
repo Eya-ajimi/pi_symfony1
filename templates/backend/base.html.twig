@@ -3,14 +3,56 @@
 
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <title>Innomall</title>
-  <link rel="shortcut icon" type="image/png" href="../assets/images/logos/favicon.png" />
-  <link rel="stylesheet" href="../assets/css/styles.min.css" />
+  
+   <!-- Core CSS -->
+  {{ encore_entry_link_tags('backend') }}
+  <link rel="shortcut icon" href="{{ asset('assets/images/logos/favicon.png') }}" />
+  <link rel="stylesheet" href="{{ asset('assets/css/atms.css') }}">
+  <link rel="stylesheet" href="{{ asset('assets/css/styles.min.css') }}" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  
+  <!-- Chart.js and DataTables CSS -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/css/bootstrap.min.css">
+  
+  
+  {% block stylesheets %}
+    <style>
+      .chart-bar {
+        height: 400px;
+      }
+      .progress {
+        height: 20px;
+      }
+      .dropdown-menu {
+        max-height: 200px;
+        overflow-y: auto;
+      }
+      .card {
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      }
+      .bg-gradient-primary {
+        background: linear-gradient(87deg, #5e72e4 0, #825ee4 100%) !important;
+      }
+      .btn-circle {
+        width: 30px;
+        height: 30px;
+        padding: 6px 0;
+        border-radius: 15px;
+        text-align: center;
+      }
+      .table th {
+        border-top: none;
+      }
+    </style>
+  {% endblock %}
 </head>
 
 <body>
-  <!--  Body Wrapper -->
+ <!--  Body Wrapper -->
   <div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6" data-sidebartype="full"
     data-sidebar-position="fixed" data-header-position="fixed">
     <!-- Sidebar Start -->
@@ -19,7 +61,7 @@
       <div>
         <div class="brand-logo d-flex align-items-center justify-content-between">
           <a href="./index.html" class="text-nowrap logo-img">
-            <img src="../assets/images/logos/dark-logo.svg" width="180" alt="" />
+            <img src="{{ asset('assets/images/logos/dark-logo.svg') }}" width="180" alt="" />
           </a>
           <div class="close-btn d-xl-none d-block sidebartoggler cursor-pointer" id="sidebarCollapse">
             <i class="ti ti-x fs-8"></i>
@@ -172,17 +214,44 @@
       <!--  Header End -->
 
       <main class="container-fluid py-4">
-    {% block content %}
-    {% endblock %}
-  </main>
+        {% block content %}
+        {% endblock %}
+      </main>
       
     </div>
   </div>
-  <script src="../assets/libs/jquery/dist/jquery.min.js"></script>
-  <script src="../assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="../assets/js/sidebarmenu.js"></script>
-  <script src="../assets/js/app.min.js"></script>
-  <script src="../assets/libs/simplebar/dist/simplebar.js"></script>
-</body>
 
+<!-- Core JS -->
+  <script src="{{ asset('assets/libs/jquery/dist/jquery.min.js') }}"></script>
+  <script src="{{ asset('assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js') }}"></script>
+  <script src="{{ asset('assets/js/sidebarmenu.js') }}"></script>
+  <script src="{{ asset('assets/js/app.min.js') }}"></script>
+  <script src="{{ asset('assets/libs/simplebar/dist/simplebar.js') }}"></script>
+  {{ encore_entry_script_tags('app') }}
+  
+  <!-- Chart.js and DataTables JS -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
+  
+  {% block javascripts %}
+    <script>
+      // Base DataTable initialization
+      $(document).ready(function() {
+        $('#dataTable').DataTable({
+          "order": [[0, "asc"]],
+          "language": {
+            "emptyTable": "No data available",
+            "info": "Showing _START_ to _END_ of _TOTAL_ entries",
+            "infoEmpty": "Showing 0 to 0 of 0 entries",
+            "infoFiltered": "(filtered from _MAX_ total entries)",
+            "lengthMenu": "Show _MENU_ entries",
+            "search": "Search:",
+            "zeroRecords": "No matching records found"
+          }
+        });
+      });
+    </script>
+  {% endblock %}
+</body>
 </html>
