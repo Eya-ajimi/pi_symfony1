@@ -41,7 +41,7 @@ class SignupUserController extends AbstractController
 
             $this->addFlash('success', 'Votre compte a été créé avec succès !');
 
-            return $this->redirectToRoute('app_home'); // Modifiez selon votre route d'accueil
+            return $this->redirectToRoute('app_login'); // Modifiez selon votre route d'accueil
         }
         
         return $this->render('auth/signupuser.html.twig', [

@@ -80,7 +80,7 @@ class AdminController extends AbstractController
             'role' => $utilisateur->getRole(),
             'statut' => $utilisateur->getStatut()
         ];
-        
+        //dd($utilisateur);
         $formBuilder = $this->createFormBuilder($utilisateur);
         
         $formBuilder->add('email', EmailType::class, [
@@ -171,7 +171,7 @@ class AdminController extends AbstractController
         $form->handleRequest($request);
         
         if ($form->isSubmitted() && $form->isValid()) {
-            $em->flush();
+            $em->flush();//sobeha fi base .nezid objet jedid persist .upadte bela persiste
             $this->addFlash('success', 'Utilisateur modifié avec succès');
             return $this->redirectToRoute('admin_dashboard');
         }
