@@ -14,7 +14,8 @@ class Atm
     private ?int $id = null;
 
     // Explicit column name to match database exactly
-    #[ORM\Column(name: 'bankName', type: 'string', length: 255)]
+    #[ORM\Column(name: 'bankName', type: 'string', length: 255, unique: true)]
+
     private ?string $bankName = null;
 
     #[ORM\Column(name: 'status', type: 'string', length: 50)]
