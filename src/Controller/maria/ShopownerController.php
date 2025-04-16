@@ -25,6 +25,7 @@ use App\Entity\LikedProduct;
 use App\Form\EventType;
 use App\Form\maria\ProductType;
 use App\Form\maria\EditProductType;
+use App\Form\maria\DiscountType;
 
 
 class ShopownerController extends AbstractController
@@ -147,37 +148,37 @@ class ShopownerController extends AbstractController
         if (!$product) {
             throw $this->createNotFoundException('Product not found');
         }
-    
+
         $shop = $utilisateurRepo->find(8); // Static shop ID 8
         $discounts = $discountRepo->findBy(['shop' => $shop]);
-    
+
         $form = $this->createForm(EditProductType::class, $product, [
             'shop' => $shop,
             'discounts' => $discounts,
             'action' => $this->generateUrl('product_edit', ['id' => $id])
         ]);
-    
+
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
             $imageFile = $form->get('image_url')->getData();
             if ($imageFile) {
-                $newFilename = uniqid().'.'.$imageFile->guessExtension();
-                $targetDirectory = $this->getParameter('kernel.project_dir').'/public/resources/assets/product_images/';
+                $newFilename = uniqid() . '.' . $imageFile->guessExtension();
+                $targetDirectory = $this->getParameter('kernel.project_dir') . '/public/resources/assets/product_images/';
                 $imageFile->move($targetDirectory, $newFilename);
-                $product->setImageUrl('resources/assets/product_images/'.$newFilename);
+                $product->setImageUrl('resources/assets/product_images/' . $newFilename);
             }
-    
+
             $em->flush();
             return $this->redirectToRoute('products');
         }
-    
+
         // For AJAX requests to get the form
         if ($request->isXmlHttpRequest()) {
             return $this->render('maria_templates/forms/edit_product_form.html.twig', [
                 'form' => $form->createView()
             ]);
         }
-    
+
         return $this->redirectToRoute('products');
     }
 
@@ -190,53 +191,97 @@ class ShopownerController extends AbstractController
         if (!$product) {
             throw $this->createNotFoundException('Product not found');
         }
-    
+
         $produitRepo->remove($product, true); // The flush parameter
-    
+
         return $this->redirectToRoute('products');
     }
-    
 
-    //discount 
+
     #[Route('/discounts', name: 'discounts')]
-    public function discounts(EntityManagerInterface $em): Response
-    {
-        // 1. Get the shop owner (user ID 8)
-        $shopOwner = $em->getRepository(Utilisateur::class)->find(8);
+    public function discounts(
+        EntityManagerInterface $em,
+        Request $request
+    ): Response {
+        // Get the current shop owner (static ID 8)
+        $shop = $em->getRepository(Utilisateur::class)->find(8);
 
-        if (!$shopOwner) {
-            throw $this->createNotFoundException('Shop owner not found');
-        }
+        // Create new discount form
+        $discount = new Discount();
+        $discount->setShop($shop);
+        $form = $this->createForm(DiscountType::class, $discount);
 
-        // 2. Fetch ALL discounts (no filtering, handled by JavaScript)
-        $discounts = $em->getRepository(Discount::class)->findBy(
-            ['shop' => $shopOwner],
-            ['startDate' => 'DESC'] // Newest first
-        );
+        // Create dummy edit form
+        $editDiscount = new Discount();
+        $editForm = $this->createForm(DiscountType::class, $editDiscount);
 
-        // 3. Pass to template (no need for `currentFilter` since JS handles it)
+        // Get existing discounts
+        $discounts = $em->getRepository(Discount::class)->findBy(['shop' => $shop]);
+
         return $this->render('maria_templates/discounts.html.twig', [
-            'discounts' => $discounts
+            'discounts' => $discounts,
+            'form' => $form->createView(),
+            'editForm' => $editForm->createView()
         ]);
     }
-    #[Route('/discount/new', name: 'discount_new')]
-    public function newDiscount(): Response
+
+    #[Route('/discount/new', name: 'discount_new', methods: ['POST'])]
+    public function newDiscount(Request $request, EntityManagerInterface $em): Response
     {
-        // Your discount creation form logic
+        $shop = $em->getRepository(Utilisateur::class)->find(8);
+        $discount = new Discount();
+        $discount->setShop($shop);
+
+        $form = $this->createForm(DiscountType::class, $discount);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em->persist($discount);
+            $em->flush();
+            return $this->redirectToRoute('discounts');
+        }
+
+        return $this->redirectToRoute('discounts');
     }
 
-    #[Route('/discount/edit/{id}', name: 'discount_edit')]
-    public function editDiscount(int $id): Response
+    #[Route('/discount/edit/{id}', name: 'discount_edit', methods: ['POST'])]
+    public function editDiscount(int $id, Request $request, EntityManagerInterface $em): Response
     {
-        // Your discount edit form logic
+        $discount = $em->getRepository(Discount::class)->find($id);
+        if (!$discount) {
+            throw $this->createNotFoundException('Discount not found');
+        }
+
+        $form = $this->createForm(DiscountType::class, $discount);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em->flush();
+            return $this->redirectToRoute('discounts');
+        }
+
+        return $this->redirectToRoute('discounts');
     }
 
-    #[Route('/discount/delete/{id}', name: 'discount_delete')]
-    public function deleteDiscount(int $id): Response
+    #[Route('/discount/delete/{id}', name: 'discount_delete', methods: ['POST'])]
+    public function deleteDiscount(int $id, EntityManagerInterface $em): Response
     {
-        // Your discount deletion logic
-    }
+        $discount = $em->getRepository(Discount::class)->find($id);
+        if (!$discount) {
+            throw $this->createNotFoundException('Discount not found');
+        }
 
+        // First, remove discount reference from all products
+        $em->createQuery('UPDATE App\Entity\Produit p SET p.discount = NULL WHERE p.discount = :discount')
+            ->setParameter('discount', $discount)
+            ->execute();
+
+        // Then delete the discount
+        $em->remove($discount);
+        $em->flush();
+
+        return $this->redirectToRoute('discounts');
+    }
     //Schedule 
 
     // src/Controller/ShopController.php
