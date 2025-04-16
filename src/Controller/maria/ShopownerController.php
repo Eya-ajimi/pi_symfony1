@@ -2,22 +2,30 @@
 // src/Controller/maria/ShopownerController.php
 namespace App\Controller\maria;
 
-use App\Entity\Event;
-use App\Entity\Schedule;
-use App\Entity\Utilisateur;
-use App\Form\EventType;
+
 use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\EventRepository;
-use App\Repository\UserRepository;
+use App\Repository\UtilisateurRepository;
 use App\Repository\ProduitRepository;
 use App\Repository\LikedProductRepository;
+use App\Repository\ScheduledEventRepository;
+use App\Repository\DiscountRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Entity\Produit;
 use App\Entity\Discount;
-use App\Repository\ScheduleRepository;
+use App\Entity\Event;
+use App\Entity\Schedule;
+use App\Entity\Utilisateur;
+use App\Entity\LikedProduct;
+
+
+use App\Form\EventType;
+use App\Form\maria\ProductType;
+use App\Form\maria\EditProductType;
+
 
 class ShopownerController extends AbstractController
 {
@@ -29,26 +37,167 @@ class ShopownerController extends AbstractController
         return $this->render('maria_templates/admindashboard.html.twig');
     }
 
-    //Products
     #[Route('/products', name: 'products')]
     public function products(
         EntityManagerInterface $entityManager,
-        ProduitRepository $produitRepository
+        ProduitRepository $produitRepository,
+        DiscountRepository $discountRepo
     ): Response {
-        // Get the current shop owner (user ID 8 in your example)
+        // Get the current shop owner (static ID 8)
         $user = $entityManager->getRepository(Utilisateur::class)->find(8);
-
         if (!$user) {
             throw $this->createNotFoundException('User not found');
         }
 
-        // Get products for this shop with their like counts
+        // Get products and discounts
         $products = $produitRepository->findByShopIdWithLikeCounts($user->getId());
+        $discounts = $discountRepo->findBy(['shop' => $user]);
+
+        // Create new product form
+        $newProduct = new Produit();
+        $addForm = $this->createForm(ProductType::class, $newProduct);
+
+        // Create dummy edit form (will be populated via JavaScript)
+        $editProduct = new Produit();
+        $editForm = $this->createForm(EditProductType::class, $editProduct, [
+            'shop' => $user,
+            'discounts' => $discounts
+        ]);
 
         return $this->render('maria_templates/products.html.twig', [
-            'products' => $products
+            'products' => $products,
+            'form' => $addForm->createView(),
+            'editForm' => $editForm->createView(),
+            'discounts' => $discounts
         ]);
     }
+    // src/Controller/ProductController.php
+
+    #[Route('/product/new', name: 'product_new')]
+    public function new(Request $request, EntityManagerInterface $em, UtilisateurRepository $utilisateurRepo): Response
+    {
+        $product = new Produit();
+        $form = $this->createForm(ProductType::class, $product);
+
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            // Get the Utilisateur with ID 8 as the shop owner
+            $shop = $utilisateurRepo->find(8);
+            if (!$shop) {
+                throw $this->createNotFoundException('Shop owner not found');
+            }
+            $product->setShop($shop);
+
+            // Handle file upload
+            $imageFile = $form->get('image_url')->getData();
+            if ($imageFile) {
+                $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $safeFilename = transliterator_transliterate(
+                    'Any-Latin; Latin-ASCII; [^A-Za-z0-9_] remove; Lower()',
+                    $originalFilename
+                );
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
+
+
+                //default saving path 
+                $targetDirectory = $this->getParameter('kernel.project_dir') . '/public/resources/assets/product_images/';
+
+                // Create directory if it doesn't exist
+                if (!file_exists($targetDirectory)) {
+                    mkdir($targetDirectory, 0777, true);
+                }
+
+                try {
+                    $imageFile->move(
+                        $targetDirectory,
+                        $newFilename
+                    );
+                    // Store relative path in database
+                    $product->setImage_url('resources\assets\product_images\ ' . $newFilename);
+                } catch (FileException $e) {
+                    $this->addFlash('error', 'File upload failed: ' . $e->getMessage());
+                    return $this->redirectToRoute('product_new');
+                }
+            }
+
+            $em->persist($product);
+            $em->flush();
+
+            $this->addFlash('success', 'Product created successfully!');
+            return $this->redirectToRoute('products');
+        }
+
+        return $this->render('maria_templates/products.html.twig', [
+            'form' => $form->createView(),
+        ]);
+    }
+
+
+
+    #[Route('/product/edit/{id}', name: 'product_edit', methods: ['GET', 'POST'])]
+    public function editProduct(
+        int $id,
+        Request $request,
+        EntityManagerInterface $em,
+        ProduitRepository $produitRepo,
+        DiscountRepository $discountRepo,
+        UtilisateurRepository $utilisateurRepo
+    ): Response {
+        $product = $produitRepo->find($id);
+        if (!$product) {
+            throw $this->createNotFoundException('Product not found');
+        }
+    
+        $shop = $utilisateurRepo->find(8); // Static shop ID 8
+        $discounts = $discountRepo->findBy(['shop' => $shop]);
+    
+        $form = $this->createForm(EditProductType::class, $product, [
+            'shop' => $shop,
+            'discounts' => $discounts,
+            'action' => $this->generateUrl('product_edit', ['id' => $id])
+        ]);
+    
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $imageFile = $form->get('image_url')->getData();
+            if ($imageFile) {
+                $newFilename = uniqid().'.'.$imageFile->guessExtension();
+                $targetDirectory = $this->getParameter('kernel.project_dir').'/public/resources/assets/product_images/';
+                $imageFile->move($targetDirectory, $newFilename);
+                $product->setImageUrl('resources/assets/product_images/'.$newFilename);
+            }
+    
+            $em->flush();
+            return $this->redirectToRoute('products');
+        }
+    
+        // For AJAX requests to get the form
+        if ($request->isXmlHttpRequest()) {
+            return $this->render('maria_templates/forms/edit_product_form.html.twig', [
+                'form' => $form->createView()
+            ]);
+        }
+    
+        return $this->redirectToRoute('products');
+    }
+
+    #[Route('/product/delete/{id}', name: 'product_delete', methods: ['POST', 'DELETE'])]
+    public function deleteProduct(
+        int $id,
+        ProduitRepository $produitRepo
+    ): Response {
+        $product = $produitRepo->find($id);
+        if (!$product) {
+            throw $this->createNotFoundException('Product not found');
+        }
+    
+        $produitRepo->remove($product, true); // The flush parameter
+    
+        return $this->redirectToRoute('products');
+    }
+    
+
+    //discount 
     #[Route('/discounts', name: 'discounts')]
     public function discounts(EntityManagerInterface $em): Response
     {
@@ -100,6 +249,11 @@ class ShopownerController extends AbstractController
             'schedules' => $schedules
         ]);
     }
+
+
+
+    // Partie Oussema
+
     // Events - Keep only this one version
     #[Route('/events', name: 'events')]
     public function events(EntityManagerInterface $entityManager, Request $request): Response

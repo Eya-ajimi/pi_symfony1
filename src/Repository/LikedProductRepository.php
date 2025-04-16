@@ -6,9 +6,6 @@ use App\Entity\LikedProduct;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-/**
- * @extends ServiceEntityRepository<LikedProduct>
- */
 class LikedProductRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -86,4 +83,16 @@ class LikedProductRepository extends ServiceEntityRepository
             ->getQuery()
             ->getSingleScalarResult();
     }
+
+
+    public function findByProduct(int $productId): array
+    {
+        return $this->createQueryBuilder('l')
+            ->andWhere('l.productId = :productId')
+            ->setParameter('productId', $productId)
+            ->orderBy('l.dateLike', 'DESC') // Optional: Order by like date if needed
+            ->getQuery()
+            ->getResult();
+    }
+
 }

@@ -1,0 +1,326 @@
+/* Elegant Edit Product Modal Styles */
+:root {
+    --primary-yellow: #FFF07B;
+    --primary-blue: #DBF0FE;
+    --primary-purple: #4B49AC;
+    --text-dark: #333333;
+    --text-light: #FFFFFF;
+    --border-color: #DDDDDD;
+    --hover-peach: #FFF07B;
+    --hover-blue: #FFF07B;
+    --shadow-color: rgba(0, 0, 0, 0.05);
+    --discount-red: #e53935;
+    --subtle-bg: #F8F9FD;
+    --success-green: #4CAF50;
+}
+
+/* Modal overlay */
+.edit-product-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(30, 30, 42, 0.75);
+    backdrop-filter: blur(3px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1050;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.edit-product-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Modal container */
+.edit-product-modal {
+    background-color: var(--text-light);
+    border-radius: 12px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15), 0 8px 10px rgba(0, 0, 0, 0.12);
+    width: 90%;
+    max-width: 640px;
+    max-height: 90vh;
+    overflow: hidden;
+    transform: translateY(20px) scale(0.98);
+    transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.edit-product-overlay.active .edit-product-modal {
+    transform: translateY(0) scale(1);
+}
+
+/* Modal header */
+.edit-product-header {
+    background-color: var(--primary-purple);
+    color: var(--text-light);
+    padding: 20px 24px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.edit-product-header h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+.edit-product-close {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-light);
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.edit-product-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+}
+
+/* Modal body with scrolling */
+.edit-product-body {
+    padding: 0;
+    max-height: calc(90vh - 70px);
+    overflow-y: auto;
+}
+
+.edit-product-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.edit-product-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.edit-product-body::-webkit-scrollbar-thumb {
+    background: rgba(75, 73, 172, 0.3);
+    border-radius: 3px;
+}
+
+.edit-product-body::-webkit-scrollbar-thumb:hover {
+    background: rgba(75, 73, 172, 0.5);
+}
+
+/* Form container */
+.edit-product-form {
+    padding: 28px 24px;
+}
+
+/* Form styling */
+.edit-form {
+    display: block;
+    width: 100%;
+}
+
+.edit-form-group {
+    margin-bottom: 22px;
+}
+
+.edit-form-label {
+    display: block;
+    font-weight: 500;
+    color: var(--text-dark);
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.edit-form-control {
+    width: 100%;
+    padding: 12px 16px;
+    background-color: var(--subtle-bg);
+    border: 1px solid #eaedf2;
+    border-radius: 8px;
+    font-size: 15px;
+    transition: all 0.2s ease;
+}
+
+.edit-form-control:focus {
+    background-color: var(--text-light);
+    border-color: var(--primary-purple);
+    box-shadow: 0 0 0 3px rgba(75, 73, 172, 0.08);
+    outline: none;
+}
+
+.edit-form textarea.edit-form-control {
+    min-height: 110px;
+    resize: vertical;
+}
+
+/* Two-column layout */
+.edit-form-row {
+    display: flex;
+    gap: 20px;
+}
+
+.edit-form-row .edit-form-group {
+    flex: 1;
+}
+
+/* File input styling */
+.edit-form-file-group {
+    position: relative;
+}
+
+.edit-form-file {
+    padding: 32px 20px;
+    background-color: rgba(219, 240, 254, 0.5);
+    border: 2px dashed rgba(75, 73, 172, 0.3);
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.edit-form-file:hover {
+    background-color: rgba(219, 240, 254, 0.7);
+    border-color: rgba(75, 73, 172, 0.5);
+}
+
+.edit-form-file-text {
+    display: block;
+    margin-top: 8px;
+    font-size: 13px;
+    color: rgba(75, 73, 172, 0.8);
+}
+
+/* Current image preview */
+.edit-current-image {
+    margin-top: 16px;
+    padding: 12px;
+    background-color: var(--primary-blue);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.edit-current-image-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--primary-purple);
+}
+
+.edit-current-image img {
+    border: 2px solid white;
+    border-radius: 6px;
+    max-height: 70px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Button styling */
+.edit-button-group {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 26px;
+}
+
+.edit-btn {
+    font-weight: 500;
+    font-size: 14px;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.edit-btn-primary {
+    background-color: var(--primary-purple);
+    color: var(--text-light);
+}
+
+.edit-btn-primary:hover {
+    background-color: var(--primary-yellow);
+    color: var(--text-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(75, 73, 172, 0.15);
+}
+
+.edit-btn-secondary {
+    background-color: #EFF1F6;
+    color: var(--text-dark);
+}
+
+.edit-btn-secondary:hover {
+    background-color: #e4e6ec;
+}
+
+/* Discount field styling */
+.edit-discount-field .edit-form-label {
+    color: var(--discount-red);
+}
+
+.edit-discount-field .edit-form-control {
+    border-color: rgba(229, 57, 53, 0.3);
+}
+
+/* Error styling */
+.edit-form-error {
+    color: var(--discount-red);
+    font-size: 12px;
+    margin-top: 6px;
+}
+
+/* Loading indicator (optional) */
+.edit-loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    z-index: 10;
+}
+
+.edit-loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(75, 73, 172, 0.1);
+    border-top-color: var(--primary-purple);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .edit-product-modal {
+        width: 95%;
+    }
+    
+    .edit-form-row {
+        flex-direction: column;
+        gap: 18px;
+    }
+    
+    .edit-button-group {
+        flex-direction: column-reverse;
+    }
+    
+    .edit-btn {
+        width: 100%;
+    }
+}

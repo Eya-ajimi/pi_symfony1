@@ -10,7 +10,7 @@
   --hover-peach: #FFF07B;
   --hover-blue: #FFF07B;
 
-  --shadow-color: rgba(0, 0, 0, 0.05);
+  --shadow-color: rgba(114, 107, 107, 0.05);
   --sidebar-width: 230px;
   --sidebar-collapsed-width: 70px;
   --menu-item-spacing: 12px;
@@ -339,6 +339,7 @@ a:focus {
   font-size: 16px;
   color: var(--primary-purple);
   transition: all var(--transition-speed) ease;
+  color: var(--text-dark);
 }
 
 .nav.side-menu>li>a:hover {

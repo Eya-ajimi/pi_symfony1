@@ -5,6 +5,9 @@ namespace App\Repository;
 use App\Entity\Produit;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use App\Repository\LikedProductRepository;
+use App\Entity\User;
+use App\Entity\UserLike;
 
 /**
  * @extends ServiceEntityRepository<Produit>
@@ -71,10 +74,10 @@ class ProduitRepository extends ServiceEntityRepository
             ->setParameter('shopId', $shopId)
             ->getQuery()
             ->getResult();
-    
+
         // Get like counts for these products
         $productIds = array_map(fn($p) => $p->getId(), $products);
-        
+
         $likeCounts = $this->getEntityManager()
             ->createQuery('
                 SELECT lp.productId, COUNT(lp.id) as count 
@@ -84,16 +87,38 @@ class ProduitRepository extends ServiceEntityRepository
             ')
             ->setParameter('ids', $productIds)
             ->getResult();
-        
+
         // Convert to [productId => count] format
         $countsMap = array_column($likeCounts, 'count', 'productId');
-        
+
         // Assign counts to products
         foreach ($products as $product) {
             $product->setLikeCount($countsMap[$product->getId()] ?? 0);
         }
-        
+
         return $products;
     }
-
+    public function removeWithRelations(Produit $product, bool $flush = true): void
+    {
+        $em = $this->getEntityManager();
+        
+        // 1. Handle related entities (modify according to your actual entity names)
+        // If you have a LikedProduct entity but no repository:
+        $likedProducts = $em->createQuery(
+            'SELECT lp FROM App\Entity\LikedProduct lp WHERE lp.product = :product'
+        )->setParameter('product', $product)
+         ->getResult();
+        
+        foreach ($likedProducts as $likedProduct) {
+            $em->remove($likedProduct);
+        }
+        
+        // 3. Remove the product
+        $em->remove($product);
+        
+        if ($flush) {
+            $em->flush();
+        }
+    }
+    
 }

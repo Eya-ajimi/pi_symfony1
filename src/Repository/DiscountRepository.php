@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Discount;
+use App\Entity\Utilisateur;    
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -40,6 +41,18 @@ class DiscountRepository extends ServiceEntityRepository
             ->andWhere('d.endDate >= :today')
             ->setParameter('shopId', $shopId)
             ->setParameter('today', $today->format('Y-m-d'))
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findActiveDiscountsByShop(Utilisateur $shop): array
+    {
+        return $this->createQueryBuilder('d')
+            ->where('d.shop = :shop')
+            ->andWhere('d.endDate >= :today')
+            ->setParameter('shop', $shop)
+            ->setParameter('today', new \DateTime())
+            ->orderBy('d.discountPercentage', 'DESC')
             ->getQuery()
             ->getResult();
     }

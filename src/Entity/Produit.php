@@ -37,6 +37,10 @@ class Produit
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $image_url = null;
 
+    /**
+     * @ORM\OneToMany(targetEntity="LikedProduct", mappedBy="product", cascade={"remove"})
+     */
+    private $likedProducts;
     public function getId(): ?int
     {
         return $this->id;
