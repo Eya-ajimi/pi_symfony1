@@ -93,6 +93,7 @@
 			</div>
 		{% endif %}
 	</div>
+
 	<!-- MODALS -->
 	<!-- Add Discount Modal -->
 	<div class="modal-background" id="addModal">
@@ -102,18 +103,18 @@
 				<button class="modal-close" onclick="closeAddModal()">&times;</button>
 			</div>
 			<div class="modal-body">
-				{% if form is defined %}
-					{{ form_start(form, {
+				{% if addForm is defined %}
+					{{ form_start(addForm, {
                         'attr': {'id': 'addDiscountForm'},
                         'action': path('discount_new'),
                         'method': 'POST'
                     }) }}
-					{{ form_widget(form) }}
+					{{ form_widget(addForm) }}
 					<div class="form-actions">
 						<button type="submit" class="btn btn-primary">Save Discount</button>
 						<button type="button" class="btn btn-secondary" onclick="closeAddModal()">Cancel</button>
 					</div>
-					{{ form_end(form) }}
+					{{ form_end(addForm) }}
 				{% else %}
 					<p>Form could not be loaded. Please refresh the page.</p>
 				{% endif %}
@@ -122,37 +123,37 @@
 	</div>
 
 	<!-- Edit Discount Modal -->
-	<div class="modal-background" id="editModal">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h3>Edit Discount</h3>
-				<button class="modal-close" onclick="closeEditModal()">&times;</button>
-			</div>
-			<div class="modal-body">
-				{% if editForm is defined %}
-					{{ form_start(editForm, {
-                        'attr': {
-                            'id': 'editDiscountForm',
-                            'action': '',
-                            'method': 'POST'
-                        }
+	<!-- Edit Discount Modals - One for each discount -->
+	<!-- Edit Discount Modals -->
+		{% if editForms is defined %}
+			{% for discount in discounts %}
+				{% if editForms[discount.id] is defined %}
+					<div class="modal-background edit-modal" id="editModal-{{ discount.id }}" style="display:none;"> <div class="modal-content">
+						<div class="modal-header">
+							<h3>Edit Discount</h3>
+							<button class="modal-close" onclick="closeEditModal({{ discount.id }})">&times;</button>
+						</div>
+						<div class="modal-body">
+							{{ form_start(editForms[discount.id], {
+                        'attr': {'id': 'editDiscountForm-' ~ discount.id},
+                        'action': path('discount_edit', {'id': discount.id}),
+                        'method': 'POST'
                     }) }}
-					{{ form_widget(editForm) }}
-					<div class="form-actions">
-						<button type="submit" class="btn btn-primary">Save Changes</button>
-						<button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+							{{ form_widget(editForms[discount.id]) }}
+							<div class="form-actions">
+								<button type="submit" class="btn btn-primary">Save Changes</button>
+								<button type="button" class="btn btn-secondary" onclick="closeEditModal({{ discount.id }})">Cancel</button>
+							</div>
+							{{ form_end(editForms[discount.id]) }}
+						</div>
 					</div>
-					{{ form_end(editForm) }}
-				{% else %}
-					<p>Form could not be loaded. Please refresh the page.</p>
-				{% endif %}
-			</div>
-		</div>
-	</div>
+				</div>
+			{% endif %}
+		{% endfor %}
+	{% endif %}
 {% endblock %}
-
 {% block javascripts %}
-	{{ parent() }}
+
 	<script>
 		// Filter by status
 document.addEventListener('DOMContentLoaded', function () {
@@ -176,7 +177,8 @@ rows.forEach(row => row.style.display = '');
 });
 });
 
-// Modal functions
+// ++++++++++++++MODALS
+
 function openAddModal() {
 document.getElementById('addModal').classList.add('active');
 }
@@ -188,16 +190,64 @@ document.getElementById('addDiscountForm').reset();
 }
 }
 
-function openEditModal(discountId) {
-const form = document.getElementById('editDiscountForm');
-if (form) {
-form.action = `/discount/edit/${discountId}`;
+function openEditModal(discountId) { // Hide all edit modals first
+document.querySelectorAll('.edit-modal').forEach(modal => {
+modal.style.display = 'none';
+});
+
+// Show the specific modal
+const modal = document.getElementById (`editModal-${discountId}`);
+if (modal) {
+modal.style.display = 'block';
+modal.classList.add('active');
 }
-document.getElementById('editModal').classList.add('active');
 }
 
-function closeEditModal() {
-document.getElementById('editModal').classList.remove('active');
+function closeEditModal(discountId) {
+const modal = document.getElementById (`editModal-${discountId}`);
+if (modal) {
+modal.style.display = 'none';
+modal.classList.remove('active');
+}
+}
+
+// Form validation - UPDATED VERSION
+document.addEventListener('DOMContentLoaded', function () { // Add form validation
+const addForm = document.getElementById('addDiscountForm');
+if (addForm) {
+addForm.addEventListener('submit', function (e) {
+if (!validateDiscountForm(this)) {
+e.preventDefault();
+}
+});
+}
+
+// Edit forms validation (handles all edit forms)
+document.querySelectorAll('form[id^="editDiscountForm-"]').forEach(form => {
+form.addEventListener('submit', function (e) {
+if (!validateDiscountForm(this)) {
+e.preventDefault();
+}
+});
+});
+});
+
+function validateDiscountForm(form) { // Works for both add and edit forms
+const percentage = parseFloat(form.querySelector('[name$="[discountPercentage]"]').value);
+const startDate = new Date(form.querySelector('[name$="[startDate]"]').value);
+const endDate = new Date(form.querySelector('[name$="[endDate]"]').value);
+
+if (percentage < 0 || percentage > 100 || isNaN(percentage)) {
+alert('Discount must be between 0% and 100%');
+return false;
+}
+
+if (startDate >= endDate) {
+alert('End date must be after start date');
+return false;
+}
+
+return true;
 }
 	</script>
 {% endblock %}

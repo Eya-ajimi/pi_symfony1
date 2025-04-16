@@ -206,22 +206,24 @@ class ShopownerController extends AbstractController
         // Get the current shop owner (static ID 8)
         $shop = $em->getRepository(Utilisateur::class)->find(8);
 
-        // Create new discount form
+        // Create new discount form for the "Add" modal
         $discount = new Discount();
         $discount->setShop($shop);
-        $form = $this->createForm(DiscountType::class, $discount);
-
-        // Create dummy edit form
-        $editDiscount = new Discount();
-        $editForm = $this->createForm(DiscountType::class, $editDiscount);
+        $addForm = $this->createForm(DiscountType::class, $discount);
 
         // Get existing discounts
         $discounts = $em->getRepository(Discount::class)->findBy(['shop' => $shop]);
 
+        // Create edit forms for each existing discount
+        $editForms = [];
+        foreach ($discounts as $discount) {
+            $editForms[$discount->getId()] = $this->createForm(DiscountType::class, $discount)->createView();
+        }
+
         return $this->render('maria_templates/discounts.html.twig', [
             'discounts' => $discounts,
-            'form' => $form->createView(),
-            'editForm' => $editForm->createView()
+            'addForm' => $addForm->createView(),
+            'editForms' => $editForms,  // This will be an array of form views keyed by discount ID
         ]);
     }
 
@@ -257,12 +259,13 @@ class ShopownerController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $em->flush();
-            return $this->redirectToRoute('discounts');
+            $this->addFlash('success', 'Discount updated successfully');
+        } else {
+            $this->addFlash('error', 'There was an error updating the discount');
         }
 
         return $this->redirectToRoute('discounts');
     }
-
     #[Route('/discount/delete/{id}', name: 'discount_delete', methods: ['POST'])]
     public function deleteDiscount(int $id, EntityManagerInterface $em): Response
     {
