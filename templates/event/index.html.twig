@@ -5,23 +5,46 @@
 {% block stylesheets %}
     {{ parent() }}
     <link rel="stylesheet" href="{{ asset('css/events.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .event-button.disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
             opacity: 0.6;
+            cursor: not-allowed;
             pointer-events: none;
+            background-color: #e2e8f0;
+            color: #718096;
         }
-        .text-red-500 {
-            color: #ef4444;
-            font-size: 0.875rem;
-            margin-top: 0.5rem;
+        .event-button.disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+        .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .tooltip-container:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
         }
     </style>
 {% endblock %}
 
 {% block content %}
 <div class="container mx-auto px-4 py-8">
+    <h1 class="page-title">Upcoming Events</h1>
+    
     <div class="event-search-form">
         <form method="get" action="{{ path('app_events') }}" novalidate>
             <input 
@@ -31,32 +54,34 @@
                 class="event-date-input"
             >
             <button type="submit" class="event-search-button">
-                Search
+                <i class="fas fa-search"></i>
             </button>
             {% if app.request.query.get('date') %}
                 <a href="{{ path('app_events') }}" class="clear-btn">
-                    Clear
+                    <i class="fas fa-times"></i>
                 </a>
             {% endif %}
         </form>
-    
-        {# Display date validation errors #}
-        {% for flash in app.flashes('error') %}
-            <div class="text-red-500 mt-2">{{ flash }}</div>
-        {% endfor %}
     </div>
+    
+    {% for flash in app.flashes('error') %}
+        <div class="alert alert-error">{{ flash }}</div>
+    {% endfor %}
 
     <div class="events-container">
         {% for item in eventsWithParticipation %}
             {% set event = item.event %}
             {% set isParticipating = item.isParticipating %}
             
-            {# Calculate time remaining for decline restriction #}
             {% set now = date() %}
             {% set eventStart = date(event.dateDebut) %}
+            {% set eventEnd = date(event.dateFin) %}
             {% set timeLeft = eventStart.diff(now) %}
             {% set hoursLeft = (timeLeft.days * 24) + timeLeft.h %}
-            {% set canDecline = not (hoursLeft < 24 and eventStart > now) %}
+            
+            {# Calculate if decline should be disabled #}
+            {% set isDuringEvent = (now >= eventStart and now <= eventEnd) %}
+            {% set canDecline = not ((hoursLeft < 24 and eventStart > now) or isDuringEvent) %}
             
             <div class="event-card">
                 <h3 class="event-organizer">
@@ -66,42 +91,54 @@
                 
                 <div class="event-meta">
                     <i class="far fa-calendar-alt"></i>
-                    <span>
-                        {{ event.dateDebut|date('Y-m-d H:i') }} to {{ event.dateFin|date('Y-m-d H:i') }}
+                    <span class="event-date">
+                        {{ event.dateDebut|date('d M Y') }} - {{ event.dateFin|date('d M Y') }}
                     </span>
                 </div>
                 
                 <div class="event-meta">
                     <i class="fas fa-map-marker-alt"></i>
-                    <span>{{ event.emplacement }}</span>
+                    <span class="event-location">{{ event.emplacement }}</span>
                 </div>
 
-                {% if not isParticipating %}
-                    <a href="{{ path('app_event_participate', {id: event.id}) }}" 
-                    class="event-button participate">
-                        Participate
-                    </a>
-                {% else %}
-                    {% if canDecline %}
-                        <a href="{{ path('app_event_decline', {id: event.id}) }}" 
-                        class="event-button decline">
-                            Decline Participation
+                <div class="event-actions">
+                    {% if not isParticipating %}
+                        <a href="{{ path('app_event_participate', {id: event.id}) }}" 
+                        class="event-button participate">
+                            <i class="fas fa-check-circle"></i> Participate
                         </a>
                     {% else %}
-                        <span class="event-button disabled" title="Cannot decline within 24 hours of event start">
-                            Decline Participation (Disabled)
-                        </span>
+                        <div class="tooltip-container" style="position: relative; display: inline-block;">
+                            {% if canDecline %}
+                                <a href="{{ path('app_event_decline', {id: event.id}) }}" 
+                                class="event-button decline">
+                                    <i class="fas fa-times-circle"></i> Decline Participation
+                                </a>
+                            {% else %}
+                                <span class="event-button disabled">
+                                    <i class="fas fa-times-circle"></i> Decline Participation
+                                </span>
+                                <span class="tooltip-text">
+                                    {% if isDuringEvent %}
+                                        Cannot decline during the event
+                                    {% else %}
+                                        Cannot decline within 24 hours of event start
+                                    {% endif %}
+                                </span>
+                            {% endif %}
+                        </div>
+                        
+                        <a href="{{ path('app_event_qrcode_view', {id: event.id}) }}" 
+                        class="event-button qr-code">
+                            <i class="fas fa-qrcode"></i> View QR Code
+                        </a>
                     {% endif %}
-                    
-                    <a href="{{ path('app_event_qrcode', {id: event.id}) }}" 
-                    class="event-button qr-code" target="_blank">
-                        View QR Code
-                    </a>
-                {% endif %}
+                </div>
             </div>
         {% else %}
-            <div class="col-span-3 text-center py-8">
-                <p class="text-gray-500">
+            <div class="no-events-message">
+                <i class="fas fa-calendar-times fa-2x mb-3" style="color: #718096;"></i>
+                <p>
                     {% if app.request.query.get('date') %}
                         No events found for the selected date.
                     {% else %}

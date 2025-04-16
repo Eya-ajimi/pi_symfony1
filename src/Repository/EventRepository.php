@@ -34,4 +34,17 @@ class EventRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function deletePastEvents(): int
+    {
+        $today = new \DateTime();
+        $todayStr = $today->format('Y-m-d');
+
+        return $this->createQueryBuilder('e')
+            ->delete()
+            ->where('e.dateFin < :today')
+            ->setParameter('today', $todayStr)
+            ->getQuery()
+            ->execute();
+    }
 }

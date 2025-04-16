@@ -27,6 +27,7 @@ class EventController extends AbstractController
         
         $dateString = $request->query->get('date');
         $date = null;
+        $eventRepository->deletePastEvents();
         
         if ($request->isMethod('GET') && $request->query->has('date')) {
             if (empty($dateString)) {
@@ -116,21 +117,27 @@ class EventController extends AbstractController
             return $this->redirectToRoute('app_events');
         }
 
-        // Convert string dates to DateTime objects
         try {
             $eventStart = new \DateTime($event->getDateDebut());
+            $eventEnd = new \DateTime($event->getDateFin());
             $now = new \DateTime();
         } catch (\Exception $e) {
             $this->addFlash('error', 'Invalid date format in event data');
             return $this->redirectToRoute('app_events');
         }
 
+        // Check if event has already started (now is between start and end dates)
+        $isDuringEvent = ($now >= $eventStart && $now <= $eventEnd);
+        
         // Check if event starts within 24 hours
         $interval = $now->diff($eventStart);
         $hoursUntilEvent = ($interval->days * 24) + $interval->h;
 
-        if ($hoursUntilEvent < 24 && $eventStart > $now) {
-            $this->addFlash('error', 'You cannot decline participation within 24 hours of the event start time.');
+        if (($hoursUntilEvent < 24 && $eventStart > $now) || $isDuringEvent) {
+            $this->addFlash(
+                'error', 
+                'You cannot decline participation within 24 hours of the event start time or during the event.'
+            );
             return $this->redirectToRoute('app_events');
         }
 
