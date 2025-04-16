@@ -1,5 +1,38 @@
+# config/routes.yaml
 controllers:
     resource:
-        path: ../src/Controller/
-        namespace: App\Controller
+        path: '../src/Controller/'
+        namespace: 'App\Controller'
     type: attribute
+    # Add this to avoid duplicate routes if using attributes in controllers
+    exclude: 
+        - '../src/Controller/LoginController.php'
+        - '../src/Controller/AdminController.php'
+        - '../src/Controller/ShopOwnerController.php'
+        - '../src/Controller/ClientController.php'
+
+# Explicit routes for important endpoints
+app_login:
+    path: /login
+    controller: App\Controller\LoginController::login
+    methods: [GET, POST]
+
+app_logout:
+    path: /logout
+    controller: App\Controller\LoginController::logout
+    methods: [GET]
+
+admin_dashboard:
+    path: /admin/dashboard
+    controller: App\Controller\AdminController::dashboard
+    # Add default requirements if needed
+    defaults:
+        _can_view: true
+
+shopowner_dashboard:
+    path: /shopowner/dashboard
+    controller: App\Controller\ShopOwnerController::dashboard
+
+client_dashboard:
+    path: /client/dashboard
+    controller: App\Controller\ClientController::dashboard

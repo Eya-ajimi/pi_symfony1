@@ -1,0 +1,94 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    {% if utilisateur.role.value == 'SHOPOWNER' %}
+        Modifier un commerçant
+    {% else %}
+        Modifier un client
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h2>
+                {% if utilisateur.role.value == 'SHOPOWNER' %}
+                    Modifier le commerçant: {{ utilisateur.nom }}
+                {% else %}
+                    Modifier l'utilisateur: {{ utilisateur.prenom }} {{ utilisateur.nom }}
+                {% endif %}
+            </h2>
+        </div>
+        <div class="card-body">
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success">
+                    {{ message }}
+                </div>
+            {% endfor %}
+
+            {{ form_start(form) }}
+                {# Common fields for all users #}
+                <div class="mb-3">
+                    {{ form_row(form.email) }}
+                </div>
+                
+                {% if utilisateur.role.value == 'SHOPOWNER' %}
+                    {# SHOPOWNER specific fields #}
+                    <div class="mb-3">
+                        {{ form_row(form.nom) }}
+                    </div>
+                    
+                    {% if form.categorie is defined %}
+                        <div class="mb-3">
+                            {{ form_row(form.categorie) }}
+                        </div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        {{ form_row(form.description) }}
+                    </div>
+                {% else %}
+                    {# CLIENT specific fields #}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form_row(form.prenom) }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form_row(form.nom) }}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form_row(form.adresse) }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form_row(form.telephone) }}
+                    </div>
+                {% endif %}
+                
+                {# Admin-only fields #}
+                {% if form.role is defined %}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form_row(form.role) }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form_row(form.statut) }}
+                        </div>
+                    </div>
+                {% endif %}
+                
+                {{ form_row(form.save) }}
+            {{ form_end(form) }}
+            
+            <div class="mt-3">
+                <a href="{{ path('admin_dashboard') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Retour au tableau de bord
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

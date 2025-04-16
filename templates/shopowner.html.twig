@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Shopowner Dashboard{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="alert alert-info">
+        Bienvenue dans l'espace SHOPOWNER
+    </div>
+    
+    <div class="card">
+        <div class="card-header bg-info text-white">
+            <h2>Tableau de bord SHOPOWNER</h2>
+        </div>
+        <div class="card-body">
+            <p>Vous êtes connecté en tant que SHOPOWNER</p>
+            <p>Email: {{ app.user.email }}</p>
+            <p>Rôle: {{ app.user.role.value }}</p>
+            
+            <a href="{{ path('app_logout') }}" class="btn btn-danger">
+                Déconnexion
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
