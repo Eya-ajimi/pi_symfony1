@@ -49,8 +49,9 @@ class Utilisateur implements UserInterface
     #[ORM\Column(name: "role", type: "string", columnDefinition: "ENUM('SHOPOWNER','ADMIN','CLIENT','UTILISATEUR')")]
     private string $role;
 
-    #[ORM\Column(name: "id_categorie", type: "integer", nullable: true)]
-    private ?int $idCategorie = null;
+    #[ORM\ManyToOne(targetEntity: Categorie::class)]
+    #[ORM\JoinColumn(name: "id_categorie", referencedColumnName: "id_categorie", nullable: true)]
+    private ?Categorie $categorie = null;  // Changed from ?int to ?Categorie
 
     #[ORM\Column(name: "reset_token", type: "integer", nullable: true)]
     private ?int $resetToken = null;
@@ -150,7 +151,16 @@ class Utilisateur implements UserInterface
     public function getSalt(): ?string { return null; }
     public function getUsername(): string { return $this->email; }
 
+    public function getCategorie(): ?Categorie
+    {
+        return $this->categorie;
+    }
     
+    public function setCategorie(?Categorie $categorie): self
+    {
+        $this->categorie = $categorie;
+        return $this;
+    }
 
     
 }

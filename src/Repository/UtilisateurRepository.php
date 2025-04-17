@@ -34,5 +34,38 @@ class UtilisateurRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
-    
+    /**
+     * Trouve les utilisateurs par rôle
+     */
+    public function findByRole(string $role): array
+    {
+        return $this->createQueryBuilder('u')
+            ->andWhere('u.role = :role')
+            ->setParameter('role', $role)
+            ->getQuery()
+            ->getResult();
+    }
+    // Alternative version that returns the full Categorie object
+    public function getCategorieByUserId(int $userId): ?Categorie
+    {
+        $user = $this->createQueryBuilder('u')
+            ->select('u', 'c')
+            ->leftJoin('u.categorie', 'c')
+            ->where('u.id = :userId')
+            ->setParameter('userId', $userId)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        return $user ? $user->getCategorie() : null;
+    }
+    public function getCategorie(): ?Categorie
+    {
+        return $this->categorie;
+    }
+
+    public function setCategorie(?Categorie $categorie): self
+    {
+        $this->categorie = $categorie;
+        return $this;
+    }
 }

@@ -12,6 +12,7 @@ use App\Repository\ScheduledEventRepository;
 use App\Repository\ScheduleRepository;
 use App\Repository\CommandeRepository;
 use App\Repository\PanierRepository;
+use App\Repository\CategorieRepository;
 use App\Repository\DiscountRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -25,7 +26,7 @@ use App\Entity\Utilisateur;
 use App\Entity\Commande;
 use App\Entity\Panier;
 use App\Entity\LikedProduct;
-
+use App\Entity\Categorie;
 
 use App\Form\EventType;
 use App\Form\maria\ProductType;
@@ -44,6 +45,30 @@ class ShopownerController extends AbstractController
     {
         return $this->render('maria_templates/admindashboard.html.twig');
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //**************************************************************************************************************************** */
 
     #[Route('/products', name: 'products')]
     public function products(
@@ -242,7 +267,7 @@ class ShopownerController extends AbstractController
     {
         $shop = $em->getRepository(Utilisateur::class)->find(8);
         $discount = new Discount();
-        $discount->setPromotionId($shop);
+        $discount->setShop($shop);
 
         $form = $this->createForm(DiscountType::class, $discount);
         $form->handleRequest($request);
@@ -548,10 +573,85 @@ class ShopownerController extends AbstractController
         ]);
     }
     //Profile 
-
     #[Route('/profile', name: 'profile')]
-    public function profile(): Response
-    {
-        return $this->render('maria_templates/profile.html.twig');
+    public function profile(
+        UtilisateurRepository $userRepo,
+        CategorieRepository $categorieRepository
+    ): Response {
+        $user = $userRepo->find(8); // Static ID=8
+        $category = $categorieRepository->findCategoryByUserId(8);
+
+        return $this->render('maria_templates/profile.html.twig', [
+            'user' => $user,
+            'userCategory' => $category,
+        ]);
+    }
+
+    #[Route('/profile/shopowner_edit', name: 'shopowner_edit', methods: ['GET', 'POST'])]
+    public function shopowner_edit(
+        Request $request,
+        ManagerRegistry $doctrine,
+        UserPasswordHasherInterface $passwordHasher,
+        CategorieRepository $categorieRepo,
+        UtilisateurRepository $userRepo
+    ): Response {
+        // Static user ID = 8 (for testing)
+        $user = $userRepo->find(8);
+
+        if (!$user) {
+            throw $this->createNotFoundException('Shop owner with ID 8 not found.');
+        }
+
+        $categories = $categorieRepo->findAll();
+
+        if ($request->isMethod('POST')) {
+            $nom = $request->request->get('nom');
+            $email = $request->request->get('email');
+            $telephone = $request->request->get('telephone');
+            $categorieId = $request->request->get('categorie');
+            $description = $request->request->get('description');
+            $password = $request->request->get('password');
+
+            // Update user properties
+            if ($nom !== null) {
+                $user->setNom($nom);
+            }
+            if ($email !== null) {
+                $user->setEmail($email);
+            }
+            if ($telephone !== null) {
+                $user->setTelephone($telephone);
+            }
+            if ($categorieId !== null) {
+                $category = $categorieRepo->find($categorieId);
+                if ($category) {
+                    $user->setCategorie($category);
+                } else {
+                    $this->addFlash('error', 'Invalid category selected');
+                }
+            }
+            if ($description !== null) {
+                $user->setDescription($description);
+            }
+
+            // Handle password change
+            if ($password && $password !== '******') {
+                $encodedPassword = $passwordHasher->hashPassword($user, $password);
+                $user->setPassword($encodedPassword);
+            }
+
+            // Save changes
+            $entityManager = $doctrine->getManager();
+            $entityManager->persist($user);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Le profil commerçant a été mis à jour.');
+            return $this->redirectToRoute('shopowner_dashboard');
+        }
+
+        return $this->render('maria_templates/profile.html.twig', [
+            'user' => $user,
+            'categories' => $categories,
+        ]);
     }
 }
