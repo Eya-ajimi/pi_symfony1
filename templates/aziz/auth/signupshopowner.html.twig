@@ -1,0 +1,190 @@
+{% extends 'aziz/base.html.twig' %}
+
+{% block title %}Sign Up as Shop Owner{% endblock %}
+
+{% block content %}
+  <div class="page-header align-items-start min-vh-50 pt-5 pb-11 m-3 border-radius-lg" style="background-image: url('{{ asset('images/back.jpg') }}'); background-size: cover; background-position: center;">
+    <span class="mask bg-gradient-dark opacity-6"></span>
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-lg-5 text-center mx-auto">
+          <h1 class="text-white mb-2 mt-5">Welcome Shop Owner!</h1>
+          <p class="text-lead text-white">Register your shop to start managing your business.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="row mt-lg-n10 mt-md-n11 mt-n10 justify-content-center">
+      <div class="col-xl-4 col-lg-5 col-md-7 mx-auto">
+        <div class="card border-0 shadow-lg rounded-4 animate-card" style="background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);">
+          
+          <div class="card-header text-white text-center py-4 rounded-top-4" style="background: rgba(0, 0, 0, 0.6);">
+            <h4 class="mb-0 fw-bold text-white">
+              <i class="fas fa-store me-2 text-white"></i>Register your shop
+            </h4>
+          </div>
+
+          <!-- Social Icons -->
+          <div class="row px-xl-5 px-sm-4 px-3 pt-3 text-center">
+            <div class="col-3 ms-auto px-1">
+              <a class="btn btn-outline-light w-100" href="javascript:;">
+                <i class="fab fa-facebook-f"></i>
+              </a>
+            </div>
+            <div class="col-3 px-1">
+              <a class="btn btn-outline-light w-100" href="javascript:;">
+                <i class="fab fa-instagram"></i>
+              </a>
+            </div>
+            <div class="col-3 me-auto px-1">
+              <a class="btn btn-outline-light w-100" href="javascript:;">
+                <i class="fab fa-google"></i>
+              </a>
+            </div>
+          </div>
+
+          <div class="card-body px-4 py-4">
+            {{ form_start(form, {'attr': {'class': 'text-start', 'novalidate': 'novalidate'}}) }}
+              <input type="hidden" name="role" value="SHOPOWNER">
+
+              {# Nom du magasin #}
+              <div class="mb-3">
+                {{ form_label(form.nom, 'Nom du magasin', {'label_attr': {'class': 'form-label text-dark'}}) }}
+                <div class="input-group has-validation">
+                  <span class="input-group-text"><i class="fas fa-store"></i></span>
+                  {{ form_widget(form.nom, {
+                    'attr': {
+                      'class': 'form-control' ~ (form.nom.vars.errors|length > 0 ? ' is-invalid' : ''),
+                      'placeholder': 'Nom de votre magasin'
+                    }
+                  }) }}
+                </div>
+                {% if form.nom.vars.errors|length > 0 %}
+                  <div class="invalid-feedback d-block">{{ form.nom.vars.errors[0].message }}</div>
+                {% endif %}
+              </div>
+
+              {# Catégorie #}
+              <div class="mb-3">
+  {{ form_label(form.categorie, 'Catégorie', {'label_attr': {'class': 'form-label text-dark'}}) }}
+  <div class="input-group has-validation">
+    <span class="input-group-text"><i class="fas fa-tags"></i></span>
+    {{ form_widget(form.categorie, {
+      'attr': {
+        'class': 'form-select' ~ (form.categorie.vars.errors|length > 0 ? ' is-invalid' : '')
+      }
+    }) }}
+  </div>
+  {% if form.categorie.vars.errors|length > 0 %}
+    <div class="invalid-feedback d-block">{{ form.categorie.vars.errors[0].message }}</div>
+  {% endif %}
+</div>
+
+
+              {# Description #}
+              <div class="mb-3">
+                {{ form_label(form.description, 'Description du magasin', {'label_attr': {'class': 'form-label text-dark'}}) }}
+                <div class="input-group has-validation">
+                  <span class="input-group-text"><i class="fas fa-align-left"></i></span>
+                  {{ form_widget(form.description, {
+                    'attr': {
+                      'class': 'form-control' ~ (form.description.vars.errors|length > 0 ? ' is-invalid' : ''),
+                      'rows': 3,
+                      'placeholder': 'Décrivez votre magasin...'
+                    }
+                  }) }}
+                </div>
+                {% if form.description.vars.errors|length > 0 %}
+                  <div class="invalid-feedback d-block">{{ form.description.vars.errors[0].message }}</div>
+                {% endif %}
+              </div>
+
+              {# Email #}
+              <div class="mb-3">
+                {{ form_label(form.email, 'Email', {'label_attr': {'class': 'form-label text-dark'}}) }}
+                <div class="input-group has-validation">
+                  <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                  {{ form_widget(form.email, {
+                    'attr': {
+                      'class': 'form-control' ~ (form.email.vars.errors|length > 0 ? ' is-invalid' : ''),
+                      'placeholder': 'votre@email.com'
+                    }
+                  }) }}
+                </div>
+                {% if form.email.vars.errors|length > 0 %}
+                  <div class="invalid-feedback d-block">{{ form.email.vars.errors[0].message }}</div>
+                {% endif %}
+              </div>
+
+              {# Mot de passe #}
+              <div class="mb-3">
+                {{ form_label(form.plainPassword, 'Mot de passe', {'label_attr': {'class': 'form-label text-dark'}}) }}
+                <div class="input-group has-validation">
+                  <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                  {{ form_widget(form.plainPassword, {
+                    'attr': {
+                      'class': 'form-control' ~ (form.plainPassword.vars.errors|length > 0 ? ' is-invalid' : ''),
+                      'placeholder': '••••••••'
+                    }
+                  }) }}
+                </div>
+                {% if form.plainPassword.vars.errors|length > 0 %}
+                  <div class="invalid-feedback d-block">{{ form.plainPassword.vars.errors[0].message }}</div>
+                {% endif %}
+              </div>
+
+              {# Conditions générales #}
+              <div class="form-check form-check-info text-start ps-0 mb-3">
+                {{ form_widget(form.agreeTerms, {
+                  'attr': {
+                    'class': 'form-check-input mt-1 ms-auto' ~ (form.agreeTerms.vars.errors|length > 0 ? ' is-invalid' : '')
+                  }
+                }) }}
+                {{ form_label(form.agreeTerms, 'J\'accepte les <a href="#" class="text-dark fw-bold">conditions générales</a>', {
+                  'label_html': true,
+                  'label_attr': {'class': 'form-check-label text-dark'}
+                }) }}
+                {% if form.agreeTerms.vars.errors|length > 0 %}
+                  <div class="invalid-feedback d-block">{{ form.agreeTerms.vars.errors[0].message }}</div>
+                {% endif %}
+              </div>
+
+              <div class="text-center">
+                {{ form_widget(form.submit, { 'attr': { 'class': 'btn btn-dark w-100 fw-bold' } }) }}
+              </div>
+
+              <p class="text-sm mt-3 mb-0 text-white text-center">
+                Vous avez déjà un compte? 
+                <a href="{{ path('app_login') }}" class="text-white fw-bold">Se connecter</a>
+              </p>
+
+            {{ form_end(form) }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block stylesheets %}
+  {{ parent() }}
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <style>
+    @keyframes fadeSlideCard {
+      0% {
+        opacity: 0;
+        transform: translateY(40px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .animate-card {
+      animation: fadeSlideCard 0.9s ease-out forwards;
+      opacity: 0;
+    }
+  </style>
+{% endblock %}

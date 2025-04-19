@@ -1,0 +1,25 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Event QR Code - InnoMall{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 text-center">
+    <h1 class="text-2xl font-bold mb-4">Your Event QR Code</h1>
+    <p class="mb-6">Scan this QR code to access event information</p>
+    
+    <div class="flex justify-center mb-8">
+        <img src="{{ path('app_event_qrcode', {id: event.id}) }}" alt="Event QR Code">
+    </div>
+    
+    <div class="event-info bg-gray-100 p-4 rounded-lg max-w-md mx-auto">
+        <h2 class="text-xl font-semibold mb-2">{{ event.description }}</h2>
+        <p class="mb-1"><strong>Location:</strong> {{ event.emplacement }}</p>
+        <p class="mb-1"><strong>Dates:</strong> {{ event.dateDebut|date('Y-m-d') }} to {{ event.dateFin|date('Y-m-d') }}</p>
+        <p class="mb-1"><strong>Organizer:</strong> {{ event.organisateur.nom }} {{ event.organisateur.prenom }}</p>
+    </div>
+    
+    <a href="{{ path('app_events') }}" class="inline-block mt-6 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+        Back to Events
+    </a>
+</div>
+{% endblock %}

@@ -8,6 +8,7 @@
     {# Global Styles #}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 
     {# Page-Specific Styles #}
     {% block stylesheets %}
@@ -217,17 +218,19 @@
         <nav class="nav-links">
             <a href="{{ path('app_home_page') }}">Home</a>
             <a href="{{ path('app_shops') }}">Shops</a>
-            <a href="#">Events</a>
-            <a href="#">Parking</a>
-        </nav>
+            <a href="{{ path('app_events') }}">Events</a>
+            <a href="{{ path('app_parking') }}">Parking</a>        </nav>
         <div class="user-icons">
+        <a href="{{ path('app_reclamation') }}" title="Submit a complaint">
+                <span><i class="fas fa-exclamation-circle"></i></span>
+            </a>
              
     <span >
     <i class="fas fa-bell"></i>
-</span>
+    </span>
 
-            <span><i class="fas fa-shopping-cart"></i></span>
-            <span><i class="fas fa-user"></i></span>
+             <a href="{{ path('app_show_panier') }}"><span><i class="fas fa-shopping-cart"></i></span></a>
+           <a href="{{path('client_dashboard')}}">  <span><i class="fas fa-user"></i></span></a>
         </div>
     </header>
 

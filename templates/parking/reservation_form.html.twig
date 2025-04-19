@@ -1,0 +1,320 @@
+{# templates/parking/reservation_form.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Reserve Parking Spot{% endblock %}
+
+{% block stylesheets %}
+   
+    <link rel="stylesheet" href="{{ asset('css/reservationform.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.css">
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const startDatePicker = flatpickr("[name*='[dateReservation]']", {
+        enableTime: true,
+        dateFormat: "Y-m-d H:i",
+        minDate: "today",
+        time_24hr: true,
+        onChange: function(selectedDates, dateStr) {
+            endDatePicker.set('minDate', dateStr);
+            validateDates();
+        }
+    });
+
+    const endDatePicker = flatpickr("[name*='[dateExpiration]']", {
+        enableTime: true,
+        dateFormat: "Y-m-d H:i",
+        minDate: "today",
+        time_24hr: true,
+        onChange: function() {
+            validateDates();
+        }
+    });
+
+    function validateDates() {
+    const startInput = document.querySelector("[name*='[dateReservation]']");
+    const endInput = document.querySelector("[name*='[dateExpiration]']");
+    const startDate = startDatePicker.selectedDates[0];
+    const endDate = endDatePicker.selectedDates[0];
+    const errorElement = document.getElementById('date-error');
+    const submitButton = document.querySelector('[name*="[submit]"]');
+    
+    if (startDate && endDate) {
+        if (endDate <= startDate) {
+            errorElement.textContent = "End date must be after start date";
+            errorElement.style.display = 'block';
+            startInput.classList.add('invalid');
+            endInput.classList.add('invalid');
+            submitButton.disabled = true;
+        } else {
+            errorElement.style.display = 'none';
+            startInput.classList.remove('invalid');
+            endInput.classList.remove('invalid');
+            submitButton.disabled = false;
+            updatePrice();
+        }
+    } else {
+        errorElement.style.display = 'none';
+        startInput.classList.remove('invalid');
+        endInput.classList.remove('invalid');
+    }
+}
+            // Initialize date pickers
+            flatpickr(".date-picker", {
+                enableTime: true,
+                dateFormat: "Y-m-d H:i",
+                minDate: "today",
+                time_24hr: true
+            });
+
+            // Select default options
+            document.querySelector('.vehicle-option[data-value="Compact"]').classList.add('selected');
+            document.querySelector('.wash-option[data-value="None"]').classList.add('selected');
+            
+            // Set initial form values
+            document.querySelector('[name*="[vehicleType]"]').value = 'Compact';
+            document.querySelector('[name*="[carWashType]"]').value = 'None';
+
+            // Vehicle type selection
+            const vehicleTypes = document.querySelectorAll('.vehicle-option');
+            vehicleTypes.forEach(option => {
+                option.addEventListener('click', function() {
+                    vehicleTypes.forEach(el => el.classList.remove('selected'));
+                    this.classList.add('selected');
+                    document.querySelector('[name*="[vehicleType]"]').value = this.dataset.value;
+                    updatePrice();
+                });
+            });
+
+            // Car wash options
+            const washOptions = document.querySelectorAll('.wash-option');
+            washOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    washOptions.forEach(el => el.classList.remove('selected'));
+                    this.classList.add('selected');
+                    document.querySelector('[name*="[carWashType]"]').value = this.dataset.value;
+                    updatePrice();
+                });
+            });
+
+            // Pricing calculator
+            function updatePrice() {
+                const hours = calculateHours();
+                const baseRate = 5; // $5 per hour
+                const vehicleMultiplier = getVehicleMultiplier();
+                const washPrice = getWashPrice();
+                
+                const parkingCost = hours * baseRate * vehicleMultiplier;
+                const totalCost = parkingCost + washPrice;
+                
+                // Update the display
+                document.getElementById('parking-cost').textContent = '$' + parkingCost.toFixed(2);
+                document.getElementById('wash-cost').textContent = '$' + washPrice.toFixed(2);
+                document.getElementById('total-cost').textContent = '$' + totalCost.toFixed(2);
+                
+                // Update the hidden price field in the form
+                const priceField = document.querySelector('[name*="[price]"]');
+                if (priceField) {
+                    priceField.value = totalCost.toFixed(2);
+                }
+            }
+
+            function calculateHours() {
+                const startInput = document.querySelector('[name*="[dateReservation]"]');
+                const endInput = document.querySelector('[name*="[dateExpiration]"]');
+                
+                const startDate = flatpickr.parseDate(startInput.value, "Y-m-d H:i");
+                const endDate = flatpickr.parseDate(endInput.value, "Y-m-d H:i");
+
+                if (startDate && endDate && endDate > startDate) {
+                    const diffInMs = endDate - startDate;
+                    return Math.max(1, Math.ceil(diffInMs / (1000 * 60 * 60))); // Round up to nearest hour
+                }
+                return 1; // Default to 1 hour if dates aren't valid
+            }
+
+            function getVehicleMultiplier() {
+                const vehicleType = document.querySelector('[name*="[vehicleType]"]').value;
+                
+                switch(vehicleType) {
+                    case 'Motorcycle': return 0.7;
+                    case 'Compact': return 1.0;
+                    case 'SUV': return 1.2;
+                    case 'Van': return 1.5;
+                    default: return 1.0;
+                }
+            }
+
+            function getWashPrice() {
+                const washType = document.querySelector('[name*="[carWashType]"]').value;
+                
+                switch(washType) {
+                    case 'Basic': return 10.00;
+                    case 'Premium': return 20.00;
+                    case 'Deluxe': return 30.00;
+                    default: return 0.00;
+                }
+            }
+
+            // Add event listeners to date inputs
+            document.querySelector('[name*="[dateReservation]"]').addEventListener('change', updatePrice);
+            document.querySelector('[name*="[dateExpiration]"]').addEventListener('change', updatePrice);
+
+            // Initialize price calculation
+            updatePrice();
+        });
+    </script>
+{% endblock %}
+
+{% block content %}
+<div class="parking-dashboard">
+    <div class="dashboard-header">
+        <div class="header-content">
+            <div class="spot-identifier">
+                <span class="spot-zone">{{ spot.zone }}</span>
+                <span class="spot-number">{{ spot.id }}</span>
+            </div>
+            <h1><i class="fas fa-car"></i> Reserve Parking Spot</h1>
+            <p class="subtitle">Level {{ spot.floor|replace({'Level ': ''}) }}</p>
+        </div>
+    </div>
+    
+    <div class="dashboard-body">
+        <div class="reservation-form glass-panel">
+            {{ form_start(form) }}
+                <div class="form-section">
+                    <h3><i class="fas fa-calendar-alt"></i> Select Date & Time</h3>
+                    
+                    <div class="form-row">
+    <div class="form-group">
+        {{ form_label(form.dateReservation, 'Arrival Time') }}
+        {{ form_widget(form.dateReservation, {'attr': {
+            'class': 'modern-input date-picker',
+            'placeholder': 'Select arrival date and time'
+        }}) }}
+        <div class="form-hint">When will you arrive?</div>
+    </div>
+    
+    <div class="form-group">
+        {{ form_label(form.dateExpiration, 'Departure Time') }}
+        {{ form_widget(form.dateExpiration, {'attr': {
+            'class': 'modern-input date-picker',
+            'placeholder': 'Select departure date and time'
+        }}) }}
+        <div class="form-hint">When will you leave?</div>
+    </div>
+</div>
+<div id="date-error" class="error-message" style="display: none; color: red;"></div>
+                </div>
+                
+                <div class="form-section">
+                    <h3><i class="fas fa-car-side"></i> Vehicle Information</h3>
+                    
+                    <div class="form-group hidden">
+                        {{ form_widget(form.vehicleType) }}
+                    </div>
+                    
+                    <div class="vehicle-selector">
+                        <div class="vehicle-option" data-value="Motorcycle">
+                            <i class="fas fa-motorcycle"></i>
+                            <span>Motorcycle</span>
+                        </div>
+                        <div class="vehicle-option" data-value="Compact">
+                            <i class="fas fa-car"></i>
+                            <span>Compact</span>
+                        </div>
+                        <div class="vehicle-option" data-value="SUV">
+                            <i class="fas fa-car-side"></i>
+                            <span>SUV</span>
+                        </div>
+                        <div class="vehicle-option" data-value="Van">
+                            <i class="fas fa-shuttle-van"></i>
+                            <span>Van</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3><i class="fas fa-shower"></i> Car Wash Service</h3>
+                    
+                    <div class="form-group hidden">
+                        {{ form_widget(form.carWashType) }}
+                    </div>
+                    
+                    <div class="wash-selector">
+                        <div class="wash-option" data-value="None">
+                            <div class="wash-icon"><i class="fas fa-times"></i></div>
+                            <div class="wash-details">
+                                <h4>No Wash</h4>
+                                <p>Parking only</p>
+                            </div>
+                        </div>
+                        <div class="wash-option" data-value="Basic">
+                            <div class="wash-icon"><i class="fas fa-tint"></i></div>
+                            <div class="wash-details">
+                                <h4>Basic Wash</h4>
+                                <p>Exterior wash + $10</p>
+                            </div>
+                        </div>
+                        <div class="wash-option" data-value="Premium">
+                            <div class="wash-icon"><i class="fas fa-tint-slash"></i></div>
+                            <div class="wash-details">
+                                <h4>Premium Wash</h4>
+                                <p>Exterior + interior + $20</p>
+                            </div>
+                        </div>
+                        <div class="wash-option" data-value="Deluxe">
+                            <div class="wash-icon"><i class="fas fa-car-wash"></i></div>
+                            <div class="wash-details">
+                                <h4>Deluxe Wash</h4>
+                                <p>Premium + wax + $30</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3><i class="fas fa-sticky-note"></i> Additional Notes</h3>
+                    
+                    <div class="form-group">
+                        {{ form_widget(form.notes, {'attr': {
+                            'class': 'modern-textarea',
+                            'placeholder': 'Any special requests or information we should know?'
+                        }}) }}
+                    </div>
+                </div>
+                
+                <div class="price-summary">
+                    <h3><i class="fas fa-receipt"></i> Reservation Summary</h3>
+                    <div class="price-breakdown">
+                        <div class="price-item">
+                            <span>Parking Fee</span>
+                            <span id="parking-cost">$0.00</span>
+                        </div>
+                        <div class="price-item">
+                            <span>Car Wash</span>
+                            <span id="wash-cost">$0.00</span>
+                        </div>
+                        <div class="price-total">
+                            <span>Total</span>
+                            <span id="total-cost">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <a href="{{ path('app_parking') }}" class="cancel-btn">
+                        <i class="fas fa-arrow-left"></i> Back to Spots
+                    </a>
+                    {{ form_widget(form.submit, {'attr': {'class': 'confirm-btn'}}) }}
+                </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+{% endblock %}

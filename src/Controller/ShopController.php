@@ -10,6 +10,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Enums\Role;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormFactoryInterface;
 
@@ -23,7 +24,7 @@ class ShopController extends AbstractController
         FormFactoryInterface $formFactory
     ): Response {
         $shopOwners = $utilisateurRepository->findAllShopOwners();
-        $fixedUser = $utilisateurRepository->find(9);
+        $fixedUser = $utilisateurRepository->find(7);
 
         $feedbackForms = [];
         $isRatedList = [];
@@ -62,10 +63,13 @@ class ShopController extends AbstractController
         EntityManagerInterface $entityManager,
         FormFactoryInterface $formFactory
     ): Response {
-        $fixedUser = $utilisateurRepository->find(9);
+        $fixedUser = $utilisateurRepository->find(7);
         $shop = $utilisateurRepository->find($shopId);
+    
+        
 
-        if (!$fixedUser || !$shop || $shop->getRole() !== 'SHOPOWNER') {
+        if (!$fixedUser || !$shop || $shop->getRole() !== Role::SHOPOWNER) {
+
             $this->addFlash('error', 'Invalid user or shop.');
             return $this->redirectToRoute('app_shops');
         }
@@ -134,7 +138,7 @@ class ShopController extends AbstractController
         FeedbackRepository $feedbackRepository,
         EntityManagerInterface $entityManager
     ): Response {
-        $user = $utilisateurRepository->find(9);
+        $user = $utilisateurRepository->find(7);
         $shop = $utilisateurRepository->find($shopId);
 
         if ($user && $shop) {

@@ -88,7 +88,11 @@
                             {% endif %}
                             
                             <button class="add-to-cart">
-                                <i class="fas fa-shopping-cart"></i> Add to Cart
+                                <i class="fas fa-shopping-cart"></i>
+                                <a style="text-decortion:none"  class="line-cart" href="{{ path('app_add_item', {
+                                        'idProduit': product.id,
+                                        'shopId' : shopId
+                                    }) }}">Add to Cart</a> 
                             </button>
                         </div>
                     </div>

@@ -1,0 +1,230 @@
+{% extends 'aziz/base.html.twig' %}
+
+{% block title %}
+    {% if utilisateur.role.value == 'SHOPOWNER' %}
+        Modifier un commerçant
+    {% else %}
+        Modifier un client
+    {% endif %}
+{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-3T9qA2KjZ4S5dU6oX+ZXJ2c6TVc6Gf7Y2N1BQcdWWVrD89T2uVnmI+p1hT7ntz5c7Po5tA5HnEAKqM3By52D3A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <style>
+        :root {
+            --main-blue: #5c8fb1;
+            --accent-orange: #f4a261;
+            --text-dark: #333;
+            --bg-light: #f9f9f9;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        nav, .navbar, header {
+            display: none !important;
+        }
+
+        .container {
+            max-width: 800px;
+        }
+
+        .card {
+            border: none;
+            border-radius: 1rem;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            background: #fff;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .card-header {
+            color: white;
+            border-top-left-radius: 1rem;
+            border-top-right-radius: 1rem;
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            animation: slideInTop 0.6s ease-out;
+        }
+
+        .card-header.shopowner {
+            background: var(--main-blue);
+        }
+
+        .card-header.client {
+            background: var(--main-blue);
+        }
+
+        .card-header h2 {
+            font-size: 1.5rem;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background-color: var(--main-blue);
+            border-color: var(--main-blue);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent-orange);
+            border-color: var(--accent-orange);
+            transform: scale(1.05);
+        }
+
+        .btn-secondary {
+            background-color: var(--accent-orange);
+            border-color: var(--accent-orange);
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--main-blue);
+            border-color: var(--main-blue);
+            transform: scale(1.05);
+            color: white;
+        }
+
+        .btn-fixed {
+    min-width: 200px;
+    text-align: center;
+        }
+
+        .alert-success {
+            background-color: var(--accent-orange);
+            border-color: var(--accent-orange);
+            color: white;
+            animation: fadeIn 0.4s ease-in;
+        }
+
+        form .form-control {
+            border-radius: 0.5rem;
+            border: 1px solid #ccc;
+            transition: border-color 0.3s;
+        }
+
+        form .form-control:focus {
+            border-color: var(--main-blue);
+            box-shadow: 0 0 0 0.2rem rgba(92, 143, 177, 0.25);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInTop {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-header {% if utilisateur.role.value == 'SHOPOWNER' %}shopowner{% else %}client{% endif %}">
+            <h2>
+                {% if utilisateur.role.value == 'SHOPOWNER' %}
+                    <i class="fas fa-store"></i> Modifier le commerçant: {{ utilisateur.nom }}
+                {% else %}
+                    <i class="fas fa-user-edit"></i> Modifier le client: {{ utilisateur.prenom }} {{ utilisateur.nom }}
+                {% endif %}
+            </h2>
+        </div>
+        <div class="card-body">
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i> {{ message }}
+                </div>
+            {% endfor %}
+
+            {{ form_start(form) }}
+                <div class="mb-3">
+                    {{ form_row(form.email) }}
+                </div>
+
+                {% if utilisateur.role.value == 'SHOPOWNER' %}
+                    <div class="mb-3">
+                        {{ form_row(form.nom) }}
+                    </div>
+
+                    {% if form.categorie is defined %}
+                        <div class="mb-3">
+                            {{ form_row(form.categorie) }}
+                        </div>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        {{ form_row(form.description) }}
+                    </div>
+                {% else %}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form_row(form.prenom) }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form_row(form.nom) }}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_row(form.adresse) }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_row(form.telephone) }}
+                    </div>
+                {% endif %}
+
+                {% if form.role is defined %}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form_row(form.role) }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form_row(form.statut) }}
+                        </div>
+                    </div>
+                {% endif %}
+
+                <div class="d-flex gap-3 mt-4">
+    {{ form_row(form.save, {'attr': {'class': 'btn btn-primary btn-fixed'}}) }}
+    <a href="{{ path('admin_dashboard') }}" class="btn btn-secondary btn-fixed">
+        <i class="fas fa-arrow-left me-1"></i> Retour
+    </a>
+</div>
+
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+{% endblock %}

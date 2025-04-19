@@ -1,0 +1,129 @@
+{# templates/registration/choose_role.html.twig #}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Rejoignez-nous - InnoMall</title>
+    <meta name="description" content="Rejoignez InnoMall en tant que client ou commerçant et démarrez votre aventure.">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: url('/images/back.jpg') center/cover no-repeat fixed;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .logo {
+            width: 120px;
+            height: auto;
+            margin-bottom: 15px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            padding: 50px 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            text-align: center;
+            width: 100%;
+            max-width: 550px;
+            animation: fadeInUp 0.8s ease-out forwards;
+            opacity: 0;
+            transform: translateY(40px);
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h2 {
+            margin-bottom: 10px;
+            font-size: 28px;
+            color: #222;
+        }
+
+        p {
+            color: #555;
+            font-size: 15px;
+            margin-bottom: 30px;
+        }
+
+        .roles {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 35px;
+            flex-wrap: wrap;
+        }
+
+        .role-option {
+            flex: 1;
+            min-width: 120px;
+            background: #f8f8f8;
+            padding: 25px;
+            border: 2px solid transparent;
+            border-radius: 16px;
+            text-align: center;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: block;
+        }
+
+        .role-option:hover {
+            background: #fff6e5;
+            border-color: #ffa726;
+            box-shadow: 0 6px 16px rgba(255, 167, 38, 0.3);
+        }
+
+        .icon {
+            font-size: 44px;
+            margin-bottom: 12px;
+            color: #ff9800;
+        }
+
+        .role-label {
+            font-size: 17px;
+            font-weight: 600;
+            color: #444;
+        }
+
+        @media (max-width: 600px) {
+            .roles {
+                flex-direction: column;
+            }
+
+            .role-option {
+                margin-bottom: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="/images/7.png" alt="Bienvenue chez InnoMall" class="logo">
+
+        <h2>Comment souhaitez-vous rejoindre InnoMall ?</h2>
+        <p>Choisissez un rôle pour commencer votre inscription sur notre plateforme.</p>
+
+        <div class="roles">
+            <a href="{{ path('app_signup_shop_owner') }}" class="role-option">
+                <div class="icon"><i class="fas fa-store"></i></div>
+                <div class="role-label">Commerçant</div>
+            </a>
+
+            <a href="{{ path('app_signup_user') }}" class="role-option">
+                <div class="icon"><i class="fas fa-user"></i></div>
+                <div class="role-label">Client</div>
+            </a>
+        </div>
+    </div>
+</body>
+</html>

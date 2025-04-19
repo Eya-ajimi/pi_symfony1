@@ -1,0 +1,253 @@
+{# templates/parking/reservations.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}My Reservations | Smart Parking{% endblock %}
+
+{% block stylesheets %}
+
+    <link rel="stylesheet" href="{{ asset('css/parking.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/reservations.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="reservations-container">
+    <div class="dashboard-header">
+        <div class="header-content">
+            <h1>
+                <i class="fas fa-calendar-alt"></i>
+                My Reservations
+            </h1>
+            <p class="subtitle">View and manage your parking reservations</p>
+            
+            <div class="header-stats">
+                <div class="stat-item">
+                    <div class="stat-label">Active Reservations</div>
+                    <div class="stat-value">{{ active_count }}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Total Reservations</div>
+                    <div class="stat-value">{{ reservations|length }}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">This Month</div>
+                    <div class="stat-value">{{ this_month_count }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <a href="{{ path('app_parking') }}" class="back-btn">
+        <i class="fas fa-arrow-left"></i>
+        Back to Parking
+    </a>
+
+    <div class="filter-section">
+        <div class="filter-left">
+            <button class="filter-btn active" data-filter="all">
+                <i class="fas fa-list"></i>
+                All Reservations
+            </button>
+            <button class="filter-btn" data-filter="active">
+                <i class="fas fa-check-circle"></i>
+                Active
+            </button>
+            <button class="filter-btn" data-filter="expired">
+                <i class="fas fa-clock"></i>
+                Expired
+            </button>
+            <button class="filter-btn" data-filter="cancelled">
+                <i class="fas fa-ban"></i>
+                Cancelled
+            </button>
+        </div>
+        
+        <div class="d-flex align-center gap-2">
+            <div id="reservation-count" class="text-small text-muted"></div>
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="searchInput" class="search-input" placeholder="Search reservations...">
+            </div>
+        </div>
+    </div>
+
+    <div class="glass-panel">
+        {% if reservations|length > 0 %}
+            <table class="modern-table" id="reservationsTable">
+                <thead>
+                    <tr>
+                        <th>Spot</th>
+                        <th>Floor</th>
+                        <th>Start Time</th>
+                        <th>End Time</th>
+                        <th>Status</th>
+                        <th>Vehicle</th>
+                        <th>Price</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+    {% for item in reservations %}
+        <tr data-status="{{ item.reservation.statut }}" data-reservation-id="{{ item.reservation.idReservation }}">
+            <td data-label="Spot">
+                {% if item.spot is not null %}
+                    <div class="reservation-info">
+                        <i class="fas fa-map-marker-alt" style="color: #00ab55;"></i>
+                        {{ item.spot.zone }}{{ item.spot.id }}
+                    </div>
+                {% else %}
+                    N/A
+                {% endif %}
+            </td>
+            <td data-label="Floor">
+                <div class="reservation-info">
+                    <i class="fas fa-layer-group" style="color: #666;"></i>
+                    {{ item.spot.floor ?? 'N/A' }}
+                </div>
+            </td>
+            <td data-label="Start Time">
+                <div class="reservation-info">
+                    <i class="fas fa-hourglass-start" style="color: #1976d2;"></i>
+                    {{ item.reservation.dateReservation|date('Y-m-d H:i') }}
+                </div>
+            </td>
+            <td data-label="End Time">
+                <div class="reservation-info">
+                    <i class="fas fa-hourglass-end" style="color: #f57c00;"></i>
+                    {{ item.reservation.dateExpiration|date('Y-m-d H:i') }}
+                </div>
+            </td>
+            <td data-label="Status">
+                <span class="status-badge {{ item.reservation.statut }}">
+                    {{ item.reservation.statut|capitalize }}
+                </span>
+            </td>
+            <td data-label="Vehicle">
+                <div class="vehicle-type">
+                    {% if item.reservation.vehicleType == 'sedan' or item.reservation.vehicleType == 'car' %}
+                        <i class="fas fa-car"></i>
+                    {% elseif item.reservation.vehicleType == 'motorcycle' or item.reservation.vehicleType == 'bike' %}
+                        <i class="fas fa-motorcycle"></i>
+                    {% elseif item.reservation.vehicleType == 'truck' or item.reservation.vehicleType == 'pickup' %}
+                        <i class="fas fa-truck"></i>
+                    {% elseif item.reservation.vehicleType == 'suv' %}
+                        <i class="fas fa-truck-pickup"></i>
+                    {% else %}
+                        <i class="fas fa-car"></i>
+                    {% endif %}
+                    {{ item.reservation.vehicleType|capitalize }}
+                </div>
+            </td>
+            <td data-label="Price">
+                <div class="price-tag">
+                    <i class="fas fa-tag"></i>
+                    {{ item.reservation.price }} TND
+                </div>
+            </td>
+            <td class="action-column">
+                {% if item.reservation.statut == 'active' %}
+                    <form method="post" action="{{ path('app_parking_cancel_reservation', {'id': item.reservation.idReservation}) }}" 
+                          onsubmit="return confirm('Are you sure you want to cancel this reservation?');"
+                          class="cancel-form">
+                        <button type="submit" class="action-btn cancel-btn">
+                            <i class="fas fa-times"></i>
+                            Cancel
+                        </button>
+                    </form>
+                {% elseif item.reservation.statut == 'cancelled' %}
+                    <span class="text-muted">No actions available</span>
+                {% elseif item.reservation.statut == 'expired' %}
+                    <a href="{{ path('app_parking') }}" class="action-btn back-btn">
+                        <i class="fas fa-redo"></i>
+                        Book Again
+                    </a>
+                {% endif %}
+            </td>
+        </tr>
+    {% endfor %}
+</tbody>
+
+            </table>
+            
+            <div class="pagination-container">
+                <div class="page-info">
+                    Showing <span id="showing-count">{{ reservations|length }}</span> of <span>{{ reservations|length }}</span> reservations
+                </div>
+                <div class="pagination">
+                    <button class="page-btn disabled" id="prev-page">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="page-btn active">1</button>
+                    <button class="page-btn disabled" id="next-page">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        {% else %}
+            <div class="no-reservations">
+                <i class="fas fa-calendar-times"></i>
+                <p>You don't have any parking reservations yet</p>
+                <a href="{{ path('app_parking') }}" class="empty-action-btn">
+                    <i class="fas fa-parking"></i>
+                    Book a Parking Spot
+                </a>
+            </div>
+        {% endif %}
+    </div>
+    
+    {% if reservations|length > 0 %}
+    <div class="glass-panel">
+        <div class="stats-header">
+            <h3><i class="fas fa-chart-line"></i> Reservation Statistics</h3>
+            <div class="stats-period">
+                <button class="period-btn active">This Month</button>
+                <button class="period-btn">Last 3 Months</button>
+                <button class="period-btn">This Year</button>
+            </div>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-card-label">Total Spent</div>
+                <div class="stat-card-value">{{ total_spent }} TND</div>
+                <div class="stat-card-change change-up">
+                    <i class="fas fa-arrow-up"></i> 12% from last month
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-label">Most Used Spot</div>
+                <div class="stat-card-value">Zone A</div>
+                <div class="stat-card-change">
+                    8 times this month
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-label">Average Duration</div>
+                <div class="stat-card-value">2h 45m</div>
+                <div class="stat-card-change change-down">
+                    <i class="fas fa-arrow-down"></i> 8% from last month
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-label">Favorite Time</div>
+                <div class="stat-card-value">18:00-20:00</div>
+                <div class="stat-card-change">
+                    Work days
+                </div>
+            </div>
+        </div>
+        
+        <div class="chart-container">
+            <canvas id="reservationChart"></canvas>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ asset('js/reservations.js') }}"></script>
+    
+{% endblock %}

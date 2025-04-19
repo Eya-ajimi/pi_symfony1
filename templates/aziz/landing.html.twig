@@ -1,0 +1,185 @@
+{% extends 'aziz/base.html.twig' %}
+
+{% block title %}Bienvenue à InnoMall{% endblock %}
+
+{% block stylesheets %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<style>
+  body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow-x: hidden;
+  }
+.btn-login:hover, .btn-register:hover {
+  background: linear-gradient(45deg, #0041c4, #00aee3);
+  transform: scale(1.05);
+  box-shadow: 0 8px 28px rgba(0, 123, 255, 0.4);
+}
+  .hero-section {
+    height: 100vh;
+    background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+                url('{{ asset("images/back.jpg") }}') center/cover no-repeat;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: white;
+  }
+ .btn-group a {
+  display: inline-block;
+  margin: 10px;
+  padding: 14px 32px;
+  width: 180px;
+  border-radius: 50px;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  transition: all 0.35s ease-in-out;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.btn-login, .btn-register {
+  background: linear-gradient(45deg, #005bea, #00c6fb);
+  color: white;
+  border: none;
+}
+  .hero-box {
+    padding: 50px 40px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(14px);
+    border-radius: 24px;
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.3);
+    animation: fadeIn 1.2s ease-in-out;
+    max-width: 600px;
+    width: 90%;
+  }
+
+  .hero-box h1 {
+    font-size: 40px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #fff;
+    overflow: hidden;
+    white-space: nowrap;
+    border-right: 3px solid #fff;
+    width: 0;
+    animation: typing 2.5s steps(30, end) forwards, blink-end 1.5s step-end 2.5s forwards;
+  }
+
+  @keyframes typing {
+    from { width: 0 }
+    to { width: 100% }
+  }
+
+  @keyframes blink-end {
+    0%, 50% { border-color: #fff; }
+    100% { border-color: transparent; }
+  }
+
+  .hero-box p {
+    font-size: 18px;
+    color: #e0e0e0;
+    margin-bottom: 35px;
+    opacity: 0;
+    animation: fadeText 1.5s ease 2.7s forwards;
+  }
+
+  .btn-group {
+    opacity: 0;
+    animation: fadeText 1.5s ease 3s forwards;
+  }
+
+  @keyframes fadeText {
+    to { opacity: 1; }
+  }
+
+  .btn-group a {
+    display: inline-block;
+    margin: 10px;
+    padding: 14px 32px;
+    border-radius: 50px;
+    font-size: 16px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.35s ease-in-out;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+  }
+
+  .btn-login {
+    color: #1e1e1e;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid #ffffffcc;
+  }
+
+  .btn-login::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 2px;
+    width: 0%;
+    background: #1e1e1e;
+    transition: 0.4s;
+    z-index: -1;
+  }
+
+  .btn-login:hover::after {
+    width: 100%;
+  }
+
+  .btn-login:hover {
+    background: white;
+    transform: translateY(-2px);
+    color: #000;
+  }
+
+  .btn-register {
+    background: linear-gradient(45deg, #2196f3, #21cbf3);
+    color: white;
+    border: none;
+  }
+
+  .btn-register:hover {
+    background: linear-gradient(45deg, #1976d2, #00bcd4);
+    transform: scale(1.05);
+    box-shadow: 0 8px 28px rgba(0, 191, 255, 0.35);
+  }
+
+  @media (max-width: 768px) {
+    .hero-box h1 {
+      font-size: 28px;
+    }
+
+    .hero-box p {
+      font-size: 16px;
+    }
+
+    .btn-group a {
+      padding: 12px 24px;
+      font-size: 15px;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="hero-section">
+  <div class="hero-box">
+    <h1>Bienvenue sur InnoMall</h1>
+    <p>La plateforme intelligente pour connecter clients et commerçants</p>
+    <div class="btn-group">
+      <a href="{{ path('app_login') }}" class="btn-login">Se connecter</a>
+      <a href="{{ path('app_choose_role') }}" class="btn-register">S'inscrire</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -26,7 +26,7 @@ class ProduitRepository extends ServiceEntityRepository
     public function findByShopId(int $shopId)
     {
         return $this->createQueryBuilder('p')
-            ->innerJoin('p.shopOwner', 'u') // Join with Utilisateur entity
+            ->innerJoin('p.shopId', 'u') // Join with Utilisateur entity
             ->andWhere('u.id = :shopId')
             ->setParameter('shopId', $shopId)
             ->orderBy('p.nom', 'ASC')

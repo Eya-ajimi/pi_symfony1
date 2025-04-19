@@ -18,6 +18,7 @@ class ProductController extends AbstractController
 
         return $this->render('product/shop_products.html.twig', [
             'products' => $products,
+            'shopId'=>$shopId
         ]);
     }
 }

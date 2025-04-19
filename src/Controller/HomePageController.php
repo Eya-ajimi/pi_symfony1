@@ -27,9 +27,11 @@ class HomePageController extends AbstractController
         EntityManagerInterface $em,
         AtmRepository $atmRepository
     ): Response {
-        $utilisateur = $utilisateurRepo->find(9);
+        $this->denyAccessUnlessGranted('ROLE_CLIENT');
+         #$user = $this->getUser();
+        $utilisateur = $this->getUser();
         if (!$utilisateur) {
-            throw $this->createNotFoundException('Utilisateur avec ID 9 non trouvé');
+            throw $this->createNotFoundException('Utilisateur avec ID 7 non trouvé');
         }
 
         // 1. Handle Post Creation

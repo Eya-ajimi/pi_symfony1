@@ -1,24 +1,59 @@
-# This file is the entry point to configure your own services.
-# Files in the packages/ subdirectory configure your dependencies.
-
-# Put parameters here that don't need to change on each machine where the app is deployed
-# https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
+# config/services.yaml
 parameters:
+    # Vous pouvez ajouter ici vos paramètres personnalisés
+    # Exemple :
+    # app.login_redirect_delay: 3
 
 services:
-    # default configuration for services in *this* file
+    # Configuration par défaut pour tous les services
     _defaults:
-        autowire: true      # Automatically injects dependencies in your services.
-        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+        autowire: true      # Active l'injection automatique des dépendances
+        autoconfigure: true # Active la configuration automatique des tags
+        public: false       # Rend les services privés par défaut                                                   
+    
 
-    # makes classes in src/ available to be used as services
-    # this creates a service per class whose id is the fully-qualified class name
+     #App\Entity\User:
+    #     class: App\Entity\User
+    #     autowire: true            
+    App\EventListener\NoCacheListener:
+        tags:
+            - { name: kernel.event_listener, event: kernel.response, method: onKernelResponse }  
+    # Charge automatiquement tous les services du dossier src/
     App\:
         resource: '../src/'
         exclude:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
+            - '../src/Tests/'
 
-    # add more service definitions when explicit configuration is needed
-    # please note that last definitions always *replace* previous ones
+    # Configuration explicite pour l'Authenticator
+    App\Security\AppAuthenticator:
+        public: true
+        tags: ['security.authenticator']
+        arguments:
+            $urlGenerator: '@router.default'
+            $userRepository: '@App\Repository\UtilisateurRepository'
+            
+
+    # Configuration pour les contrôleurs
+    App\Controller\:
+        resource: '../src/Controller/'
+        tags: ['controller.service_arguments']
+        public: true
+
+# Configuration spécifique pour l'environnement de développement
+when@dev:
+    services:
+        # Désactive certains services du profiler en production
+        Symfony\Bundle\WebProfilerBundle\DataCollector\TemplateAwareDataCollectorInterface:
+            public: false
+
+# Configuration spécifique pour les tests
+when@test:
+    services:
+        # Crée une version de test de l'Authenticator
+        test.App\Security\AppAuthenticator:
+            parent: 'App\Security\AppAuthenticator'
+            public: true
+#          

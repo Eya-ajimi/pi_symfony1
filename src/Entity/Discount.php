@@ -2,83 +2,124 @@
 
 namespace App\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
 use App\Repository\DiscountRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
+use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: DiscountRepository::class)]
-#[ORM\Table(name: 'discount')]
 class Discount
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(name: 'discount_percentage', type: 'decimal', precision: 5, scale: 2)]
-    private string $discountPercentage;
+    #[ORM\Column(type: Types::DECIMAL, precision: 5, scale: 2)]
+    private ?string $discount_percentage = null;
 
-    #[ORM\Column(name: 'start_date', type: 'date')]
-    private \DateTimeInterface $startDate;
+    #[ORM\Column(type: Types::DATE_MUTABLE)]
+    private ?\DateTimeInterface $start_date = null;
 
-    #[ORM\Column(name: 'end_date', type: 'date')]
-    private \DateTimeInterface $endDate;
+    #[ORM\Column(type: Types::DATE_MUTABLE)]
+    private ?\DateTimeInterface $end_date = null;
 
-    #[ORM\Column(name: 'shop_id', type: 'integer')]
-    private int $shopId;
+    #[ORM\ManyToOne(inversedBy: 'discounts')]
+    #[ORM\JoinColumn(name: 'shop_id', referencedColumnName: 'id')]
+    private ?Utilisateur $shop_id = null;
+
+    /**
+     * @var Collection<int, Produit>
+     */
+    #[ORM\OneToMany(targetEntity: Produit::class, mappedBy: 'promotionId')]
+    private Collection $produits;
+
+    public function __construct()
+    {
+        $this->produits = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getDiscountPercentage(): string
+    public function getDiscountPercentage(): ?string
     {
-        return $this->discountPercentage;
+        return $this->discount_percentage;
     }
 
-    public function setDiscountPercentage(string $discountPercentage): self
+    public function setDiscountPercentage(string $discount_percentage): static
     {
-        $this->discountPercentage = $discountPercentage;
+        $this->discount_percentage = $discount_percentage;
+
         return $this;
     }
 
-    public function getStartDate(): \DateTimeInterface
+    public function getStartDate(): ?\DateTimeInterface
     {
-        return $this->startDate;
+        return $this->start_date;
     }
 
-    public function setStartDate(\DateTimeInterface $startDate): self
+    public function setStartDate(\DateTimeInterface $start_date): static
     {
-        $this->startDate = $startDate;
+        $this->start_date = $start_date;
+
         return $this;
     }
 
-    public function getEndDate(): \DateTimeInterface
+    public function getEndDate(): ?\DateTimeInterface
     {
-        return $this->endDate;
+        return $this->end_date;
     }
 
-    public function setEndDate(\DateTimeInterface $endDate): self
+    public function setEndDate(\DateTimeInterface $end_date): static
     {
-        $this->endDate = $endDate;
+        $this->end_date = $end_date;
+
         return $this;
     }
 
-    public function getShopId(): int
+    public function getShopId(): ?Utilisateur
     {
-        return $this->shopId;
+        return $this->shop_id;
     }
 
-    public function setShopId(int $shopId): self
+    public function setShopId(?Utilisateur $shop_id): static
     {
-        $this->shopId = $shopId;
+        $this->shop_id = $shop_id;
+
         return $this;
     }
 
-    // Helper method to check if discount is currently active
-    public function isActive(): bool
+    /**
+     * @return Collection<int, Produit>
+     */
+    public function getProduits(): Collection
     {
-        $now = new \DateTime();
-        return $this->startDate <= $now && $this->endDate >= $now;
+        return $this->produits;
+    }
+
+    public function addProduit(Produit $produit): static
+    {
+        if (!$this->produits->contains($produit)) {
+            $this->produits->add($produit);
+            $produit->setPromotionId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeProduit(Produit $produit): static
+    {
+        if ($this->produits->removeElement($produit)) {
+            // set the owning side to null (unless already changed)
+            if ($produit->getPromotionId() === $this) {
+                $produit->setPromotionId(null);
+            }
+        }
+
+        return $this;
     }
 }
