@@ -1,0 +1,67 @@
+/* dropdown.css */
+/* Sidebar dropdown styles */
+.sidebar-nav .sidebar-item {
+    position: relative;
+}
+
+.sidebar-nav .has-arrow::after {
+    content: "";
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%) rotate(-135deg);
+    width: 5px;
+    height: 5px;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transition: all 0.3s ease;
+}
+
+.sidebar-nav .has-arrow[aria-expanded="true"]::after {
+    transform: translateY(-50%) rotate(45deg);
+}
+
+.sidebar-nav .first-level {
+    padding-left: 30px;
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+.sidebar-nav .sidebar-item.active > .sidebar-link {
+    background: rgba(41, 98, 255, 0.1);
+    color: #2962ff;
+    font-weight: 500;
+}
+
+.sidebar-nav .sidebar-item.active > .sidebar-link i {
+    color: #2962ff;
+}
+
+.sidebar-nav .sidebar-link:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+/* Fix for navbar overlapping content */
+.body-wrapper {
+    padding-top: 70px;
+}
+
+/* Active state for dropdown items */
+.sidebar-nav .first-level .sidebar-item.active .sidebar-link {
+    color: #2962ff;
+    font-weight: 500;
+}
+
+/* Ensure dropdown stays open when item is active */
+.sidebar-nav .first-level.show {
+    display: block;
+}
+
+/* Better visual hierarchy */
+.sidebar-nav .first-level .sidebar-link {
+    padding-left: 15px;
+}
+
+/* Smooth transitions */
+.collapsing {
+    transition: height 0.3s ease;
+}

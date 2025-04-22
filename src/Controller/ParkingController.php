@@ -163,36 +163,43 @@ public function index(Request $request): Response
         $this->addFlash('success', 'Reservation cancelled successfully');
         return $this->redirectToRoute('app_parking_my_reservations');
     }
-    #[Route('/parking/floor/{floor}', name: 'app_parking_floor', methods: ['GET'])]
     public function changeFloor(int $floor): JsonResponse
-    {
-        $floorValue = 'Level ' . $floor;
+{
+    $floorValue = 'Level ' . $floor;
+    $spots = $this->placeParkingRepository->findBy(['floor' => $floorValue]);
+    
+    // Create demo spots if none exist
+    if (empty($spots)) {
+        $this->createDemoSpotsForFloor($floorValue);
         $spots = $this->placeParkingRepository->findBy(['floor' => $floorValue]);
-        $availableSpots = $this->placeParkingRepository->count([
-            'floor' => $floorValue,
-            'statut' => 'free'
-        ]);
-        
-        $totalSpots = $this->placeParkingRepository->count(['floor' => $floorValue]);
-        $occupancyRate = $totalSpots > 0 ? round($occupiedSpots / $totalSpots * 100) : 0;
-        
-        $spotsData = array_map(function($spot) {
-            return [
-                'id' => $spot->getId(),
-                'zone' => $spot->getZone(),
-                'statut' => $spot->getStatut(),
-                'floor' => $spot->getFloor()
-            ];
-        }, $spots);
-        
-        return $this->json([
-            'spots' => $spotsData,
-            'stats' => [
-                'availableSpots' => $availableSpots,
-                'occupancyRate' => $occupancyRate
-            ]
-        ]);
     }
+
+    $availableSpots = $this->placeParkingRepository->count([
+        'floor' => $floorValue,
+        'statut' => 'free'
+    ]);
+    
+    $totalSpots = $this->placeParkingRepository->count(['floor' => $floorValue]);
+    $occupiedSpots = $totalSpots - $availableSpots; // Calculate occupied spots
+    $occupancyRate = $totalSpots > 0 ? round(($occupiedSpots / $totalSpots) * 100) : 0;
+    
+    $spotsData = array_map(function($spot) {
+        return [
+            'id' => $spot->getId(),
+            'zone' => $spot->getZone(),
+            'statut' => $spot->getStatut(),
+            'floor' => $spot->getFloor()
+        ];
+    }, $spots);
+    
+    return $this->json([
+        'spots' => $spotsData,
+        'stats' => [
+            'availableSpots' => $availableSpots,
+            'occupancyRate' => $occupancyRate
+        ]
+    ]);
+}
 
     #[Route('/parking/reserve/{id}', name: 'app_parking_reserve', methods: ['GET', 'POST'])]
     public function reserveSpot(Request $request, PlaceParking $spot): Response
@@ -301,62 +308,68 @@ public function myReservations(): Response
     ]);
 }
 
-#[Route('/admin/parking/floor/{floor}', name: 'admin_parking_floor', methods: ['GET'])]
-public function adminFloor(int $floor): JsonResponse
+#[Route('/admin/parking/floor/{floor}', name: 'app_parking_floor', methods: ['GET'])]
+public function getFloorSpots(int $floor): JsonResponse
 {
-$floorValue = 'Level ' . $floor;
-$spots = $this->placeParkingRepository->findBy(['floor' => $floorValue]);
+    $floorValue = 'Level ' . $floor;
+    $spots = $this->placeParkingRepository->findBy(['floor' => $floorValue]);
+    
+    // Create demo spots if none exist
+    if (empty($spots)) {
+        $this->createDemoSpotsForFloor($floorValue);
+        $spots = $this->placeParkingRepository->findBy(['floor' => $floorValue]);
+    }
 
-$formattedSpots = array_map(function($spot) {
-    return [
-        'id' => $spot->getId(),
-        'zone' => $spot->getZone(),
-        'statut' => $spot->getStatut(),
-        'floor' => $spot->getFloor()
-    ];
-}, $spots);
+    $formattedSpots = array_map(function($spot) {
+        return [
+            'id' => $spot->getId(),
+            'zone' => $spot->getZone(),
+            'floor' => $spot->getFloor(),
+            'statut' => $spot->getStatut()
+        ];
+    }, $spots);
 
-return $this->json([
-    'spots' => $formattedSpots,
-    'stats' => [
-        'total' => count($spots),
-        'available' => $this->placeParkingRepository->count([
-            'floor' => $floorValue,
-            'statut' => 'free'
-        ]),
-        'occupied' => $this->placeParkingRepository->count([
-            'floor' => $floorValue,
-            'statut' => 'taken'
-        ])
-    ]
-]);
+    return $this->json([
+        'spots' => $formattedSpots,
+        'stats' => [
+            'total' => count($spots),
+            'available' => $this->placeParkingRepository->count([
+                'floor' => $floorValue,
+                'statut' => 'free'
+            ]),
+            'occupied' => $this->placeParkingRepository->count([
+                'floor' => $floorValue,
+                'statut' => ['taken', 'reserved']
+            ])
+        ]
+    ]);
 }
 #[Route('/admin/parking/add', name: 'admin_parking_add')]
-    public function addSpot(Request $request): Response
-    {
-        $spot = new PlaceParking();
-        $form = $this->createForm(ParkingSpotType::class, $spot);
-        
-        $form->handleRequest($request);
-        if ($form->isSubmitted() && $form->isValid()) {
-            // Handle zone formatting for new spots
-            $zone = $spot->getZone();
-            if (preg_match('/^[A-Za-z]$/', $zone)) {
-                $spot->setZone('Zone ' . strtoupper($zone));
-            }
-            
-            $this->entityManager->persist($spot);
-            $this->entityManager->flush();
-            
-            $this->addFlash('success', 'Parking spot added successfully!');
-            return $this->redirectToRoute('app_parking_admin');
+public function addSpot(Request $request): Response
+{
+    $spot = new PlaceParking();
+    $form = $this->createForm(ParkingSpotType::class, $spot);
+    
+    $form->handleRequest($request);
+    if ($form->isSubmitted() && $form->isValid()) {
+        // Handle zone formatting for new spots
+        $zone = $spot->getZone();
+        if (preg_match('/^[A-Za-z]$/', $zone)) {
+            $spot->setZone('Zone ' . strtoupper($zone));
         }
         
-        return $this->render('parking/add_spot.html.twig', [
-            'form' => $form->createView(),
-        ]);
+        $this->entityManager->persist($spot);
+        $this->entityManager->flush();
+        
+        $this->addFlash('success', 'Parking spot added successfully!');
+        return $this->redirectToRoute('app_parking_spots', ['floor' => 1]); // Updated redirect
     }
-    #[Route('/admin/parking/edit/{id}', name: 'admin_parking_edit')]
+    
+    return $this->render('parking/add_spot.html.twig', [
+        'form' => $form->createView(),
+    ]);
+}
+#[Route('/admin/parking/edit/{id}', name: 'admin_parking_edit')]
 public function editSpot(Request $request, PlaceParking $spot): Response    
 {
     $form = $this->createForm(ParkingSpotType::class, $spot);
@@ -370,13 +383,13 @@ public function editSpot(Request $request, PlaceParking $spot): Response
         if (preg_match('/^[A-Za-z]$/', $zone)) {
             $spot->setZone('Zone ' . strtoupper($zone));
         }
-        // If it's already in "Zone X" format, leave it as is
-        // Otherwise, it will keep whatever was submitted
         
         $this->entityManager->flush();
         
         $this->addFlash('success', 'Parking spot updated successfully!');
-        return $this->redirectToRoute('app_parking_admin');
+        // Extract floor from spot and redirect back to same floor
+        $floor = str_replace('Level ', '', $spot->getFloor());
+        return $this->redirectToRoute('app_parking_spots', ['floor' => $floor]); // Updated redirect
     }
     
     return $this->render('parking/edit_spot.html.twig', [
@@ -416,11 +429,14 @@ public function updateSpot(int $id, Request $request, EntityManagerInterface $en
 #[Route('/admin/parking/delete/{id}', name: 'admin_parking_delete')]
 public function deleteSpot(PlaceParking $spot): Response
 {
+    // First get the floor before deleting
+    $floor = str_replace('Level ', '', $spot->getFloor());
+    
     $this->entityManager->remove($spot);
     $this->entityManager->flush();
     
     $this->addFlash('success', 'Parking spot deleted successfully!');
-    return $this->redirectToRoute('app_parking_admin');
+    return $this->redirectToRoute('app_parking_spots', ['floor' => $floor]); // Updated redirect
 }
 #[Route('/admin/reservation/edit/{id}', name: 'admin_reservation_edit')]
 public function editReservation(Reservation $reservation): Response
@@ -463,5 +479,89 @@ public function deleteReservation(Reservation $reservation): Response
 
     $this->addFlash('success', 'Reservation deleted successfully!');
     return $this->redirectToRoute('app_parking_admin');
+}
+// Add these new routes to your ParkingController
+
+#[Route('/admin/parking/spots/{floor}', name: 'app_parking_spots', defaults: ['floor' => 1])]
+public function adminSpots(int $floor): Response
+{
+    $floorValue = 'Level ' . $floor;
+    $spots = $this->placeParkingRepository->findBy(['floor' => $floorValue]);
+    
+    // Create demo spots if none exist
+    if (empty($spots)) {
+        $this->createDemoSpotsForFloor($floorValue);
+        $spots = $this->placeParkingRepository->findBy(['floor' => $floorValue]);
+    }
+
+    return $this->render('parking/spotsAdmin.html.twig', [
+        'spots' => $spots,
+        'current_floor' => $floor  // Pass current floor to template
+    ]);
+}
+#[Route('/admin/parking/reservations', name: 'app_parking_reservations')]
+public function adminReservations(): Response
+{
+    $allReservations = $this->reservationRepository->findAll();
+    
+    return $this->render('parking/reservationsAdmin.html.twig', [
+        'all_reservations' => $allReservations,
+    ]);
+}
+
+#[Route('/admin/parking/statistics', name: 'app_parking_statistics')]
+public function adminStatistics(): Response
+{
+    $floorValue = 'Level 1';
+    $spots = $this->placeParkingRepository->findBy(['floor' => $floorValue]);
+    $allReservations = $this->reservationRepository->findAll();
+
+    $totalSpots = count($spots);
+    $availableSpots = $this->placeParkingRepository->count([
+        'floor' => $floorValue,
+        'statut' => 'free'
+    ]);
+    $occupiedSpots = $this->placeParkingRepository->count([
+        'floor' => $floorValue,
+        'statut' => ['taken', 'reserved']
+    ]);
+    $occupancyRate = $totalSpots > 0 ? round(($totalSpots - $availableSpots) / $totalSpots * 100) : 0;
+    $activeReservations = $this->reservationRepository->count(['statut' => 'active']);
+
+    $dailyRevenue = 0;
+    $monthlyRevenue = 0;
+    foreach ($allReservations as $reservation) {
+        if ($reservation->getDateReservation() > new \DateTime('-1 day')) {
+            $dailyRevenue += $reservation->getPrice();
+        }
+        if ($reservation->getDateReservation() > new \DateTime('-1 month')) {
+            $monthlyRevenue += $reservation->getPrice();
+        }
+    }
+
+    $floorStats = [];
+    $floors = ['Level 1', 'Level 2', 'Level 3'];
+    foreach ($floors as $floor) {
+        $total = $this->placeParkingRepository->count(['floor' => $floor]);
+        $available = $this->placeParkingRepository->count(['floor' => $floor, 'statut' => 'free']);
+        $occupied = $this->placeParkingRepository->count(['floor' => $floor, 'statut' => ['taken', 'reserved']]);
+        $floorStats[] = [
+            'floor' => $floor,
+            'total' => $total,
+            'available' => $available,
+            'occupied' => $occupied,
+            'occupancy_rate' => $total > 0 ? round($occupied / $total * 100) : 0
+        ];
+    }
+
+    return $this->render('parking/statisticsAdmin.html.twig', [
+        'total_spots' => $totalSpots,
+        'available_spots' => $availableSpots,
+        'occupancy_rate' => $occupancyRate,
+        'active_reservations' => $activeReservations,
+        'daily_revenue' => $dailyRevenue,
+        'monthly_revenue' => $monthlyRevenue,
+        'floor_stats' => $floorStats,
+    ]);
 }
 }

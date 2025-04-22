@@ -1,0 +1,168 @@
+{# templates/parking/statisticsAdmin.html.twig #}
+{% extends 'backend/base.html.twig' %}
+
+{% block title %}Parking Statistics | Admin{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/parking.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/adminpark.css') }}">
+{% endblock %}
+
+{% block content %}
+    <div class="card" style="margin-top: 100px;>
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="card-title">
+                    <i class="fas fa-chart-pie me-2"></i>Parking Statistics
+                </h4>
+                <button class="btn btn-primary">
+                    <i class="fas fa-download me-2"></i>Export
+                </button>
+            </div>
+
+            {# Stats Cards #}
+            <div class="row mb-4">
+                <div class="col-md-4 col-sm-6 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3 bg-primary bg-opacity-10 p-3 rounded">
+                                    <i class="fas fa-parking text-primary fs-4"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Total Spots</h6>
+                                    <h4 class="mb-0">{{ total_spots ?? 0 }}</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3 bg-success bg-opacity-10 p-3 rounded">
+                                    <i class="fas fa-check-circle text-success fs-4"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Available Spots</h6>
+                                    <h4 class="mb-0">{{ available_spots ?? 0 }}</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3 bg-info bg-opacity-10 p-3 rounded">
+                                    <i class="fas fa-percentage text-info fs-4"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Occupancy Rate</h6>
+                                    <h4 class="mb-0">{{ occupancy_rate ?? 0 }}%</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3 bg-warning bg-opacity-10 p-3 rounded">
+                                    <i class="fas fa-calendar-check text-warning fs-4"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Active Reservations</h6>
+                                    <h4 class="mb-0">{{ active_reservations ?? 0 }}</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3 bg-danger bg-opacity-10 p-3 rounded">
+                                    <i class="fas fa-money-bill-wave text-danger fs-4"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Today's Revenue</h6>
+                                    <h4 class="mb-0">{{ daily_revenue ?? 0 }} TND</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3 bg-secondary bg-opacity-10 p-3 rounded">
+                                    <i class="fas fa-chart-line text-secondary fs-4"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Monthly Revenue</h6>
+                                    <h4 class="mb-0">{{ monthly_revenue ?? 0 }} TND</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# Floor Stats #}
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Floor Statistics</h5>
+                    {% if floor_stats is defined and floor_stats|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Floor</th>
+                                        <th>Total Spots</th>
+                                        <th>Available</th>
+                                        <th>Occupied</th>
+                                        <th>Occupancy Rate</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for floor_stat in floor_stats %}
+                                        <tr>
+                                            <td>{{ floor_stat.floor }}</td>
+                                            <td>{{ floor_stat.total }}</td>
+                                            <td>{{ floor_stat.available }}</td>
+                                            <td>{{ floor_stat.occupied }}</td>
+                                            <td>
+                                                <div class="progress" style="height: 20px;">
+                                                    <div class="progress-bar bg-{{ floor_stat.occupancy_rate > 80 ? 'danger' : floor_stat.occupancy_rate > 50 ? 'warning' : 'success' }}" 
+                                                         role="progressbar" 
+                                                         style="width: {{ floor_stat.occupancy_rate }}%" 
+                                                         aria-valuenow="{{ floor_stat.occupancy_rate }}" 
+                                                         aria-valuemin="0" 
+                                                         aria-valuemax="100">
+                                                        {{ floor_stat.occupancy_rate }}%
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-chart-area fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No floor statistics available.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

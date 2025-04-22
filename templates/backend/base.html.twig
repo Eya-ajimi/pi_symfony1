@@ -6,16 +6,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no ">
   <title>Innomall</title>
 
-
-{% block stylesheets %}
+  {% block stylesheets %}
     <link rel="stylesheet" href="{{ asset('assets/css2/css/styles.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css2/css/atms.css') }}">  
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-{% endblock %}
+  {% endblock %}
   <link rel="shortcut icon" type="image/png"href="{{ asset('assets/css2/images/logos/favicon.png') }}" />
-
-
- 
 </head>
 
 <body>
@@ -94,14 +90,41 @@
                 <span class="hide-menu">Atms</span>
               </a>
             </li>
-            <li class="sidebar-item">
-              <a class="sidebar-link" href="{{path('app_parkingadmin')}}" aria-expanded="false">
-                <span>
-                  <i class="ti ti-typography"></i>
-                </span>
-                <span class="hide-menu">Parking</span>
-              </a>
-            </li>
+            
+            <!-- Parking Dropdown Menu -->
+<li class="sidebar-item {% if app.request.pathinfo starts with '/admin/parking' or app.request.get('_route') starts with 'app_parking_' %}active{% endif %}">
+  <a class="sidebar-link {% if app.request.pathinfo starts with '/admin/parking' or app.request.get('_route') starts with 'app_parking_' %}active{% endif %}" 
+     href="#collapseParking" 
+     data-bs-toggle="collapse" 
+     aria-expanded="{% if app.request.pathinfo starts with '/admin/parking' or app.request.get('_route') starts with 'app_parking_' %}true{% else %}false{% endif %}" 
+     aria-controls="collapseParking">
+    <span>
+      <i class="ti ti-car"></i>
+    </span>
+    <span class="hide-menu">Parking</span>
+    <span class="menu-arrow"><i class="ti ti-chevron-down"></i></span>
+  </a>
+  <ul class="collapse sidebar-collapse {% if app.request.pathinfo starts with '/admin/parking' or app.request.get('_route') starts with 'app_parking_' %}show{% endif %}" id="collapseParking">
+    <li class="sidebar-item {% if app.request.get('_route') == 'app_parking_spots' %}active{% endif %}">
+      <a href="{{ path('app_parking_spots') }}" class="sidebar-link {% if app.request.get('_route') == 'app_parking_spots' %}active{% endif %}">
+        <i class="ti ti-circle-dot fs-6 me-2"></i>
+        <span class="hide-menu">Parking Spots</span>
+      </a>
+    </li>
+    <li class="sidebar-item {% if app.request.get('_route') == 'app_parking_reservations' %}active{% endif %}">
+      <a href="{{ path('app_parking_reservations') }}" class="sidebar-link {% if app.request.get('_route') == 'app_parking_reservations' %}active{% endif %}">
+        <i class="ti ti-circle-dot fs-6 me-2"></i>
+        <span class="hide-menu">Reservations</span>
+      </a>
+    </li>
+    <li class="sidebar-item {% if app.request.get('_route') == 'app_parking_statistics' %}active{% endif %}">
+      <a href="{{ path('app_parking_statistics') }}" class="sidebar-link {% if app.request.get('_route') == 'app_parking_statistics' %}active{% endif %}">
+        <i class="ti ti-circle-dot fs-6 me-2"></i>
+        <span class="hide-menu">Statistics</span>
+      </a>
+    </li>
+  </ul>
+</li>
            
 
             <li class="sidebar-item">
@@ -171,11 +194,9 @@
       <!--  Header End -->
 
       <main class="container-fluid py-4">
-    {% block content %}
-
-    
-    {% endblock %}
-  </main>
+        {% block content %}
+        {% endblock %}
+      </main>
       
     </div>
   </div>
@@ -184,6 +205,7 @@
   <script src="../assets/css2/js/sidebarmenu.js"></script>
   <script src="../assets/css2/js/app.min.js"></script>
   <script src="../assets/css2/libs/simplebar/dist/simplebar.js"></script>
+  
 </body>
 
 </html>
