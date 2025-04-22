@@ -36,3 +36,4 @@ shopowner_dashboard:
 client_dashboard:
     path: /client/dashboard
     controller: App\Controller\ClientController::dashboard
+
