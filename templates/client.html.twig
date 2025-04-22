@@ -44,29 +44,28 @@ body {
 
 /* Card Header */
 .card-header {
-    background: linear-gradient(90deg, #5c8fb1 0%, #4a7d97 100%);
+    background: linear-gradient(90deg, rgb(131, 200, 242) 0%, rgb(131, 200, 242) 40%);
     padding: 0.3rem 1rem;
     display: flex;
     justify-content: space-between;
-    align-items: center; /* centre verticalement */
-    height: 45px; /* légèrement augmenté pour plus d’espace */
+    align-items: center;
+    height: 45px;
     border-top-left-radius: 12px;
     border-top-right-radius: 12px;
 }
 .card-header h4 {
     margin: 0;
     font-weight: 500;
-    font-size: 1rem; /* Réduction de la taille du texte */
+    font-size: 1rem;
     color: white;
 }
 .card-header .btn {
     font-size: 0.85rem;
     padding: 0.35rem 0.8rem;
     line-height: 1.1;
-    margin: 0; /* supprime marges inutiles */
-    align-self: center; /* centre dans le header */
+    margin: 0;
+    align-self: center;
 }
-
 
 /* Card Body */
 .card-body {
@@ -128,9 +127,9 @@ form .form-control:focus {
     transition: background 0.3s;
 }
 .btn.btn-outline-primary {
-    background: transparent;
+    background: white;
     color: #f4a261;
-    border: 2px solid #f4a261;
+    border: 2px solid rgb(234, 164, 106);
 }
 .btn.btn-outline-primary:hover {
     background: #f4a261;
@@ -208,6 +207,13 @@ form .form-control:focus {
                 </div>
             </form>
         </div>
+    </div>
+
+    <!-- BOUTON DE DÉCONNEXION -->
+    <div style="text-align: right;">
+        <a href="{{ path('app_logout') }}" class="btn btn-danger mt-3">
+            <i class="fas fa-sign-out-alt"></i> Déconnexion
+        </a>
     </div>
 </div>
 

@@ -89,7 +89,7 @@ class AppAuthenticator extends AbstractLoginFormAuthenticator implements Authent
 
                 return $user;
             }),
-            new PasswordCredentials($password),
+            new PasswordCredentials($password),    //verifier au base
             [
                 new CsrfTokenBadge('authenticate', $csrfToken),
             ]
@@ -98,7 +98,7 @@ class AppAuthenticator extends AbstractLoginFormAuthenticator implements Authent
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
-        $user = $token->getUser();
+        $user = $token->getUser();             //recuper utilisateur cnct
         
         if (!$user instanceof Utilisateur) {
             $this->logger->error('Invalid user type', [

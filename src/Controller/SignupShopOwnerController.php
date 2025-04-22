@@ -21,9 +21,9 @@ class SignupShopOwnerController extends AbstractController
         UserPasswordHasherInterface $passwordHasher
     ): Response {
         $user = new Utilisateur();
-        $form = $this->createForm(ShopOwnerRegistrationType::class, $user);
+        $form = $this->createForm(ShopOwnerRegistrationType::class, $user);  //On crée le formulaire à partir de la classe ShopOwnerRegistrationType
         
-        $form->handleRequest($request);
+        $form->handleRequest($request);   //Si le formulaire a été soumis (POST)
         
         if ($form->isSubmitted() && $form->isValid()) {
             // Configuration spécifique shop owner
