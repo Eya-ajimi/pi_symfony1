@@ -1,0 +1,455 @@
+:root {
+    --primary-color: #f4a261;
+    --secondary-color: #2a9d8f;
+    --background-color: #f8f9fa;
+    --card-bg: #ffffff;
+    --text-color: #333;
+    --border-color: #e0e0e0;
+    --filter-bg: rgb(255, 255, 255);
+    --filter-accent: #a8d4ff;
+}
+
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Fixed shops container - removed the * selector */
+.shops-container {
+    display: flex;
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 0 15px;
+    gap: 30px;
+}
+
+/* Rest of your CSS remains the same */
+.shops-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 25px;
+}
+
+.shop-card {
+    background-color: var(--card-bg);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+
+.shop-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+}
+
+.shop-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.shop-header h3 {
+    font-size: 1.3rem;
+    margin-bottom: 5px;
+    color: var(--text-color);
+}
+
+.shop-rating {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.stars {
+    color: #ffc107;
+    margin-right: 10px;
+}
+
+.rating-count {
+    font-size: 0.9rem;
+    color: #777;
+}
+
+
+/*erro*/
+.tooltip-error {
+    position: absolute;
+    bottom: 100%;
+    left: 10px;
+    transform: translateY(-5px);
+    background-color: #E63946;
+    color: white;
+    padding: 6px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 9999;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    animation: fadeIn 0.3s ease-in-out;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to   { opacity: 1; transform: translateY(-5px); }
+  }
+
+
+/* Optional: Customize browser tooltip look? You can use a tooltip library if needed. */
+
+
+
+/**/
+
+
+.shop-body {
+    padding: 20px;
+}
+
+.shop-description {
+    margin-bottom: 15px;
+    line-height: 1.5;
+    color: #555;
+}
+
+.shop-details {
+    margin-bottom: 15px;
+}
+
+.detail-item {
+    display: flex;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+}
+
+.detail-item i {
+    margin-right: 10px;
+    color: var(--primary-color);
+    width: 20px;
+    text-align: center;
+}
+
+.shop-promo {
+    background-color: #fff9e6;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+    border-left: 3px solid var(--primary-color);
+}
+
+.shop-website {
+    display: inline-block;
+    color: var(--secondary-color);
+    text-decoration: none;
+    font-weight: 500;
+    margin-top: 10px;
+    transition: color 0.3s ease;
+}
+
+.shop-website:hover {
+    color: var(--primary-color);
+    text-decoration: underline;
+}
+
+/* Rating System */
+.rating-form {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid var(--border-color);
+}
+
+.rating-form h4 {
+    margin-bottom: 10px;
+    font-size: 0.95rem;
+}
+
+.rating-stars {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+.rating-stars input {
+    display: none;
+}
+
+.rating-stars label {
+    font-size: 1.5rem;
+    color: #ddd;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.rating-stars label:hover,
+.rating-stars label:hover ~ label,
+.rating-stars input:checked ~ label {
+    color: #ffc107;
+}
+
+.submit-rating {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.3s;
+}
+
+.submit-rating:hover {
+    background-color: #e08d4a;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .shops-container {
+        flex-direction: column;
+    }
+
+    .filter-section {
+        width: 100%;
+        position: static;
+        margin-bottom: 20px;
+    }
+
+    .shops-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Enhanced Filter Section */
+.filter-section {
+    width: 280px;
+    background-color: var(--filter-bg);
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+}
+
+.filter-section h2 {
+    font-size: 1.5rem;
+    margin-bottom: 25px;
+    color: var(--text-color);
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--filter-accent);
+}
+
+.filter-group {
+    margin-bottom: 25px;
+    background-color: rgba(255, 255, 255, 0.7);
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid var(--filter-accent);
+}
+
+.filter-group h3 {
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+}
+
+.filter-group h3 i {
+    margin-right: 10px;
+    color: var(--primary-color);
+}
+
+.filter-options {
+    list-style: none;
+}
+
+.filter-options li {
+    margin-bottom: 10px;
+    padding: 5px 0;
+    border-bottom: 1px dashed rgba(0, 0, 0, 0.1);
+}
+
+.filter-options li:last-child {
+    border-bottom: none;
+}
+
+.filter-options label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+
+.filter-options label:hover {
+    color: var(--primary-color);
+    transform: translateX(5px);
+}
+
+.filter-options input[type="checkbox"],
+.filter-options input[type="radio"] {
+    margin-right: 12px;
+    width: 16px;
+    height: 16px;
+    accent-color: var(--primary-color);
+}
+
+/* Rating Filter */
+.rating-filter {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.rating-option {
+    display: flex;
+    align-items: center;
+}
+
+.rating-stars-filter {
+    display: flex;
+    margin-left: 10px;
+}
+
+.rating-stars-filter i {
+    color: #ffc107;
+    font-size: 0.9rem;
+}
+
+/* Price Range Filter */
+.price-range {
+    width: 100%;
+    margin-top: 10px;
+}
+
+.price-range-values {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 5px;
+    font-size: 0.85rem;
+    color: #666;
+}
+
+/* Search Filter */
+.search-filter {
+    margin-bottom: 20px;
+}
+
+.search-filter input {
+    width: 250px;
+    padding: 10px 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 25px;
+    font-size: 0.95rem;
+    background-color: rgba(255, 255, 255, 0.8);
+    transition: all 0.3s ease;
+}
+
+.search-filter input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(244, 162, 97, 0.2);
+}
+
+/* Reset Button */
+.filter-reset {
+    width: 100%;
+    padding: 10px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+}
+
+.filter-reset:hover {
+    background-color: #e08d4a;
+    transform: translateY(-2px);
+}
+
+/* Shops Grid (unchanged from previous) */
+.shops-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 25px;
+}
+
+/* ... (rest of your existing shop card styles) ... */
+
+@media (max-width: 768px) {
+    .shops-container {
+        flex-direction: column;
+    }
+
+    .filter-section {
+        width: 100%;
+        position: static;
+        margin-bottom: 20px;
+    }
+}
+
+/***********************************/
+.star-rating {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+}
+
+.star-rating input[type="radio"] {
+    display: none;
+}
+
+.star-rating label {
+    font-size: 1.5em;
+    color: #ddd;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.star-rating input[type="radio"]:checked ~ label,
+.star-rating label:hover,
+.star-rating label:hover ~ label {
+    color: #ffc107;
+}
+
+.shop-rating .stars i {
+    color: #ffc107;
+}
+
+/* Display selected rating */
+.star-rating input[type="radio"]:checked + label {
+    color: #ffc107;
+}
+/***********/
+
+/* Style for the View Product button */
+.view-product-container {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.view-product-btn {
+    background-color: #6aa6c9; /* Green background */
+    color: white; /* White text */
+    padding: 10px 20px; /* Padding */
+    text-decoration: none; /* Remove underline */
+    font-size: 16px;
+    border-radius: 20px; /* Rounded corners */
+    border: none; /* No border */
+    cursor: pointer; /* Pointer cursor */
+    transition: background-color 0.3s; /* Smooth transition */
+}
+
+.view-product-btn:hover {
+    background-color: #5c8fb1; /* Darker green on hover */
+}
