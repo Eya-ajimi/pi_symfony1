@@ -1,8 +1,6 @@
 <?php
 // src/Controller/maria/ShopownerController.php
 namespace App\Controller\maria;
-
-
 use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\EventRepository;
 use App\Repository\UtilisateurRepository;
@@ -13,6 +11,7 @@ use App\Repository\ScheduleRepository;
 use App\Repository\CommandeRepository;
 use App\Repository\PanierRepository;
 use App\Repository\CategorieRepository;
+use App\Repository\FeedbackRepository;
 use App\Repository\DiscountRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -27,46 +26,44 @@ use App\Entity\Commande;
 use App\Entity\Panier;
 use App\Entity\LikedProduct;
 use App\Entity\Categorie;
-
 use App\Form\EventType;
 use App\Form\maria\ProductType;
 use App\Form\maria\EditProductType;
 use App\Form\maria\DiscountType;
 use App\Form\maria\ScheduleType;
-;
-
+use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class ShopownerController extends AbstractController
 {
+    private $currentId = 8; // This will be replaced with session ID later
+
     //Main
-
     #[Route('/admindashboard', name: 'dashboard')]
-    public function dashboard(): Response
-    {
-        return $this->render('maria_templates/admindashboard.html.twig');
+    public function dashboard(
+        EntityManagerInterface $entityManager,
+        FeedbackRepository $feedbackRepository,
+        ProduitRepository $produitRepository
+    ): Response {
+        // Get the current shop owner (using the currentId property we added earlier)
+        $shop = $entityManager->getRepository(Utilisateur::class)->find($this->currentId);
+        if (!$shop) {
+            throw $this->createNotFoundException('Shop not found');
+        }
+
+        // Get average rating
+        $averageRating = $feedbackRepository->getAverageRatingValue($shop);
+        $ratingCount = $feedbackRepository->countByShop($shop);
+
+        // Get product count
+        $productCount = $produitRepository->count(['shopId' => $shop]);
+
+        return $this->render('maria_templates/admindashboard.html.twig', [
+            'averageRating' => $averageRating,
+            'ratingCount' => $ratingCount,
+            'productCount' => $productCount,
+        ]);
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     //**************************************************************************************************************************** */
 
@@ -76,8 +73,8 @@ class ShopownerController extends AbstractController
         ProduitRepository $produitRepository,
         DiscountRepository $discountRepo
     ): Response {
-        // Get the current shop owner (static ID 8)
-        $user = $entityManager->getRepository(Utilisateur::class)->find(8);
+        // Get the current shop owner
+        $user = $entityManager->getRepository(Utilisateur::class)->find($this->currentId);
         if (!$user) {
             throw $this->createNotFoundException('User not found');
         }
@@ -104,7 +101,6 @@ class ShopownerController extends AbstractController
             'discounts' => $discounts
         ]);
     }
-    // src/Controller/ProductController.php
 
     #[Route('/product/new', name: 'product_new')]
     public function new(Request $request, EntityManagerInterface $em, UtilisateurRepository $utilisateurRepo): Response
@@ -114,8 +110,8 @@ class ShopownerController extends AbstractController
 
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
-            // Get the Utilisateur with ID 8 as the shop owner
-            $shop = $utilisateurRepo->find(8);
+            // Get the current shop owner
+            $shop = $utilisateurRepo->find($this->currentId);
             if (!$shop) {
                 throw $this->createNotFoundException('Shop owner not found');
             }
@@ -129,7 +125,6 @@ class ShopownerController extends AbstractController
                     $originalFilename
                 );
                 $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
-
 
                 //default saving path 
                 $targetDirectory = $this->getParameter('kernel.project_dir') . '/public/resources/assets/product_images/';
@@ -164,8 +159,6 @@ class ShopownerController extends AbstractController
         ]);
     }
 
-
-
     #[Route('/product/edit/{id}', name: 'product_edit', methods: ['GET', 'POST'])]
     public function editProduct(
         int $id,
@@ -180,7 +173,7 @@ class ShopownerController extends AbstractController
             throw $this->createNotFoundException('Product not found');
         }
 
-        $shop = $utilisateurRepo->find(8); // Static shop ID 8
+        $shop = $utilisateurRepo->find($this->currentId);
         $discounts = $discountRepo->findBy(['shop' => $shop]);
         $count = $discountRepo->count(['shop' => $shop]);
         dump($count);
@@ -198,7 +191,7 @@ class ShopownerController extends AbstractController
                 $newFilename = uniqid() . '.' . $imageFile->guessExtension();
                 $targetDirectory = $this->getParameter('kernel.project_dir') . '/public/resources/assets/product_images/';
                 $imageFile->move($targetDirectory, $newFilename);
-                $product->setImageUrl('resources/assets/product_images/' . $newFilename);
+                $product->setImage_url('resources/assets/product_images/' . $newFilename);
             }
 
             $em->flush();
@@ -230,20 +223,17 @@ class ShopownerController extends AbstractController
         return $this->redirectToRoute('products');
     }
 
-
     #[Route('/discounts', name: 'discounts')]
     public function discounts(
         EntityManagerInterface $em,
         Request $request
     ): Response {
-        // Get the current shop owner (static ID 8)
-        $shop = $em->getRepository(Utilisateur::class)->find(8);
+        // Get the current shop owner
+        $shop = $em->getRepository(Utilisateur::class)->find($this->currentId);
 
         // Create new discount form for the "Add" modal
         $discount = new Discount();
-        $discount->setShop
-
-        ($shop);
+        $discount->setShop($shop);
         $addForm = $this->createForm(DiscountType::class, $discount);
 
         // Get existing discounts
@@ -258,14 +248,14 @@ class ShopownerController extends AbstractController
         return $this->render('maria_templates/discounts.html.twig', [
             'discounts' => $discounts,
             'addForm' => $addForm->createView(),
-            'editForms' => $editForms,  // This will be an array of form views keyed by discount ID
+            'editForms' => $editForms,
         ]);
     }
 
     #[Route('/discount/new', name: 'discount_new', methods: ['POST'])]
     public function newDiscount(Request $request, EntityManagerInterface $em): Response
     {
-        $shop = $em->getRepository(Utilisateur::class)->find(8);
+        $shop = $em->getRepository(Utilisateur::class)->find($this->currentId);
         $discount = new Discount();
         $discount->setShop($shop);
 
@@ -301,6 +291,7 @@ class ShopownerController extends AbstractController
 
         return $this->redirectToRoute('discounts');
     }
+
     #[Route('/discount/delete/{id}', name: 'discount_delete', methods: ['POST'])]
     public function deleteDiscount(int $id, EntityManagerInterface $em): Response
     {
@@ -310,7 +301,7 @@ class ShopownerController extends AbstractController
         }
 
         // First, remove discount reference from all products
-        $em->createQuery('UPDATE App\Entity\Produit p SET p.discount = NULL WHERE p.discount = :discount')
+        $em->createQuery('UPDATE App\Entity\Produit p SET p.promotionId = NULL WHERE p.promotionId = :discount')
             ->setParameter('discount', $discount)
             ->execute();
 
@@ -320,18 +311,16 @@ class ShopownerController extends AbstractController
 
         return $this->redirectToRoute('discounts');
     }
+
     //Schedule 
-
-
-
     #[Route('/schedule', name: 'schedule')]
     public function schedule(
         ScheduleRepository $scheduleRepo,
         EntityManagerInterface $em
     ): Response {
-        $shop = $em->getRepository(Utilisateur::class)->find(8);
+        $shop = $em->getRepository(Utilisateur::class)->find($this->currentId);
         if (!$shop) {
-            throw $this->createNotFoundException('Shop with ID 8 not found');
+            throw $this->createNotFoundException('Shop not found');
         }
 
         $schedules = $scheduleRepo->findBy(['shop' => $shop], ['dayOfWeek' => 'ASC']);
@@ -359,15 +348,13 @@ class ShopownerController extends AbstractController
 
     #[Route('/schedule/new', name: 'schedule_new', methods: ['POST'])]
     public function newSchedule(
-
         Request $request,
         EntityManagerInterface $em,
         UtilisateurRepository $utilisateurRepo
     ): Response {
-        $current_user = 8;
-        $shop = $utilisateurRepo->findutilisateurbyid($current_user);
+        $shop = $utilisateurRepo->find($this->currentId);
         if (!$shop) {
-            throw $this->createNotFoundException('Shop with ID 8 not found');
+            throw $this->createNotFoundException('Shop not found');
         }
 
         $schedule = new Schedule();
@@ -404,7 +391,6 @@ class ShopownerController extends AbstractController
         EntityManagerInterface $em,
         ScheduleRepository $scheduleRepo
     ): Response {
-
         $schedule = $scheduleRepo->find($id);
         if (!$schedule) {
             throw $this->createNotFoundException('Schedule not found');
@@ -438,6 +424,7 @@ class ShopownerController extends AbstractController
         }
         return $this->redirectToRoute('schedule');
     }
+
     #[Route('/schedule/delete/{id}', name: 'schedule_delete', methods: ['POST'])]
     public function deleteSchedule(
         int $id,
@@ -449,8 +436,8 @@ class ShopownerController extends AbstractController
             throw $this->createNotFoundException('Schedule not found');
         }
 
-        // Verify schedule belongs to shop ID 8
-        if ($schedule->getUtilisateur()->getId() !== 8) {
+        // Verify schedule belongs to current shop
+        if ($schedule->getUtilisateur()->getId() !== $this->currentId) {
             throw $this->createAccessDeniedException('You can only delete schedules for your shop');
         }
 
@@ -460,13 +447,13 @@ class ShopownerController extends AbstractController
         $this->addFlash('success', 'Schedule deleted successfully!');
         return $this->redirectToRoute('schedule');
     }
-    // Partie Oussema
 
+    // Partie Oussema
     // Events - Keep only this one version
     #[Route('/events', name: 'events')]
     public function events(EntityManagerInterface $entityManager, Request $request): Response
     {
-        $user = $entityManager->getRepository(Utilisateur::class)->find(8);
+        $user = $entityManager->getRepository(Utilisateur::class)->find($this->currentId);
 
         if (!$user) {
             throw $this->createNotFoundException('User not found');
@@ -518,8 +505,6 @@ class ShopownerController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // The form will automatically handle the DateTimeImmutable to string conversion
-            // through the entity's setter methods
             $entityManager->flush();
 
             $this->addFlash('success', 'Event updated successfully!');
@@ -548,13 +533,11 @@ class ShopownerController extends AbstractController
         return $this->redirectToRoute('events');
     }
 
-    //Commands 
-
+    //Commands  houssem
     #[Route('/commands', name: 'commands')]
     public function commands(CommandeRepository $commandeRepository): Response
     {
-        $shopOwnerId = 8; // Static ID (or fetch dynamically)
-        $todayCommands = $commandeRepository->findTodayPaidOrdersByShop($shopOwnerId);
+        $todayCommands = $commandeRepository->findTodayPaidOrdersByShop($this->currentId);
 
         $result = [];
         foreach ($todayCommands as $commande) {
@@ -569,17 +552,18 @@ class ShopownerController extends AbstractController
 
         return $this->render('maria_templates/commands.html.twig', [
             'commands' => $result,
-            'utilisateurId' => $shopOwnerId, // ✅ Now passed to Twig
+            'utilisateurId' => $this->currentId,
         ]);
     }
+
     //Profile 
     #[Route('/profile', name: 'profile')]
     public function profile(
         UtilisateurRepository $userRepo,
         CategorieRepository $categorieRepository
     ): Response {
-        $user = $userRepo->find(8); // Static ID=8
-        $category = $categorieRepository->findCategoryByUserId(8);
+        $user = $userRepo->find($this->currentId);
+        $category = $categorieRepository->findCategoryByUserId($this->currentId);
 
         return $this->render('maria_templates/profile.html.twig', [
             'user' => $user,
@@ -587,6 +571,7 @@ class ShopownerController extends AbstractController
         ]);
     }
 
+    //aziz
     #[Route('/profile/shopowner_edit', name: 'shopowner_edit', methods: ['GET', 'POST'])]
     public function shopowner_edit(
         Request $request,
@@ -595,11 +580,10 @@ class ShopownerController extends AbstractController
         CategorieRepository $categorieRepo,
         UtilisateurRepository $userRepo
     ): Response {
-        // Static user ID = 8 (for testing)
-        $user = $userRepo->find(8);
+        $user = $userRepo->find($this->currentId);
 
         if (!$user) {
-            throw $this->createNotFoundException('Shop owner with ID 8 not found.');
+            throw $this->createNotFoundException('Shop owner not found.');
         }
 
         $categories = $categorieRepo->findAll();

@@ -1,5 +1,5 @@
 {% extends "maria_templates/base.html.twig" %}
-{% block title %}commands
+{% block title %}Commands
 {% endblock %}
 
 {% block body %}
@@ -35,7 +35,7 @@
 
 		th {
 			background-color: #d9edf7;
-			color: #31708f;
+			color: #4B49AC;
 			font-weight: bold;
 		}
 
@@ -44,7 +44,7 @@
 		}
 
 		.details-btn {
-			background-color: #e6b949;
+			background-color:#4B49AC;
 			color: white;
 			border: none;
 			padding: 10px 20px;
@@ -57,7 +57,8 @@
 		}
 
 		.details-btn:hover {
-			background-color: #d1a73e;
+			background-color: #FFF07B;
+			color:#4B49AC
 		}
 
 		.back-link {
@@ -109,15 +110,14 @@
 			}
 		}
 	</style>
-	<h1>commands</h1>
 	<div class="container">
 		<div class="card" style="padding:20px ;margin:20px">
-			<h1>Commandes Payées Aujourd'hui</h1>
+			<h1>Today's paid commands</h1>
 
 			<table>
 				<thead>
 					<tr>
-						<th>Numero ticket</th>
+						<th>Ticket number</th>
 						<th>Client</th>
 						<th>Date</th>
 						<th>Total</th>

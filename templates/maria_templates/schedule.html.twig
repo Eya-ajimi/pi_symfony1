@@ -104,9 +104,9 @@
                             }
                         }) }}
 							<div class="form-group">
-								<label>Day of Week</label>
-								<input type="text" class="form-control" value="{{ schedule.dayOfWeek.value }}" readonly>
-							</div>
+    {{ form_label(editForms[schedule.id].dayOfWeek) }}
+    {{ form_widget(editForms[schedule.id].dayOfWeek, {'attr': {'readonly': true}}) }}
+</div>
 
 							<div class="form-row">
 								<div class="form-group">

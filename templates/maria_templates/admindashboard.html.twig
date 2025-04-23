@@ -1,19 +1,285 @@
+{# templates/dashboard/index.html.twig #}
 {% extends "maria_templates/base.html.twig" %}
 
-{% block title %}Dashboard
+{% block title %}Shop Dashboard
 {% endblock %}
 
-{% block body %}
-	<div class="content-container">
-		<div class="content-card">
-			<h2>My dashboard content going to be hereeee</h2>
-			<!-- Your dashboard content here -->
-		</div>
 
-		<div class="content-card">
-			<h2>test card </h2>
-			<!-- Activity content here -->
+{% block body %}
+	<div class="dashboard-container">
+		<div class="main-content">
+
+			<div class="dashboard-stats">
+				<div class="stat-card client-of-month" style="justify-content:center">
+					<div class="stat-icon">
+						<i class="fas fa-trophy"></i>
+					</div>
+					<div class="stat-info">
+						<h3 style="  content: '🏆';">Client of the Month</h3>
+						<div class="client-info">
+							<img src="{{ asset('images/user.JPG') }}" alt="Client" class="client-avatar">
+							<div class="client-details">
+								<h4>Mariem Ammari
+								</h4>
+
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="stat-card average-rating">
+					<div class="stat-icon">
+						<i class="fas fa-star"></i>
+					</div>
+					<div class="stat-info">
+						<h3>Average Rating</h3>
+						<div class="rating-display">
+							<span class="rating-value">{{ averageRating|number_format(1) }}</span>
+							<div class="star-rating">
+								{% for i in 1..5 %}
+									{% if averageRating >= i %}
+										<i class="fas fa-star"></i>
+									{% elseif averageRating > (i - 0.8) %}
+										<i class="fas fa-star-half-alt"></i>
+									{% else %}
+										<i class="far fa-star"></i>
+									{% endif %}
+								{% endfor %}
+							</div>
+							<span class="rating-count">({{ ratingCount }}
+								reviews)</span>
+						</div>
+					</div>
+				</div>
+
+				<div class="stat-card product-count">
+					<div class="stat-icon">
+						<i class="fas fa-box"></i>
+					</div>
+					<div class="stat-info">
+						<h3>Total Products</h3>
+						<div class="product-stats">
+							<h2 class="">11</h2>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="dashboard-main-content">
+				<div class="content-section top-products">
+					<div class="section-header">
+						<h2>Top Liked Products</h2>
+						<a href="#" class="view-all">View All</a>
+					</div>
+					<div class="products-grid">
+						<div class="product-card">
+							<div class="product-image">
+								<img src="{{ asset('images/product1.jpg') }}" alt="Product 1">
+							</div>
+							<div class="product-info">
+								<h4>Premium T-Shirt</h4>
+								<div class="product-meta">
+									<span class="product-price">$29.99</span>
+									<span class="product-likes">
+										<i class="fas fa-heart"></i>
+										347</span>
+								</div>
+								<div class="product-stock in-stock">In Stock (42)</div>
+							</div>
+						</div>
+
+						<div class="product-card">
+							<div class="product-image">
+								<img src="{{ asset('images/product2.jpg') }}" alt="Product 2">
+							</div>
+							<div class="product-info">
+								<h4>Designer Sunglasses</h4>
+								<div class="product-meta">
+									<span class="product-price">$79.99</span>
+									<span class="product-likes">
+										<i class="fas fa-heart"></i>
+										286</span>
+								</div>
+								<div class="product-stock in-stock">In Stock (15)</div>
+							</div>
+						</div>
+
+						<div class="product-card">
+							<div class="product-image">
+								<img src="{{ asset('images/product3.jpg') }}" alt="Product 3">
+							</div>
+							<div class="product-info">
+								<h4>Leather Watch</h4>
+								<div class="product-meta">
+									<span class="product-price">$129.99</span>
+									<span class="product-likes">
+										<i class="fas fa-heart"></i>
+										254</span>
+								</div>
+								<div class="product-stock low-stock">Low Stock (3)</div>
+							</div>
+						</div>
+
+						<div class="product-card">
+							<div class="product-image">
+								<img src="{{ asset('images/product4.jpg') }}" alt="Product 4">
+							</div>
+							<div class="product-info">
+								<h4>Wireless Earbuds</h4>
+								<div class="product-meta">
+									<span class="product-price">$89.99</span>
+									<span class="product-likes">
+										<i class="fas fa-heart"></i>
+										218</span>
+								</div>
+								<div class="product-stock out-of-stock">Out of Stock</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="charts-container">
+					<div class="chart-section ratings-chart">
+						<div class="section-header">
+							<h2>Ratings Distribution</h2>
+						</div>
+						<div class="chart-container">
+							<canvas id="ratingsChart"></canvas>
+						</div>
+					</div>
+
+					<div class="chart-section sales-chart">
+						<div class="section-header">
+							<h2>Product Sales</h2>
+						</div>
+						<div class="chart-container">
+							<canvas id="salesChart"></canvas>
+						</div>
+					</div>
+				</div>
+
+				<div class="content-section stock-status">
+					<div class="section-header">
+						<h2>Stock Status</h2>
+					</div>
+					<div class="stock-tabs">
+						<button class="tab-button active" data-tab="low-stock">Low Stock</button>
+						<button class="tab-button" data-tab="out-of-stock">Out of Stock</button>
+					</div>
+					<div class="tab-content" id="low-stock">
+						<table class="stock-table">
+							<thead>
+								<tr>
+									<th>Product</th>
+									<th>Category</th>
+									<th>Current Stock</th>
+									<th>Action</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td>
+										<div class="product-cell">
+											<img src="{{ asset('images/product3.jpg') }}" alt="Leather Watch">
+											<span>Leather Watch</span>
+										</div>
+									</td>
+									<td>Accessories</td>
+									<td>
+										<span class="stock-count low">3</span>
+									</td>
+									<td>
+										<button class="restock-btn">Restock</button>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<div class="product-cell">
+											<img src="{{ asset('images/product5.jpg') }}" alt="Denim Jacket">
+											<span>Denim Jacket</span>
+										</div>
+									</td>
+									<td>Clothing</td>
+									<td>
+										<span class="stock-count low">5</span>
+									</td>
+									<td>
+										<button class="restock-btn">Restock</button>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<div class="product-cell">
+											<img src="{{ asset('images/product6.jpg') }}" alt="Sneakers">
+											<span>Sneakers</span>
+										</div>
+									</td>
+									<td>Footwear</td>
+									<td>
+										<span class="stock-count low">4</span>
+									</td>
+									<td>
+										<button class="restock-btn">Restock</button>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<div class="tab-content" id="out-of-stock" style="display: none;">
+						<table class="stock-table">
+							<thead>
+								<tr>
+									<th>Product</th>
+									<th>Category</th>
+									<th>Last Available</th>
+									<th>Action</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td>
+										<div class="product-cell">
+											<img src="{{ asset('images/product4.jpg') }}" alt="Wireless Earbuds">
+											<span>Wireless Earbuds</span>
+										</div>
+									</td>
+									<td>Electronics</td>
+									<td>2 days ago</td>
+									<td>
+										<button class="restock-btn urgent">Restock</button>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<div class="product-cell">
+											<img src="{{ asset('images/product7.jpg') }}" alt="Smartphone Case">
+											<span>Smartphone Case</span>
+										</div>
+									</td>
+									<td>Accessories</td>
+									<td>5 days ago</td>
+									<td>
+										<button class="restock-btn urgent">Restock</button>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<div class="product-cell">
+											<img src="{{ asset('images/product8.jpg') }}" alt="Winter Scarf">
+											<span>Winter Scarf</span>
+										</div>
+									</td>
+									<td>Clothing</td>
+									<td>1 week ago</td>
+									<td>
+										<button class="restock-btn urgent">Restock</button>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
 		</div>
 	</div>
-
 {% endblock %}
