@@ -214,7 +214,7 @@ class ParkingController extends AbstractController
 
         $reservation = new Reservation();
         $reservation->setPlaceParking($spot);
-        $reservation->setIdUtilisateur($currentUser); // Static user ID for now
+        $reservation->setIdUtilisateur($currentUser); 
 
         $form = $this->createForm(ReservationType::class, $reservation);
         $form->handleRequest($request);
@@ -375,26 +375,42 @@ class ParkingController extends AbstractController
     #[Route('/admin/parking/edit/{id}', name: 'admin_parking_edit')]
     public function editSpot(Request $request, PlaceParking $spot): Response
     {
+        // Store original zone value
+        $originalZone = $spot->getZone();
+        
+        // If zone starts with "Zone ", strip it for the form
+        if (strpos($originalZone, 'Zone ') === 0) {
+            $spot->setZone(substr($originalZone, 5));
+        }
+    
         $form = $this->createForm(ParkingSpotType::class, $spot);
-
+    
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
             // Get the submitted zone value
             $zone = $spot->getZone();
-
+    
             // If it's a single letter (A-Z), prepend "Zone "
             if (preg_match('/^[A-Za-z]$/', $zone)) {
                 $spot->setZone('Zone ' . strtoupper($zone));
+            } else {
+                // If it's not a single letter, restore the original value
+                $spot->setZone($originalZone);
             }
-
+    
             $this->entityManager->flush();
-
+    
             $this->addFlash('success', 'Parking spot updated successfully!');
             // Extract floor from spot and redirect back to same floor
             $floor = str_replace('Level ', '', $spot->getFloor());
-            return $this->redirectToRoute('app_parking_spots', ['floor' => $floor]); // Updated redirect
+            return $this->redirectToRoute('app_parking_spots', ['floor' => $floor]);
         }
-
+    
+        // Restore original value if form wasn't submitted
+        if (!$form->isSubmitted()) {
+            $spot->setZone($originalZone);
+        }
+    
         return $this->render('parking/edit_spot.html.twig', [
             'form' => $form->createView(),
             'spot' => $spot,
@@ -481,7 +497,7 @@ class ParkingController extends AbstractController
         $this->entityManager->flush();
 
         $this->addFlash('success', 'Reservation deleted successfully!');
-        return $this->redirectToRoute('app_parking_admin');
+        return $this->redirectToRoute('app_parking_spots');
     }
 // Add these new routes to your ParkingController
 
