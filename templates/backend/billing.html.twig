@@ -1,7 +1,304 @@
 {% extends 'backend/base.html.twig' %}
 
 {% block title %}Sales{% endblock %}
+{% block stylesheets %}
+<link rel="stylesheet" href="{{ asset('assets/css2/css/styles.min.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+ <style>
+  * {
+   margin: 0;
+   padding: 0;
+   box-sizing: border-box;
+  }
 
+  .container {
+   max-width: 1200px;
+   margin: 0 auto;
+   padding: 20px;
+   margin-top: 50px;!important;
+   font-family: Arial, sans-serif;
+   background-color: #f7f7f2; /* Blanc cassé */
+  }
+
+  h1 {
+   color: #333;
+   margin-bottom: 24px;
+   font-weight: 600;
+   padding-bottom: 10px;
+   border-bottom: 1px solid #ccc;
+  }
+
+  .card {
+   background-color: white;
+   border-radius: 8px;
+   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+   margin-bottom: 20px;
+   overflow: hidden;
+   transition: all 0.3s ease;
+  }
+
+  .card:hover {
+   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+   transform: translateY(-2px);
+  }
+
+  .card-body {
+   padding: 20px;
+  }
+
+  .filter-form {
+   display: flex;
+   flex-wrap: wrap;
+   align-items: center;
+   gap: 16px;
+   margin-bottom: 16px;
+  }
+
+  .form-group {
+   display: flex;
+   align-items: center;
+   gap: 8px;
+  }
+
+  label {
+   color: #555;
+   font-weight: 500;
+   margin-right: 8px;
+  }
+
+  input[type="date"] {
+   padding: 10px 12px;
+   border: 1px solid #ccc;
+   border-radius: 4px;
+   outline: none;
+   transition: all 0.3s ease;
+  }
+
+  input[type="date"]:focus {
+   border-color: #31708f;
+   box-shadow: 0 0 0 3px rgba(49, 112, 143, 0.2);
+  }
+
+  .btn {
+   padding: 10px 18px;
+   border-radius: 4px;
+   border: none;
+   font-weight: 500;
+   cursor: pointer;
+   transition: all 0.3s ease;
+   text-decoration: none;
+   display: inline-block;
+   text-align: center;
+  }
+
+  .btn-primary {
+   background: linear-gradient(135deg, #3a86ca 0%, #31708f 100%);
+   color: white;
+  }
+
+  .btn-primary:hover {
+   background: linear-gradient(135deg, #31708f 0%, #275a77 100%);
+   transform: translateY(-1px);
+  }
+
+  .btn-secondary {
+   background: linear-gradient(135deg, #7d8892 0%, #6c757d 100%);
+   color: white;
+  }
+
+  .btn-secondary:hover {
+   background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+   transform: translateY(-1px);
+  }
+
+  .btn-info {
+   background: linear-gradient(135deg, #f0c358 0%, #e6b949 100%);
+   color: white;
+   padding: 10px 20px;
+   font-size: 14px;
+   border-radius: 4px;
+  }
+
+  .btn-info:hover {
+   background: linear-gradient(135deg, #e6b949 0%, #d1a73e 100%);
+   transform: translateY(-1px);
+  }
+
+  .text-muted {
+   color: #6c757d;
+   font-size: 14px;
+   margin-top: 8px;
+  }
+
+  .table-container {
+   overflow-x: auto;
+  }
+
+  table {
+   width: 100%;
+   border-collapse: collapse;
+   margin-top: 16px;
+  }
+
+  th, td {
+   padding: 15px;
+   text-align: left;
+   border-bottom: 1px solid #eee;
+  }
+
+  th {
+   background-color: #d9edf7;
+   color: #31708f;
+   font-weight: bold;
+  }
+
+  tbody tr {
+   transition: background-color 0.3s;
+  }
+
+  tbody tr:hover {
+   background-color: #f9f9f9;
+  }
+
+  .text-center {
+   text-align: center;
+  }
+
+  .empty-message {
+   text-align: center;
+   padding: 20px;
+   color: #777;
+   font-style: italic;
+   background-color: #f9f9f9;
+   border-radius: 4px;
+  }
+
+  .back-link {
+   display: flex;
+   align-items: center;
+   margin-top: 15px;
+  }
+
+  .back-link a {
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   width: 24px;
+   height: 24px;
+   background-color: #f0f0f0;
+   border-radius: 50%;
+   margin-right: 8px;
+   text-decoration: none;
+   color: #555;
+   font-weight: bold;
+  }
+
+  .back-link a:hover {
+   background-color: #e0e0e0;
+  }
+
+  .back-link span {
+   color: #555;
+  }
+
+  .chart-container {
+   min-height: 300px;
+  }
+
+  .chart-bar {
+   transition: height 0.3s ease;
+  }
+
+  @media (max-width: 768px) {
+   .filter-form {
+    flex-direction: column;
+    align-items: flex-start;
+   }
+
+   .form-group {
+    width: 100%;
+   }
+
+   .btn {
+    width: 100%;
+    margin-top: 8px;
+   }
+
+   table {
+    font-size: 14px;
+   }
+
+   th, td {
+    padding: 10px;
+   }
+
+   .btn-info {
+    padding: 8px 12px;
+    font-size: 12px;
+   }
+  }
+ </style>
+{% endblock %}
 {% block content %}
- <h2> hello sales </h2>
+ <div class="container">
+  <h1>Statistiques des Shops</h1>
+
+  <div class="card">
+   <div class="card-body">
+    <form method="get" class="filter-form">
+     <div class="form-group">
+      <label for="date">Date dans la semaine :</label>
+      <input type="date" id="date" name="date" value="{{ currentDate|date('Y-m-d') }}" required>
+     </div>
+     <div class="form-group">
+      <button type="submit" class="btn btn-primary">Filtrer</button>
+     </div>
+     <div class="form-group">
+      <a href="{{ path('admin_shop_stats') }}" class="btn btn-secondary">Cette semaine</a>
+     </div>
+    </form>
+    <p class="text-muted">
+     Semaine du {{ weekStart|date('d/m/Y') }} au {{ weekEnd|date('d/m/Y') }}
+    </p>
+   </div>
+  </div>
+
+  <div class="card">
+   <div class="card-body">
+    <div class="table-container">
+     <table>
+      <thead>
+      <tr>
+       <th>Shop</th>
+       <th>Nombre de commandes</th>
+       <th>Actions</th>
+      </tr>
+      </thead>
+      <tbody>
+      {% for stat in stats %}
+       <tr>
+        <td>{{ stat.shopName }}</td>
+        <td>{{ stat.commandeCount }}</td>
+        <td>
+         <a href="{{ path('admin_shop_details', {'id': stat.shopId, 'date': currentDate|date('Y-m-d')}) }}"
+            class="btn btn-info">
+          Voir détails
+         </a>
+        </td>
+       </tr>
+      {% else %}
+       <tr>
+        <td colspan="3" class="text-center">
+         <div class="empty-message">
+          Aucune donnée disponible pour cette semaine
+         </div>
+        </td>
+       </tr>
+      {% endfor %}
+      </tbody>
+     </table>
+    </div>
+   </div>
+  </div>
+ </div>
 {% endblock %}

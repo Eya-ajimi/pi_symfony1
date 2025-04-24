@@ -44,19 +44,19 @@ security:
                 httponly: true
                 samesite: lax
 
-    # access_control:
-    #     - { path: ^/landing, roles: PUBLIC_ACCESS }
-    #     - { path: ^/events, roles: PUBLIC_ACCESS }
-    #     - { path: ^/choose-role, roles: PUBLIC_ACCESS }
-    #     - { path: ^/home, roles: PUBLIC_ACCESS }
-    #     - { path: ^/shops, roles: PUBLIC_ACCESS }
-    #     - { path: ^/admin, roles: PUBLIC_ACCESS }
-    #     - { path: ^/shopowner, roles: ROLE_SHOPOWNER }
-    #     - { path: ^/client, roles: ROLE_CLIENT }
-    #     - { path: ^/login, roles: PUBLIC_ACCESS }
-    #     - { path: ^/signup/shop-owner, roles: PUBLIC_ACCESS }
-    #     - { path: ^/signup/User, roles: PUBLIC_ACCESS }
-    #     - { path: ^/, roles: IS_AUTHENTICATED_FULLY }
+    access_control:
+         - { path: ^/landing, roles: PUBLIC_ACCESS }
+         - { path: ^/events, roles: PUBLIC_ACCESS }
+         - { path: ^/choose-role, roles: PUBLIC_ACCESS }
+         - { path: ^/shops, roles: PUBLIC_ACCESS }
+         - { path: ^/login, roles: PUBLIC_ACCESS }
+         - { path: ^/signup/shop-owner, roles: PUBLIC_ACCESS }
+         - { path: ^/signup/User, roles: PUBLIC_ACCESS }
+         - { path: ^/home, roles: ROLE_CLIENT }
+         - { path: ^/admin, roles: ROLE_ADMIN }
+         - { path: ^/shopOwner, roles: ROLE_SHOPOWNER }
+         - { path: ^/client, roles: ROLE_CLIENT }
+         - { path: ^/, roles: IS_AUTHENTICATED_FULLY }
 
 when@test:
     security:

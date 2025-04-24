@@ -1,0 +1,253 @@
+{% extends "maria_templates/base.html.twig" %}
+
+{% block title %}Shop Discounts
+{% endblock %}
+
+{% block stylesheets %}
+	{{ parent() }}
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+{% endblock %}
+
+{% block body %}
+	<div class="discount-container">
+		<div class="discount-header">
+			<h1>
+				<i class="fas fa-tag"></i>
+				Shop Discounts</h1>
+			<div class="addbutton-container">
+				<button id="addDiscountBtn" class="btn btn-add" onclick="openAddModal()">
+					<i class="fas fa-plus"></i>
+					Add Discount
+				</button>
+			</div>
+		</div>
+
+		<!-- Status Filter (No form submission) -->
+		<div class="filter-bar">
+			<div class="filter-group">
+				<select name="status" id="statusFilter">
+					<option value="">All Discounts</option>
+					<option value="active">Active</option>
+					<option value="upcoming">Upcoming</option>
+					<option value="expired">Expired</option>
+				</select>
+			</div>
+			<button id="clearFilterBtn">
+				<i class="fas fa-times"></i>
+				Clear Filter
+			</button>
+		</div>
+
+		{% if discounts|length > 0 %}
+			<table class="discount-table">
+				<thead>
+					<tr>
+						<th>Discount</th>
+						<th>Duration</th>
+						<th>Status</th>
+						<th>Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for discount in discounts %}
+						{% set now = "now"|date('Y-m-d') %}
+						{% set status = discount.startDate|date('Y-m-d') > now ? 'upcoming' : 
+                                    discount.endDate|date('Y-m-d') < now ? 'expired' : 'active' %}
+
+						<tr data-status="{{ status }}">
+							<td>{{ discount.discountPercentage }}% OFF</td>
+							<td>
+								{{ discount.startDate|date('M d, Y') }}
+								-
+								{{ discount.endDate|date('M d, Y') }}
+							</td>
+							<td>
+								<span class="status-{{ status }}">
+									{{ status|capitalize }}
+								</span>
+							</td>
+							<td>
+								<button class="btn btn-edit" onclick="openEditModal({{ discount.id }})">
+									<i class="fas fa-edit"></i>
+									Edit
+								</button>
+								<form method="POST" action="{{ path('discount_delete', {'id': discount.id}) }}" class="delete-form" style="padding:0px;margin-top:10px">
+									<button type="submit" class="btn btn-remove" onclick="return confirm('Are you sure? This will remove the discount from all products.');">
+										<i class="fas fa-trash"></i>
+										Remove
+									</button>
+								</form>
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		{% else %}
+			<div class="empty-state">
+				<i class="fas fa-tag fa-3x"></i>
+				<h3>No discounts found</h3>
+				<a href="{{ path('discount_new') }}" class="btn btn-purple">
+					<i class="fas fa-plus"></i>
+					Create First Discount
+				</a>
+			</div>
+		{% endif %}
+	</div>
+
+	<!-- MODALS -->
+	<!-- Add Discount Modal -->
+	<div class="modal-background" id="addModal">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h3>Add New Discount</h3>
+				<button class="modal-close" onclick="closeAddModal()">&times;</button>
+			</div>
+			<div class="modal-body">
+				{% if addForm is defined %}
+					{{ form_start(addForm, {
+                        'attr': {'id': 'addDiscountForm'},
+                        'action': path('discount_new'),
+                        'method': 'POST'
+                    }) }}
+					{{ form_widget(addForm) }}
+					<div class="form-actions">
+						<button type="submit" class="btn btn-primary">Save Discount</button>
+						<button type="button" class="btn btn-secondary" onclick="closeAddModal()">Cancel</button>
+					</div>
+					{{ form_end(addForm) }}
+				{% else %}
+					<p>Form could not be loaded. Please refresh the page.</p>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+
+	<!-- Edit Discount Modal -->
+	<!-- Edit Discount Modals - One for each discount -->
+	<!-- Edit Discount Modals -->
+		{% if editForms is defined %}
+			{% for discount in discounts %}
+				{% if editForms[discount.id] is defined %}
+					<div class="modal-background edit-modal" id="editModal-{{ discount.id }}" style="display:none;"> <div class="modal-content">
+						<div class="modal-header">
+							<h3>Edit Discount</h3>
+							<button class="modal-close" onclick="closeEditModal({{ discount.id }})">&times;</button>
+						</div>
+						<div class="modal-body">
+							{{ form_start(editForms[discount.id], {
+                        'attr': {'id': 'editDiscountForm-' ~ discount.id},
+                        'action': path('discount_edit', {'id': discount.id}),
+                        'method': 'POST'
+                    }) }}
+							{{ form_widget(editForms[discount.id]) }}
+							<div class="form-actions">
+								<button type="submit" class="btn btn-primary">Save Changes</button>
+								<button type="button" class="btn btn-secondary" onclick="closeEditModal({{ discount.id }})">Cancel</button>
+							</div>
+							{{ form_end(editForms[discount.id]) }}
+						</div>
+					</div>
+				</div>
+			{% endif %}
+		{% endfor %}
+	{% endif %}
+{% endblock %}
+{% block javascripts %}
+
+	<script>
+		// Filter by status
+document.addEventListener('DOMContentLoaded', function () {
+const filter = document.getElementById('statusFilter');
+const clearBtn = document.getElementById('clearFilterBtn');
+
+filter.addEventListener('change', function () {
+const selected = this.value;
+const rows = document.querySelectorAll('tbody tr');
+
+rows.forEach(row => {
+const status = row.getAttribute('data-status');
+row.style.display = ! selected || status === selected ? '' : 'none';
+});
+});
+
+clearBtn.addEventListener('click', function () {
+filter.value = '';
+const rows = document.querySelectorAll('tbody tr');
+rows.forEach(row => row.style.display = '');
+});
+});
+
+// ++++++++++++++MODALS
+
+function openAddModal() {
+document.getElementById('addModal').classList.add('active');
+}
+
+function closeAddModal() {
+document.getElementById('addModal').classList.remove('active');
+if (document.getElementById('addDiscountForm')) {
+document.getElementById('addDiscountForm').reset();
+}
+}
+
+function openEditModal(discountId) { // Hide all edit modals first
+document.querySelectorAll('.edit-modal').forEach(modal => {
+modal.style.display = 'none';
+});
+
+// Show the specific modal
+const modal = document.getElementById (`editModal-${discountId}`);
+if (modal) {
+modal.style.display = 'block';
+modal.classList.add('active');
+}
+}
+
+function closeEditModal(discountId) {
+const modal = document.getElementById (`editModal-${discountId}`);
+if (modal) {
+modal.style.display = 'none';
+modal.classList.remove('active');
+}
+}
+
+// Form validation - UPDATED VERSION
+document.addEventListener('DOMContentLoaded', function () { // Add form validation
+const addForm = document.getElementById('addDiscountForm');
+if (addForm) {
+addForm.addEventListener('submit', function (e) {
+if (!validateDiscountForm(this)) {
+e.preventDefault();
+}
+});
+}
+
+// Edit forms validation (handles all edit forms)
+document.querySelectorAll('form[id^="editDiscountForm-"]').forEach(form => {
+form.addEventListener('submit', function (e) {
+if (!validateDiscountForm(this)) {
+e.preventDefault();
+}
+});
+});
+});
+
+function validateDiscountForm(form) { // Works for both add and edit forms
+const percentage = parseFloat(form.querySelector('[name$="[discountPercentage]"]').value);
+const startDate = new Date(form.querySelector('[name$="[startDate]"]').value);
+const endDate = new Date(form.querySelector('[name$="[endDate]"]').value);
+
+if (percentage < 0 || percentage > 100 || isNaN(percentage)) {
+alert('Discount must be between 0% and 100%');
+return false;
+}
+
+if (startDate >= endDate) {
+alert('End date must be after start date');
+return false;
+}
+
+return true;
+}
+	</script>
+{% endblock %}

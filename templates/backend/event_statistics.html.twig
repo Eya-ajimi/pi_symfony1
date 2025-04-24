@@ -1,0 +1,210 @@
+{% extends 'backend/base.html.twig' %}
+
+{% block title %}Events Statistics - {{ shop.getFullName() }}{% endblock %}
+
+{% block content %}
+    <div class="container-fluid">
+        <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800">Events Statistics for {{ shop.getFullName() }}</h1>
+            <div class="dropdown">
+                <button class="btn btn-primary dropdown-toggle" type="button" id="yearDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Year: {{ selectedYear }}
+                </button>
+                <div class="dropdown-menu" aria-labelledby="yearDropdown">
+                    {% for year in availableYears %}
+                        <a class="dropdown-item {% if year == selectedYear %}active{% endif %}"
+                           href="{{ path('app_eventsadmin_statistics', {'id': shop.id, 'year': year}) }}">
+                            {{ year }}
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Total Participants Card -->
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-primary shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                    Total Participants ({{ selectedYear }})
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ totalParticipants }}</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-users fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bar Chart -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Monthly Participants</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-bar">
+                    <canvas id="myBarChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Table -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Monthly Breakdown</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered" width="100%" cellspacing="0">
+                        <thead>
+                        <tr class="bg-light">
+                            <th>Month</th>
+                            <th>Participants</th>
+                            <th>Percentage</th>
+                            <th>Visual</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for stat in monthlyStats %}
+                            <tr>
+                                <td>{{ stat.month }}</td>
+                                <td>{{ stat.participants }}</td>
+                                <td>
+                                    {% if totalParticipants > 0 %}
+                                        {{ ((stat.participants / totalParticipants) * 100)|number_format(1) }}%
+                                    {% else %}
+                                        0%
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-success"
+                                             role="progressbar"
+                                             style="width: {% if totalParticipants > 0 %}{{ ((stat.participants / totalParticipants) * 100) }}%{% else %}0%{% endif %}"
+                                             aria-valuenow="{{ stat.participants }}"
+                                             aria-valuemin="0"
+                                             aria-valuemax="{{ totalParticipants }}">
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('assets/css2/css/styles.min.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        .chart-bar {
+            height: 400px;
+        }
+        .progress {
+            height: 20px;
+        }
+        .dropdown-menu {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('backend/vendor/chart.js/Chart.min.js') }}"></script>
+    <script>
+        // Bar Chart
+        var ctx = document.getElementById("myBarChart");
+        var myBarChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: [
+                    {% for stat in monthlyStats %}
+                    "{{ stat.month }}",
+                    {% endfor %}
+                ],
+                datasets: [{
+                    label: "Participants",
+                    backgroundColor: "#4e73df",
+                    hoverBackgroundColor: "#2e59d9",
+                    borderColor: "#4e73df",
+                    data: [
+                        {% for stat in monthlyStats %}
+                        {{ stat.participants }},
+                        {% endfor %}
+                    ],
+                }],
+            },
+            options: {
+                maintainAspectRatio: false,
+                layout: {
+                    padding: {
+                        left: 10,
+                        right: 25,
+                        top: 25,
+                        bottom: 0
+                    }
+                },
+                scales: {
+                    xAxes: [{
+                        gridLines: {
+                            display: false,
+                            drawBorder: false
+                        },
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 45
+                        }
+                    }],
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true,
+                            stepSize: {% if (totalParticipants/10) < 1 %}1{% else %}{{ (totalParticipants/10)|round }}{% endif %},
+                            padding: 10
+                        },
+                        gridLines: {
+                            color: "rgb(234, 236, 244)",
+                            zeroLineColor: "rgb(234, 236, 244)",
+                            drawBorder: false,
+                            borderDash: [2],
+                            zeroLineBorderDash: [2]
+                        }
+                    }],
+                },
+                legend: {
+                    display: false
+                },
+                tooltips: {
+                    titleMarginBottom: 10,
+                    titleFontColor: '#6e707e',
+                    titleFontSize: 14,
+                    backgroundColor: "rgb(255,255,255)",
+                    bodyFontColor: "#858796",
+                    borderColor: '#dddfeb',
+                    borderWidth: 1,
+                    xPadding: 15,
+                    yPadding: 15,
+                    displayColors: false,
+                    caretPadding: 10,
+                    callbacks: {
+                        label: function(tooltipItem, chart) {
+                            var datasetLabel = chart.datasets[tooltipItem.datasetIndex].label || '';
+                            return datasetLabel + ': ' + tooltipItem.yLabel;
+                        }
+                    }
+                },
+            }
+        });
+    </script>
+{% endblock %}

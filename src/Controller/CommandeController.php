@@ -17,11 +17,10 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class CommandeController extends AbstractController
 {
-    #[Route('/showCommandePayee', name: 'app_show_commande_payee')]
+    #[Route('/shopOwner/showCommandePayee', name: 'app_show_commande_payee')]
     public function showCommandePayee(CommandeRepository $commandeRepository): Response
     {
-        $utilisateur = new Utilisateur();
-        $utilisateur->setId(8);
+        $utilisateur = $this->getUser();
         $todayCommands = $commandeRepository->findTodayPaidOrdersByShop($utilisateur->getId());
         $result = [];
 
@@ -50,7 +49,7 @@ final class CommandeController extends AbstractController
         ]);
     }
 
-    #[Route('/commandeDetails/{commandeId}/{shopId}', name: 'app_commande_details')]
+    #[Route('/shopOwner/commandeDetails/{commandeId}/{shopId}', name: 'app_commande_details')]
     public function commandeDetails(int $commandeId, int $shopId, CommandeRepository $commandeRepository): Response
     {
         $commande = $commandeRepository->find($commandeId);
@@ -91,7 +90,7 @@ final class CommandeController extends AbstractController
         ]);
     }
 
-    #[Route('/CommandeConfirm/{commandeId}/{shopId}', name: 'app_commande_confirm')]
+    #[Route('/shopOwner/CommandeConfirm/{commandeId}/{shopId}', name: 'app_commande_confirm')]
     public function confirmCommande(int $commandeId, int $shopId, CommandeRepository $commandeRepository, EntityManagerInterface $entityManager): Response
     {
         $commande = $commandeRepository->find($commandeId);
@@ -130,7 +129,7 @@ final class CommandeController extends AbstractController
     }
 
 
-    #[Route('/CommandePayement/{clientId}', name: 'app_commande_payement')]
+    #[Route('/client/CommandePayement/{clientId}', name: 'app_commande_payement')]
     public function payerCommande(
         int                    $clientId,
         CommandeRepository     $commandeRepository,

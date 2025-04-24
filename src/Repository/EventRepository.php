@@ -47,4 +47,43 @@ class EventRepository extends ServiceEntityRepository
             ->getQuery()
             ->execute();
     }
+    public function findMonthlyParticipationStats(int $shopId): array
+    {
+        $currentYear = date('Y');
+
+        $results = $this->createQueryBuilder('e')
+            ->select([
+                "MONTH(e.dateDebut) as month",
+                "COUNT(ec.idClient) as participants",
+                "COUNT(DISTINCT e.id) as events"
+            ])
+            ->leftJoin('e.eventClients', 'ec')
+            ->where('e.organisateur = :shopId')
+            ->andWhere("YEAR(e.dateDebut) = :year")
+            ->setParameter('shopId', $shopId)
+            ->setParameter('year', $currentYear)
+            ->groupBy('month')
+            ->orderBy('month', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        // Format the results to include all months
+        $monthlyStats = [];
+        for ($i = 1; $i <= 12; $i++) {
+            $monthlyStats[$i] = [
+                'month' => $i,
+                'month_name' => date('F', mktime(0, 0, 0, $i, 1)),
+                'participants' => 0,
+                'events' => 0
+            ];
+        }
+
+        foreach ($results as $result) {
+            $month = $result['month'];
+            $monthlyStats[$month]['participants'] = $result['participants'];
+            $monthlyStats[$month]['events'] = $result['events'];
+        }
+
+        return array_values($monthlyStats);
+    }
 }

@@ -14,7 +14,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use App\Repository\UtilisateurRepository;
 use App\Entity\Commentaire;  
 
-#[Route('/post')]
+#[Route('/client')]
 class PostController extends AbstractController
 {
     #[Route('/post/{id}/edit', name: 'post_edit', methods: ['POST'])]

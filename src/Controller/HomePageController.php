@@ -30,6 +30,7 @@ class HomePageController extends AbstractController
         $this->denyAccessUnlessGranted('ROLE_CLIENT');
          #$user = $this->getUser();
         $utilisateur = $this->getUser();
+
         if (!$utilisateur) {
             throw $this->createNotFoundException('Utilisateur avec ID 7 non trouvé');
         }

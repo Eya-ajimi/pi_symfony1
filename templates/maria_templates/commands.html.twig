@@ -1,0 +1,161 @@
+{% extends "maria_templates/base.html.twig" %}
+{% block title %}Commands
+{% endblock %}
+
+{% block body %}
+	<style>
+
+
+		h1 {
+			color: #333;
+			padding-bottom: 10px;
+			border-bottom: 1px solid #ccc;
+		}
+
+		.card {
+			background-color: white;
+			border-radius: 8px;
+			padding: 20px;
+			box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+			margin-bottom: 20px;
+		}
+
+		table {
+			width: 100%;
+			border-collapse: collapse;
+			margin-bottom: 20px;
+		}
+
+		th,
+		td {
+			padding: 15px;
+			text-align: left;
+			border-bottom: 1px solid #eee;
+		}
+
+		th {
+			background-color: #d9edf7;
+			color: #4B49AC;
+			font-weight: bold;
+		}
+
+		tr:hover {
+			background-color: #f9f9f9;
+		}
+
+		.details-btn {
+			background-color:#4B49AC;
+			color: white;
+			border: none;
+			padding: 10px 20px;
+			font-size: 14px;
+			border-radius: 4px;
+			cursor: pointer;
+			text-decoration: none;
+			display: inline-block;
+			transition: background-color 0.3s;
+		}
+
+		.details-btn:hover {
+			background-color: #FFF07B;
+			color:#4B49AC
+		}
+
+		.back-link {
+			display: flex;
+			align-items: center;
+			margin-top: 15px;
+		}
+
+		.back-link a {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			width: 24px;
+			height: 24px;
+			background-color: #f0f0f0;
+			border-radius: 50%;
+			margin-right: 8px;
+			text-decoration: none;
+			color: #555;
+			font-weight: bold;
+		}
+
+		.back-link a:hover {
+			background-color: #e0e0e0;
+		}
+
+		.back-link span {
+			color: #555;
+		}
+
+		.empty-message {
+			text-align: center;
+			padding: 20px;
+			color: #777;
+			font-style: italic;
+			background-color: #f9f9f9;
+			border-radius: 4px;
+		}
+
+		@media(max-width: 768px) {
+			th,
+			td {
+				padding: 10px;
+			}
+
+			.details-btn {
+				padding: 8px 12px;
+				font-size: 12px;
+			}
+		}
+	</style>
+	<div class="container">
+		<div class="card" style="padding:20px ;margin:20px">
+			<h1>Today's paid commands</h1>
+
+			<table>
+				<thead>
+					<tr>
+						<th>Ticket number</th>
+						<th>Client</th>
+						<th>Date</th>
+						<th>Total</th>
+						<th>Action</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% if commands is defined and commands|length > 0 %}
+						{% for commande in commands %}
+							{# Now loops over `commands` #}
+							<tr>
+								<td>{{ commande.numeroTicket }}</td>
+								<td>{{ commande.client }}</td>
+								<td>{{ commande.date }}</td>
+								<td>{{ commande.total }}
+									DT</td>
+								<td>
+									<a href="{{ path('app_commande_details', { 'commandeId': commande.commandeId, 'shopId': utilisateurId }) }}" class="details-btn">
+										Afficher Détails
+									</a>
+								</td>
+							</tr>
+						{% endfor %}
+					{% else %}
+						<tr>
+							<td colspan="5" class="empty-message">
+								Il n'y a aucune commande payée aujourd'hui.
+							</td>
+						</tr>
+					{% endif %}
+				</tbody>
+			</table>
+
+			{#        <div class="back-link">#}
+		{#            <a href="#">&leftarrow;</a>#}
+			{#            <span>Retour au tableau de bord</span>#}
+			{#        </div>#}
+		</div>
+	</div>
+
+{% endblock %}

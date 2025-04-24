@@ -13,6 +13,14 @@ class ReclamationRepository extends ServiceEntityRepository
         parent::__construct($registry, Reclamation::class);
     }
 
+    public function findAllOrderedByStatus()
+    {
+        return $this->createQueryBuilder('r')
+            ->orderBy('r.statut', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     public function save(Reclamation $entity, bool $flush = false): void
     {
         $this->getEntityManager()->persist($entity);

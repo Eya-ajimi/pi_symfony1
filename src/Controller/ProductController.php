@@ -10,7 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class ProductController extends AbstractController
 {
-    #[Route('/shop/{shopId}/products', name: 'shop_products')]
+    #[Route('/client/shop/{shopId}/products', name: 'shop_products')]
     public function showProducts(int $shopId, ProduitRepository $produitRepository): Response
     {
         // Fetch products for the specific shop owner (Utilisateur)

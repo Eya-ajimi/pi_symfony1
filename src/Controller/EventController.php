@@ -15,7 +15,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class EventController extends AbstractController
 {
 
-    #[Route('/events', name: 'app_events')]
+    #[Route('/client/events', name: 'app_events')]
     public function index(
         EventRepository $eventRepository,
         EventClientRepository $eventClientRepository, 
@@ -23,7 +23,7 @@ class EventController extends AbstractController
         EntityManagerInterface $entityManager
     ): Response {
         // Static user with ID 7
-        $user = $entityManager->getReference(Utilisateur::class, id: 7);
+        $user = $this->getUser();
         
         $dateString = $request->query->get('date');
         $date = null;
@@ -70,14 +70,14 @@ class EventController extends AbstractController
         ]);
     }
 
-    #[Route('/events/participate/{id}', name: 'app_event_participate')]
+    #[Route('/client/events/participate/{id}', name: 'app_event_participate')]
     public function participate(
         Event $event,
         EventClientRepository $eventClientRepository,
         EntityManagerInterface $entityManager
     ): Response {
         // Static user with ID 7
-        $user = $entityManager->getReference(Utilisateur::class, 7);
+        $user = $this->getUser();
 
         // Check if already participating
         if ($eventClientRepository->isParticipating($user->getId(), $event->getId())) {
@@ -98,14 +98,14 @@ class EventController extends AbstractController
         return $this->redirectToRoute('app_events');
     }
 
-    #[Route('/events/decline/{id}', name: 'app_event_decline')]
+    #[Route('/client/events/decline/{id}', name: 'app_event_decline')]
     public function decline(
         Event $event,
         EventClientRepository $eventClientRepository,
         EntityManagerInterface $entityManager
     ): Response {
         // Static user with ID 7
-        $user = $entityManager->getReference(Utilisateur::class, 7);
+        $user = $this->getUser();
         
         $participation = $eventClientRepository->findOneBy([
             'idClient' => $user->getId(),
@@ -148,7 +148,7 @@ class EventController extends AbstractController
         return $this->redirectToRoute('app_events');
     }
 
-    #[Route('/event/qrcode/{id}', name: 'app_event_qrcode')]
+    #[Route('/client/event/qrcode/{id}', name: 'app_event_qrcode')]
     public function generateQrCode(
         Event $event,
         EventClientRepository $eventClientRepository,
@@ -156,7 +156,7 @@ class EventController extends AbstractController
         EntityManagerInterface $entityManager
     ): Response {
         // Static user with ID 7
-        $user = $entityManager->getReference(Utilisateur::class, 7);
+        $user = $this->getUser();
         
         // Verify user is participating
         if (!$eventClientRepository->isParticipating($user->getId(), $event->getId())) {
@@ -183,14 +183,14 @@ class EventController extends AbstractController
         ]);
     }
 
-    #[Route('/event/qrcode/{id}/view', name: 'app_event_qrcode_view')]
+    #[Route('/client/event/qrcode/{id}/view', name: 'app_event_qrcode_view')]
     public function viewQrCode(
         Event $event,
         EventClientRepository $eventClientRepository,
         EntityManagerInterface $entityManager
     ): Response {
         // Static user with ID 7
-        $user = $entityManager->getReference(Utilisateur::class, 7);
+        $user = $this->getUser();
         
         if (!$eventClientRepository->isParticipating($user->getId(), $event->getId())) {
             throw $this->createNotFoundException('You are not participating in this event');

@@ -2,8 +2,10 @@
 // src/Controller/ReclamationController.php
 namespace App\Controller;
 
+use App\Form\reclamationform;
 use App\Entity\Reclamation;
 use App\Entity\Utilisateur;
+use App\Repository\ReclamationRepository;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
@@ -16,7 +18,7 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 
 class ReclamationController extends AbstractController
 {
-    #[Route('/reclamation', name: 'app_reclamation')]
+    #[Route('/client/reclamation', name: 'app_reclamation')]
     public function index(Request $request, EntityManagerInterface $entityManager): Response
     {
         $reclamation = new Reclamation();
@@ -63,9 +65,9 @@ class ReclamationController extends AbstractController
             }
             
             // Set static user ID 7
-            $utilisateur = $entityManager->getRepository(Utilisateur::class)->find(7);
+            $utilisateur = $this->getUser();
             if (!$utilisateur) {
-                throw $this->createNotFoundException('User with ID 7 not found');
+                throw $this->createNotFoundException('User not found');
             }
             $reclamation->setUtilisateur($utilisateur);
             
@@ -81,6 +83,48 @@ class ReclamationController extends AbstractController
         
         return $this->render('reclamation/reclamation.html.twig', [
             'form' => $form->createView(),
+        ]);
+    }
+    #[Route('/admin/reclamation', name: 'app_reclamation_admin')]
+    public function indexAdmin(
+        ReclamationRepository $reclamationRepository,
+        Request $request,
+        EntityManagerInterface $em
+    ): Response {
+        // Get all reclamations ordered by status
+        $reclamations = $reclamationRepository->findAllOrderedByStatus();
+
+        // Handle form submission
+        if ($request->isMethod('POST') && $request->request->has('reply')) {
+            $replyData = $request->request->all()['reply'];
+
+            // Validate the data
+            if (isset($replyData['id']) && isset($replyData['commentaire'])) {
+
+                // Find the reclamation
+                $reclamation = $reclamationRepository->find((int) $replyData['id']);
+
+                if ($reclamation) {
+                    $reclamation->setCommentaire($replyData['commentaire']);
+                    $reclamation->setStatut('traite');
+                    $em->flush();
+
+                    $this->addFlash('success', 'Reclamation updated successfully!');
+                    return $this->redirectToRoute('app_reclamation_admin');
+                }
+
+                $this->addFlash('error', 'Reclamation not found!');
+            } else {
+                $this->addFlash('error', 'Invalid form data!');
+            }
+        }
+
+        // Create empty form for the view
+        $replyForm = $this->createForm(reclamationform::class);
+
+        return $this->render('backend/reclamation.html.twig', [
+            'reclamations' => $reclamations,
+            'replyForm' => $replyForm->createView(),
         ]);
     }
 }

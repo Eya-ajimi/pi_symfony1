@@ -17,7 +17,7 @@ use Symfony\Component\HttpFoundation\Request;
 
 
 final class AtmsController extends AbstractController{
-    #[Route('/atms', name: 'app_atms')]
+    #[Route('/admin/atms', name: 'app_atms')]
     public function dashboard(
         Request $request,
         EntityManagerInterface $em,

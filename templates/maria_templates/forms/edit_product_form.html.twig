@@ -1,0 +1,72 @@
+<!-- Edit Product Modal -->
+<div class="edit-product-overlay" id="editProductModal">
+	<div class="edit-product-modal">
+		<div class="edit-product-header">
+			<h2>Edit Product</h2>
+			<button class="edit-product-close" onclick="closeEditProductModal()">×</button>
+		</div>
+
+		<div class="edit-product-body">
+			<div class="edit-product-form">
+				{% if form is defined %}
+					{{ form_start(form, {'attr': {'class': 'edit-form', 'enctype': 'multipart/form-data'}}) }}
+
+					<div class="edit-form-group">
+						{{ form_label(form.nom, null, {'label_attr': {'class': 'edit-form-label'}}) }}
+						{{ form_widget(form.nom, {'attr': {'class': 'edit-form-control', 'placeholder': 'Product name'}}) }}
+						{{ form_errors(form.nom, {'attr': {'class': 'edit-form-error'}}) }}
+					</div>
+
+					<div class="edit-form-group">
+						{{ form_label(form.description, null, {'label_attr': {'class': 'edit-form-label'}}) }}
+						{{ form_widget(form.description, {'attr': {'class': 'edit-form-control', 'rows': 4, 'placeholder': 'Describe your product...'}}) }}
+						{{ form_errors(form.description, {'attr': {'class': 'edit-form-error'}}) }}
+					</div>
+
+					<div class="edit-form-row">
+						<div class="edit-form-group">
+							{{ form_label(form.prix, null, {'label_attr': {'class': 'edit-form-label'}}) }}
+							{{ form_widget(form.prix, {'attr': {'class': 'edit-form-control', 'placeholder': '0.00'}}) }}
+							{{ form_errors(form.prix, {'attr': {'class': 'edit-form-error'}}) }}
+						</div>
+
+						<div class="edit-form-group">
+							{{ form_label(form.stock, null, {'label_attr': {'class': 'edit-form-label'}}) }}
+							{{ form_widget(form.stock, {'attr': {'class': 'edit-form-control', 'placeholder': '0'}}) }}
+							{{ form_errors(form.stock, {'attr': {'class': 'edit-form-error'}}) }}
+						</div>
+					</div>
+
+					<div class="edit-form-group edit-discount-field">
+						{{ form_label(form.promotionId, null, {'label_attr': {'class': 'edit-form-label'}}) }}
+						{{ form_widget(form.promotionId, {'attr': {'class': 'edit-form-control', 'placeholder': '0%'}}) }}
+						{{ form_errors(form.promotionId, {'attr': {'class': 'edit-form-error'}}) }}
+					</div>
+
+					<div class="edit-form-group edit-form-file-group">
+						{{ form_label(form.image_url, null, {'label_attr': {'class': 'edit-form-label'}}) }}
+						<div class="edit-form-file">
+							{{ form_widget(form.image_url, {'attr': {'class': 'edit-form-control-file'}}) }}
+							<span class="edit-form-file-text">Upload a product image (JPG, PNG, GIF)</span>
+						</div>
+						{{ form_errors(form.image_url, {'attr': {'class': 'edit-form-error'}}) }}
+
+						{% if product.image_url is defined and product.image_url %}
+							<div class="edit-current-image">
+								<span class="edit-current-image-label">Current image:</span>
+								<img src="{{ asset(product.image_url) }}" alt="Current product image">
+							</div>
+						{% endif %}
+					</div>
+
+
+					{{ form_end(form) }}
+				{% else %}
+					<div class="edit-form-message-error">
+						<p>Form could not be loaded. Please refresh the page.</p>
+					</div>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+</div>

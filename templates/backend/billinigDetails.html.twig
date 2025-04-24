@@ -1,0 +1,300 @@
+{% extends 'backend/base.html.twig' %}
+
+{% block title %}Sales{% endblock %}
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('assets/css2/css/styles.min.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            margin-top: 50px;!important;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f2; /* Blanc cassé */
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 24px;
+            font-weight: 600;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ccc;
+        }
+
+        h4 {
+            color: #31708f;
+            margin-bottom: 20px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        .filter-form {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        label {
+            color: #555;
+            font-weight: 500;
+            margin-right: 8px;
+        }
+
+        input[type="date"] {
+            padding: 10px 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        input[type="date"]:focus {
+            border-color: #31708f;
+            box-shadow: 0 0 0 3px rgba(49, 112, 143, 0.2);
+        }
+
+        .btn {
+            padding: 10px 18px;
+            border-radius: 4px;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3a86ca 0%, #31708f 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #31708f 0%, #275a77 100%);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #7d8892 0%, #6c757d 100%);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+            transform: translateY(-1px);
+        }
+
+        .text-muted {
+            color: #6c757d;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+
+        /* Styles pour le graphique */
+        .chart-container {
+            height: 400px;
+            position: relative;
+            margin-top: 30px;
+        }
+
+        .chart-wrapper {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 90%;
+            display: flex;
+            align-items: flex-end;
+            gap: 15px;
+            padding: 0 15px;
+        }
+
+        .chart-column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            position: relative;
+        }
+
+        .chart-bar {
+            background: linear-gradient(180deg, #3a86ca 0%, #31708f 100%);
+            border-radius: 5px 5px 0 0;
+            transition: height 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-bar:hover {
+            filter: brightness(1.1);
+            transform: scaleY(1.02);
+            transform-origin: bottom;
+        }
+
+        .chart-value {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            background: linear-gradient(135deg, #3a86ca 0%, #31708f 100%);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            white-space: nowrap;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+        }
+
+        .chart-label {
+            font-size: 13px;
+            text-align: center;
+            margin-top: 10px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        /* Lignes horizontales de référence */
+        .chart-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .grid-line {
+            position: absolute;
+            width: 100%;
+            height: 1px;
+            background-color: rgba(0, 0, 0, 0.07);
+        }
+
+        .grid-line-text {
+            position: absolute;
+            left: -35px;
+            font-size: 10px;
+            color: #999;
+            transform: translateY(-50%);
+        }
+
+        @media (max-width: 768px) {
+            .filter-form {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .form-group {
+                width: 100%;
+            }
+
+            .btn {
+                width: 100%;
+                margin-top: 8px;
+            }
+
+            .chart-wrapper {
+                gap: 8px;
+                padding: 0 8px;
+            }
+
+            .chart-value {
+                font-size: 10px;
+                padding: 2px 5px;
+            }
+
+            .chart-label {
+                font-size: 10px;
+            }
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    <div class="container">
+        <h1>Statistiques de ventes</h1>
+
+        <div class="card">
+            <div class="card-body">
+                <form method="get" class="filter-form">
+                    <div class="form-group">
+                        <label for="date">Date dans la semaine :</label>
+                        <input type="date" id="date" name="date" value="{{ currentDate|date('Y-m-d') }}" required>
+                    </div>
+                    <input type="hidden" name="id" value="{{ shopId }}">
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">Filtrer</button>
+                    </div>
+                    <div class="form-group">
+                        <a href="{{ path('admin_shop_details', {'id': shopId}) }}" class="btn btn-secondary">Cette semaine</a>
+                    </div>
+                </form>
+                <p class="text-muted">
+                    Semaine du {{ weekStart|date('d/m/Y') }} au {{ weekEnd|date('d/m/Y') }}
+                </p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h4>Commandes par jour</h4>
+                <div class="chart-container">
+                    <div class="chart-grid">
+                        <div class="grid-line" style="bottom: 20%;"><span class="grid-line-text">20%</span></div>
+                        <div class="grid-line" style="bottom: 40%;"><span class="grid-line-text">40%</span></div>
+                        <div class="grid-line" style="bottom: 60%;"><span class="grid-line-text">60%</span></div>
+                        <div class="grid-line" style="bottom: 80%;"><span class="grid-line-text">80%</span></div>
+                        <div class="grid-line" style="bottom: 100%;"><span class="grid-line-text">100%</span></div>
+                    </div>
+                    <div class="chart-wrapper">
+                        {% for day, count in salesData %}
+                            <div class="chart-column">
+                                <div class="chart-bar"
+                                     style="height: {{ count > 0 ? (count / max(salesData)) * 100 : 2 }}%;">
+                                    {% if count > 0 %}
+                                        <span class="chart-value">{{ count }} cmd</span>
+                                    {% endif %}
+                                </div>
+                                <div class="chart-label">
+                                    {{ day|date('d/m') }}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,103 +1,136 @@
 <?php
+// src/Entity/Event.php
 namespace App\Entity;
 
-use App\Repository\EventRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
+
+use App\Entity\Utilisateur;
 use Doctrine\ORM\Mapping as ORM;
+use DateTimeImmutable;
 
-
-#[ORM\Entity(repositoryClass: EventRepository::class)]
+#[ORM\Entity]
+#[ORM\Table(name: "event")]
 class Event
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column]
+    #[ORM\Column(type: "integer")]
     private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: Utilisateur::class)]
-    #[ORM\JoinColumn(name: "idOrganisateur", nullable: false)]
-    private ?Utilisateur $organisateur = null;
+    #[ORM\JoinColumn(name: "idOrganisateur", referencedColumnName: "id")]
+    private Utilisateur $organisateur;
 
-    #[ORM\Column(length: 255)]
-    private ?string $description = null;
+    #[ORM\Column(name: "nomOrganisateur", type: "string", length: 50)]
+    private string $nomOrganisateur;
 
-    #[ORM\Column(name: "dateDebut", length: 255)]
+    #[ORM\Column(type: "text")]
+    private string $description;
+
+    #[ORM\Column(name: "dateDebut", type: "string", length: 10)]
     private ?string $dateDebut = null;
 
-    #[ORM\Column(name: "dateFin", length: 255)]
+    #[ORM\Column(name: "dateFin", type: "string", length: 10)]
     private ?string $dateFin = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $emplacement = null;
+    #[ORM\Column(type: "string", length: 50)]
+    private string $emplacement;
 
-    /**
-     * @var Collection<int, EventClient>
-     */
-    #[ORM\OneToMany(targetEntity: EventClient::class, mappedBy: 'idEvent')]
-    private Collection $eventClients;
-
-    public function __construct()
+    // Getters and Setters
+    public function getId(): ?int
     {
-        $this->eventClients = new ArrayCollection();
+        return $this->id;
     }
 
-    // Basic getters and setters
-    public function getId(): ?int { return $this->id; }
-    
-    public function getOrganisateur(): ?Utilisateur { return $this->organisateur; }
-    public function setOrganisateur(?Utilisateur $organisateur): self { $this->organisateur = $organisateur; return $this; }
-    
-    public function getDescription(): ?string { return $this->description; }
-    public function setDescription(string $description): self { $this->description = $description; return $this; }
-    
-    public function getDateDebut(): ?string { return $this->dateDebut; }
-    public function setDateDebut(string $dateDebut): self { $this->dateDebut = $dateDebut; return $this; }
-    
-    public function getDateFin(): ?string { return $this->dateFin; }
-    public function setDateFin(string $dateFin): self { $this->dateFin = $dateFin; return $this; }
-    
-    public function getEmplacement(): ?string { return $this->emplacement; }
-    public function setEmplacement(string $emplacement): self { $this->emplacement = $emplacement; return $this; }
-
-    /**
-     * @return Collection<int, EventClient>
-     */
-    public function getEventClients(): Collection
+    public function getOrganisateur(): Utilisateur
     {
-        return $this->eventClients;
+        return $this->organisateur;
     }
-
-    public function addEventClient(EventClient $eventClient): static
+    public function setOrganisateur(Utilisateur $organisateur): self
     {
-        if (!$this->eventClients->contains($eventClient)) {
-            $this->eventClients->add($eventClient);
-            $eventClient->setIdEvent($this);
-        }
-
+        $this->organisateur = $organisateur;
         return $this;
     }
 
-    public function removeEventClient(EventClient $eventClient): static
+    public function getNomOrganisateur(): string
     {
-        if ($this->eventClients->removeElement($eventClient)) {
-            // set the owning side to null (unless already changed)
-            if ($eventClient->getIdEvent() === $this) {
-                $eventClient->setIdEvent(null);
-            }
-        }
-
+        return $this->nomOrganisateur;
+    }
+    public function setNomOrganisateur(string $nomOrganisateur): self
+    {
+        $this->nomOrganisateur = $nomOrganisateur;
         return $this;
     }
 
-    // Helper method to check if a user is participating
-    public function isUserParticipating(Utilisateur $user): bool
+    public function getDescription(): string
     {
-        foreach ($this->eventClients as $eventClient) {
-            if ($eventClient->getIdClient() === $user) {
-                return true;
-            }
+        return $this->description;
+    }
+    public function setDescription(string $description): self
+    {
+        $this->description = $description;
+        return $this;
+    }
+
+
+
+    public function getDateDebut(): ?DateTimeImmutable
+    {
+        if (empty($this->dateDebut)) {
+            return null;
         }
-        return false;
+
+        $date = DateTimeImmutable::createFromFormat('Y-m-d', $this->dateDebut);
+        return $date === false ? null : $date;
+    }
+    public function setDateDebut(DateTimeImmutable|string|null $date): self
+    {
+        if ($date instanceof DateTimeImmutable) {
+            $this->dateDebut = $date->format('Y-m-d');
+        } elseif (is_string($date) && !empty($date)) {
+            $this->dateDebut = $date;
+        } else {
+            $this->dateDebut = null;
+        }
+        return $this;
+    }
+
+    public function getDateFin(): ?DateTimeImmutable
+    {
+        if (empty($this->dateFin)) {
+            return null;
+        }
+
+        $date = DateTimeImmutable::createFromFormat('Y-m-d', $this->dateFin);
+        return $date === false ? null : $date;
+    }
+    public function setDateFin(DateTimeImmutable|string|null $date): self
+    {
+        if ($date instanceof DateTimeImmutable) {
+            $this->dateFin = $date->format('Y-m-d');
+        } elseif (is_string($date) && !empty($date)) {
+            $this->dateFin = $date;
+        } else {
+            $this->dateFin = null;
+        }
+        return $this;
+    }
+
+    public function getDateDebutString(): ?string
+    {
+        return $this->dateDebut;
+    }
+
+    public function getDateFinString(): ?string
+    {
+        return $this->dateFin;
+    }
+    public function getEmplacement(): string
+    {
+        return $this->emplacement;
+    }
+    public function setEmplacement(string $emplacement): self
+    {
+        $this->emplacement = $emplacement;
+        return $this;
     }
 }

@@ -1,0 +1,263 @@
+{% extends "maria_templates/base.html.twig" %}
+
+{% block title %}Shop Hours
+{% endblock %}
+
+{% block stylesheets %}
+	{{ parent() }}
+	<link rel="stylesheet" href="{{ asset('css/schedule.css') }}">
+{% endblock %}
+
+{% block body %}
+	<div class="schedule-container">
+		<div class="schedule-header">
+			<h2 class="schedule-title">Shop Operating Hours</h2>
+			<button class="btn-add" onclick="openAddModal()">
+				<i class="fas fa-plus"></i>
+				Add Schedule
+			</button>
+		</div>
+
+		<div class="schedule-grid">
+			{% for schedule in schedules %}
+				<div class="schedule-card">
+					<div class="day-header" {% if schedule.openingTime == schedule.closingTime %} data-closed="true" {% endif %}>
+						<span class="day-name">{{ schedule.dayOfWeek.value }}</span>
+						{% if schedule.openingTime == schedule.closingTime %}
+							<span class="status-badge closed">Closed</span>
+						{% else %}
+							<span class="status-badge open">Open</span>
+						{% endif %}
+					</div>
+					<div class="time-content">
+						<div class="time-display">
+							{% if schedule.openingTime == schedule.closingTime %}
+								<span class="closed-message">Not operating</span>
+							{% else %}
+								<div class="time-slot">
+									<i class="fas fa-door-open"></i>
+									<span>{{ schedule.openingTime|date('h:i A') }}</span>
+								</div>
+								<div class="time-divider">to</div>
+								<div class="time-slot">
+									<i class="fas fa-door-closed"></i>
+									<span>{{ schedule.closingTime|date('h:i A') }}</span>
+								</div>
+							{% endif %}
+						</div>
+
+						<div class="schedule-actions">
+							<button type="button" class="btn-action btn-edit" onclick="openEditModal({{ schedule.id }})">
+								<i class="fas fa-edit"></i>
+								<span>Edit</span>
+							</button>
+
+							<form style="padding:0px;margin:0px
+								                            " method="POST" action="{{ path('schedule_delete', {'id': schedule.id}) }}" onsubmit="return confirm('Are you sure you want to delete this schedule?');">
+								<button type="submit" class="btn-action btn-delete">
+									<i class="fas fa-trash-alt"></i>
+									<span>Delete</span>
+								</button>
+							</form>
+						</div>
+					</div>
+				</div>
+			{% endfor %}
+		</div>
+	</div>
+
+	<!-- Add Schedule Modal -->
+	<div id="addScheduleModal" class="modal">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h3>Add New Schedule</h3>
+				<span class="close-modal" onclick="closeModal('addScheduleModal')">&times;</span>
+			</div>
+			<div class="modal-body">
+				{{ form_start(addForm, {'attr': {'id': 'addScheduleForm', 'action': path('schedule_new')}}) }}
+				{{ form_widget(addForm) }}
+				<div class="form-actions">
+					<button type="button" class="btn-cancel" onclick="closeModal('addScheduleModal')">Cancel</button>
+					<button type="submit" class="btn-submit">Save Schedule</button>
+				</div>
+				{{ form_end(addForm) }}
+			</div>
+		</div>
+	</div>
+
+	<!-- Edit Schedule Modals -->
+	{% if editForms is defined %}
+		{% for schedule in schedules %}
+			{% if editForms[schedule.id] is defined %}
+				<div class="modal" id="editModal-{{ schedule.id }}" style="display:none;">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h3>Edit Schedule for
+								{{ schedule.dayOfWeek.value }}</h3>
+							<span class="close-modal" onclick="closeModal('editModal-{{ schedule.id }}')">&times;</span>
+						</div>
+						<div class="modal-body">
+							{{ form_start(editForms[schedule.id], {
+                            'attr': {
+                                'id': 'editForm-' ~ schedule.id,
+                                'class': 'edit-schedule-form'
+                            }
+                        }) }}
+							<div class="form-group">
+    {{ form_label(editForms[schedule.id].dayOfWeek) }}
+    {{ form_widget(editForms[schedule.id].dayOfWeek, {'attr': {'readonly': true}}) }}
+</div>
+
+							<div class="form-row">
+								<div class="form-group">
+									{{ form_label(editForms[schedule.id].openingTime) }}
+									{{ form_widget(editForms[schedule.id].openingTime) }}
+									{{ form_errors(editForms[schedule.id].openingTime) }}
+								</div>
+
+								<div class="form-group">
+									{{ form_label(editForms[schedule.id].closingTime) }}
+									{{ form_widget(editForms[schedule.id].closingTime) }}
+									{{ form_errors(editForms[schedule.id].closingTime) }}
+								</div>
+							</div>
+							<div class="form-group closed-toggle">
+								<label class="checkbox-container">
+									{{ form_widget(editForms[schedule.id].isClosed, {
+                                        'attr': {
+                                            'class': 'form-check-input closed-checkbox',
+                                            'data-id': schedule.id
+                                        }
+                                    }) }}
+									<span class="checkmark"></span>
+									Closed on this day
+								</label>
+							</div>
+
+							<div class="form-actions">
+								<button type="submit" class="btn-submit">Update Schedule</button>
+								<button type="button" class="btn-cancel" onclick="closeModal('editModal-{{ schedule.id }}')">Cancel</button>
+							</div>
+							{{ form_end(editForms[schedule.id]) }}
+						</div>
+					</div>
+				</div>
+			{% endif %}
+		{% endfor %}
+	{% endif %}
+{% endblock %}
+
+{% block javascripts %}
+	{{ parent() }}
+	<script>
+		// Toggle "closed" state in forms
+document.addEventListener('DOMContentLoaded', function () { // For add form
+const addClosedCheckbox = document.querySelector('#addScheduleForm input[name="isClosed"]');
+if (addClosedCheckbox) {
+addClosedCheckbox.addEventListener('change', function () {
+toggleTimeFields('schedule_openingTime', 'schedule_closingTime', this.checked);
+});
+}
+
+// For edit forms - delegated event listener
+document.addEventListener('change', function (e) {
+if (e.target.classList.contains('closed-checkbox')) {
+const scheduleId = e.target.dataset.id;
+const openingTime = document.querySelector (`#editModal-${scheduleId} input[name="schedule[openingTime]"]`);
+const closingTime = document.querySelector (`#editModal-${scheduleId} input[name="schedule[closingTime]"]`);
+
+toggleTimeFieldsForEdit(openingTime, closingTime, e.target.checked);
+}
+});
+});
+
+function toggleTimeFields(openingId, closingId, isClosed) {
+const openingField = document.getElementById(openingId);
+const closingField = document.getElementById(closingId);
+
+if (isClosed) {
+openingField.disabled = true;
+closingField.disabled = true;
+openingField.value = '00:00';
+closingField.value = '00:00';
+} else {
+openingField.disabled = false;
+closingField.disabled = false;
+if (openingField.value === '00:00' && closingField.value === '00:00') {
+openingField.value = '09:00';
+closingField.value = '17:00';
+}
+}
+}
+
+function toggleTimeFieldsForEdit(openingField, closingField, isClosed) {
+if (isClosed) {
+openingField.disabled = true;
+closingField.disabled = true;
+openingField.value = '00:00';
+closingField.value = '00:00';
+} else {
+openingField.disabled = false;
+closingField.disabled = false;
+if (openingField.value === '00:00' && closingField.value === '00:00') {
+openingField.value = '09:00';
+closingField.value = '17:00';
+}
+}
+}
+
+// Modal functionality
+function openAddModal() {
+document.getElementById('addScheduleModal').style.display = 'flex';
+}
+
+function openEditModal(id) {
+document.getElementById (`editModal-${id}`).style.display = 'flex';
+
+// Initialize the closed state for this modal
+const checkbox = document.querySelector (`#editModal-${id} .closed-checkbox`);
+const openingTime = document.querySelector (`#editModal-${id} input[name="schedule[openingTime]"]`);
+const closingTime = document.querySelector (`#editModal-${id} input[name="schedule[closingTime]"]`);
+
+if (checkbox && openingTime && closingTime) {
+toggleTimeFieldsForEdit(openingTime, closingTime, checkbox.checked);
+}
+}
+
+function closeModal(modalId) {
+document.getElementById(modalId).style.display = 'none';
+}
+
+// Close modal when clicking outside
+window.onclick = function (event) {
+const modals = document.getElementsByClassName('modal');
+for (let i = 0; i < modals.length; i++) {
+if (event.target === modals[i]) {
+modals[i].style.display = 'none';
+}
+}
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const forms = document.querySelectorAll('form[name="schedule"]');
+    
+    forms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const openingTime = form.querySelector('input[name="schedule[openingTime]"]').value;
+            const closingTime = form.querySelector('input[name="schedule[closingTime]"]').value;
+            const isClosed = form.querySelector('input[name="schedule[isClosed]"]')?.checked;
+            
+            // Skip validation for closed days
+            if (isClosed) return true;
+            
+            if (openingTime && closingTime && openingTime >= closingTime) {
+                e.preventDefault();
+                alert('Closing time must be after opening time');
+                return false;
+            }
+            return true;
+        });
+    });
+});
+	</script>
+{% endblock %}

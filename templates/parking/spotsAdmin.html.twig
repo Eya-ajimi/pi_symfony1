@@ -1,0 +1,194 @@
+{# templates/parking/spotsAdmin.html.twig #}
+{% extends 'backend/base.html.twig' %}
+
+{% block title %}Parking Spots | Admin{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('assets/css2/css/styles.min.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('css/parking.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/adminpark.css') }}">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+{% endblock %}
+
+{% block content %}
+    <div class="card" style="margin-top: 100px;>
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="card-title">
+                    <i class="fas fa-parking me-2"></i>Manage Parking Spots
+                </h4>
+                <a href="{{ path('admin_parking_add') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Add Spot
+                </a>
+            </div>
+
+            {# Floor Selector #}
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Select Floor</h5>
+                    <div class="floor-selector">
+                        <div class="btn-group" role="group">
+    <a href="{{ path('app_parking_spots', {'floor': 1}) }}" 
+       class="btn btn-outline-primary floor-btn {{ current_floor == 1 ? 'active' : '' }}">
+        Floor 1
+    </a>
+    <a href="{{ path('app_parking_spots', {'floor': 2}) }}" 
+       class="btn btn-outline-primary floor-btn {{ current_floor == 2 ? 'active' : '' }}">
+        Floor 2
+    </a>
+    <a href="{{ path('app_parking_spots', {'floor': 3}) }}" 
+       class="btn btn-outline-primary floor-btn {{ current_floor == 3 ? 'active' : '' }}">
+        Floor 3
+    </a>
+</div>
+<div class="mt-2">
+    <small class="text-muted">Currently viewing: <strong>Floor {{ current_floor }}</strong></small>
+</div>
+                    </div>
+                </div>
+            </div>
+
+            {# Spots Table #}
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table id="spotsTable" class="table table-striped table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Zone</th>
+                                    <th>Floor</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for spot in spots %}
+                                    <tr>
+                                        <td>{{ spot.zone }}{{ spot.id }}</td>
+                                        <td>{{ spot.zone }}</td>
+                                        <td>{{ spot.floor|replace({'Level ': ''}) }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ spot.statut == 'free' ? 'success' : spot.statut == 'taken' ? 'danger' : 'warning' }}">
+                                                {{ spot.statut|capitalize }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <a href="{{ path('admin_parking_edit', {'id': spot.id}) }}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="{{ path('admin_parking_delete', {'id': spot.id}) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure?')">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // Initialize DataTable with empty data
+            const table = $('#spotsTable').DataTable({
+                responsive: true,
+                columns: [
+                    { title: "ID" },
+                    { title: "Zone" },
+                    { title: "Floor" },
+                    { title: "Status" },
+                    { title: "Actions" }
+                ],
+                language: {
+                    search: "Search spots:",
+                    lengthMenu: "Show _MENU_ spots per page",
+                    info: "Showing _START_ to _END_ of _TOTAL_ spots",
+                    paginate: {
+                        first: "First",
+                        last: "Last",
+                        next: "Next",
+                        previous: "Previous"
+                    }
+                }
+            });
+
+            // Load initial floor data
+            loadFloorSpots(1, table);
+
+            // Set up floor buttons - using event delegation
+            $(document).on('click', '.floor-btn', function() {
+                $('.floor-btn').removeClass('active');
+                $(this).addClass('active');
+                const floor = $(this).data('floor');
+                console.log('Loading floor:', floor); // Debug log
+                loadFloorSpots(floor, table);
+            });
+        });
+
+        function loadFloorSpots(floor, table) {
+            console.log(`Fetching data for floor ${floor}...`);
+            
+            fetch(`/admin/parking/floor/${floor}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Data received:', data); // Debug log
+                    
+                    // Update the current floor display
+                    $('#currentFloorDisplay').text(floor);
+
+                    // Clear existing data
+                    table.clear().draw();
+                    
+                    // Add new rows if data exists
+                    if (data.spots && data.spots.length > 0) {
+                        data.spots.forEach(spot => {
+                            // Format the status badge
+                            let statusClass = '';
+                            if (spot.statut === 'free') statusClass = 'success';
+                            else if (spot.statut === 'taken') statusClass = 'danger';
+                            else statusClass = 'warning';
+                            
+                            // Add row to table
+                            table.row.add([
+                                spot.zone + spot.id,
+                                spot.zone,
+                                spot.floor.replace('Level ', ''),
+                                `<span class="badge bg-${statusClass}">
+                                    ${spot.statut.charAt(0).toUpperCase() + spot.statut.slice(1)}
+                                </span>`,
+                                `<div>
+                                    <a href="/admin/parking/edit/${spot.id}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="/admin/parking/delete/${spot.id}" class="btn btn-sm btn-outline-danger" 
+                                       onclick="return confirm('Are you sure?')">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>`
+                            ]).draw(false);
+                        });
+                    }
+                    
+                    console.log('Table updated for floor:', floor); // Debug log
+                })
+                .catch(error => {
+                    console.error('Error loading floor spots:', error);
+                    alert(`Error loading floor ${floor}: ${error.message}`);
+                });
+        }
+    </script>
+{% endblock %}

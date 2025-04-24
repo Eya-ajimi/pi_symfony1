@@ -24,13 +24,12 @@ final class PanierContollerController extends AbstractController
         private UtilisateurRepository $utilisateurRepository
     ) {}
 
-    #[Route('/panier/contoller', name: 'app_show_panier')]
+    #[Route('/client/panier/contoller', name: 'app_show_panier')]
     public function showPanier(): Response
     {
 
 
-        $utilisateur = new Utilisateur();
-        $utilisateur->setId(7);
+        $utilisateur = $this->getUser();
         $clientId=$utilisateur->getId();
         $commandeEnCours = $this->commandeRepository->findCommandeEnCours($utilisateur);
         if (!$commandeEnCours) {
@@ -96,7 +95,7 @@ final class PanierContollerController extends AbstractController
 
     }
 
-    #[Route('/panier/addQuantite/{idCommande}/{idProduit}', name: 'app_add_quantite')]
+    #[Route('/client/panier/addQuantite/{idCommande}/{idProduit}', name: 'app_add_quantite')]
     public function addQuantite($idCommande, $idProduit): Response {
         $panierItem = $this->panierRepository->findBy([
             'idCommande' => $idCommande,
@@ -130,7 +129,7 @@ final class PanierContollerController extends AbstractController
         return $this->redirectToRoute('app_show_panier');
     }
 
-    #[Route('/panier/diminuerQuantite/{idCommande}/{idProduit}', name: 'app_diminuer_quantite')]
+    #[Route('/client/panier/diminuerQuantite/{idCommande}/{idProduit}', name: 'app_diminuer_quantite')]
     public function diminuerQuantite($idCommande, $idProduit): Response {
         $panierItem = $this->panierRepository->findBy([
             'idCommande' => $idCommande,
@@ -163,7 +162,7 @@ final class PanierContollerController extends AbstractController
         // Redirection vers la page du panier
         return $this->redirectToRoute('app_show_panier');
     }
-    #[Route('/panier/deletePanier/{idCommande}/{idProduit}', name: 'app_delete_item')]
+    #[Route('/client/panier/deletePanier/{idCommande}/{idProduit}', name: 'app_delete_item')]
     public function deleteItem($idCommande, $idProduit): Response
     {
         // Récupérer l'item du panier
@@ -198,7 +197,7 @@ final class PanierContollerController extends AbstractController
     }
 
 
-    #[Route('/panier/ajouterPanier/{idProduit}/{shopId}', name: 'app_add_item')]
+    #[Route('/client/panier/ajouterPanier/{idProduit}/{shopId}', name: 'app_add_item')]
     public function addItem($shopId,$idProduit, ProduitRepository $produitRepository): Response
     {
         // Récupération du produit
@@ -215,7 +214,7 @@ final class PanierContollerController extends AbstractController
         }
     
         // Récupération de l'utilisateur
-        $utilisateur = $this->utilisateurRepository->findOneById(7);
+        $utilisateur = $this->getUser();
     
         // Recherche de la commande en cours
         $commandeEnCours = $this->commandeRepository->findCommandeEnCours($utilisateur);

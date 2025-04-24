@@ -57,9 +57,9 @@ class PanierRepository extends ServiceEntityRepository
                 'pr.stock',
                 'pr.prix as prixOriginal',
                 'pr.image_url',
-                'd.discount_percentage as discountPercentage',
-                'd.start_date as discountStartDate',
-                'd.end_date as discountEndDate'
+                'd.discountPercentage as discountPercentage',
+                'd.startDate as discountStartDate',
+                'd.endDate as discountEndDate'
             )
             ->join('p.idProduit', 'pr')
             ->leftJoin('pr.promotionId', 'd')

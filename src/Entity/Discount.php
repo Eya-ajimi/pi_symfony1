@@ -3,8 +3,6 @@
 namespace App\Entity;
 
 use App\Repository\DiscountRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -16,30 +14,20 @@ class Discount
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 5, scale: 2)]
-    private ?string $discount_percentage = null;
+    #[ORM\Column(type: Types::DECIMAL, precision: 5, scale: 2, nullable: true)]
+    private ?string $discountPercentage = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
-    private ?\DateTimeInterface $start_date = null;
+    private ?\DateTimeInterface $startDate = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
-    private ?\DateTimeInterface $end_date = null;
+    private ?\DateTimeInterface $endDate = null;
 
-    #[ORM\ManyToOne(inversedBy: 'discounts')]
+    #[ORM\ManyToOne(targetEntity: Utilisateur::class)]
     #[ORM\JoinColumn(name: 'shop_id', referencedColumnName: 'id')]
-    private ?Utilisateur $shop_id = null;
+    private ?Utilisateur $shop = null;
 
-    /**
-     * @var Collection<int, Produit>
-     */
-    #[ORM\OneToMany(targetEntity: Produit::class, mappedBy: 'promotionId')]
-    private Collection $produits;
-
-    public function __construct()
-    {
-        $this->produits = new ArrayCollection();
-    }
-
+    // Getters and Setters
     public function getId(): ?int
     {
         return $this->id;
@@ -47,79 +35,45 @@ class Discount
 
     public function getDiscountPercentage(): ?string
     {
-        return $this->discount_percentage;
+        return $this->discountPercentage;
     }
 
-    public function setDiscountPercentage(string $discount_percentage): static
+    public function setDiscountPercentage(?string $discountPercentage): static
     {
-        $this->discount_percentage = $discount_percentage;
-
+        $this->discountPercentage = $discountPercentage;
         return $this;
     }
 
     public function getStartDate(): ?\DateTimeInterface
     {
-        return $this->start_date;
+        return $this->startDate;
     }
 
-    public function setStartDate(\DateTimeInterface $start_date): static
+    public function setStartDate(\DateTimeInterface $startDate): static
     {
-        $this->start_date = $start_date;
-
+        $this->startDate = $startDate;
         return $this;
     }
 
     public function getEndDate(): ?\DateTimeInterface
     {
-        return $this->end_date;
+        return $this->endDate;
     }
 
-    public function setEndDate(\DateTimeInterface $end_date): static
+    public function setEndDate(\DateTimeInterface $endDate): static
     {
-        $this->end_date = $end_date;
-
+        $this->endDate = $endDate;
         return $this;
     }
 
-    public function getShopId(): ?Utilisateur
+    public function getShop(): ?Utilisateur
     {
-        return $this->shop_id;
+        return $this->shop;
     }
 
-    public function setShopId(?Utilisateur $shop_id): static
+    public function setShop(?Utilisateur $shop): static
     {
-        $this->shop_id = $shop_id;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Produit>
-     */
-    public function getProduits(): Collection
-    {
-        return $this->produits;
-    }
-
-    public function addProduit(Produit $produit): static
-    {
-        if (!$this->produits->contains($produit)) {
-            $this->produits->add($produit);
-            $produit->setPromotionId($this);
-        }
-
-        return $this;
-    }
-
-    public function removeProduit(Produit $produit): static
-    {
-        if ($this->produits->removeElement($produit)) {
-            // set the owning side to null (unless already changed)
-            if ($produit->getPromotionId() === $this) {
-                $produit->setPromotionId(null);
-            }
-        }
-
+        $this->shop = $shop;
         return $this;
     }
 }

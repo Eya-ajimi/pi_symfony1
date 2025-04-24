@@ -14,6 +14,7 @@ use App\Enums\Role;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormFactoryInterface;
 
+#[Route('/client')]
 class ShopController extends AbstractController
 {
     #[Route('/shops', name: 'app_shops')]
@@ -24,7 +25,7 @@ class ShopController extends AbstractController
         FormFactoryInterface $formFactory
     ): Response {
         $shopOwners = $utilisateurRepository->findAllShopOwners();
-        $fixedUser = $utilisateurRepository->find(7);
+        $fixedUser = $this->getUser();
 
         $feedbackForms = [];
         $isRatedList = [];
@@ -63,7 +64,7 @@ class ShopController extends AbstractController
         EntityManagerInterface $entityManager,
         FormFactoryInterface $formFactory
     ): Response {
-        $fixedUser = $utilisateurRepository->find(7);
+        $fixedUser = $this->getUser();
         $shop = $utilisateurRepository->find($shopId);
     
         
@@ -138,7 +139,7 @@ class ShopController extends AbstractController
         FeedbackRepository $feedbackRepository,
         EntityManagerInterface $entityManager
     ): Response {
-        $user = $utilisateurRepository->find(7);
+        $user = $this->getUser();
         $shop = $utilisateurRepository->find($shopId);
 
         if ($user && $shop) {

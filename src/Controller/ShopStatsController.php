@@ -29,7 +29,7 @@ final class ShopStatsController extends AbstractController
 
         $stats = $commandeRepo->findWeeklyShopStatistics($currentDate);
 
-        return $this->render('shop_stats/index.html.twig', [
+        return $this->render('backend/billing.html.twig', [
             'stats' => $stats,
             'currentDate' => $currentDate,
             'weekDates' => $weekDates,
@@ -62,7 +62,7 @@ final class ShopStatsController extends AbstractController
             $salesData[$sale['day']] = $sale['salesCount'];
         }
 
-        return $this->render('shop_stats/shop_details.html.twig', [
+        return $this->render('backend/billinigDetails.html.twig', [
             'salesData' => $salesData,
             'shopId' => $id,
             'currentDate' => $currentDate,

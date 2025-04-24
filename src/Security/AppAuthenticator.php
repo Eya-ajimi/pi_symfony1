@@ -118,9 +118,9 @@ class AppAuthenticator extends AbstractLoginFormAuthenticator implements Authent
 
         // Check role value directly
         if ($roleValue === 'ADMIN') {
-            return new RedirectResponse($this->urlGenerator->generate('admin_dashboard'));
+            return new RedirectResponse($this->urlGenerator->generate('app_admin_dashboard1'));
         } elseif ($roleValue === 'SHOPOWNER') {
-            return new RedirectResponse($this->urlGenerator->generate('shopowner_dashboard'));
+            return new RedirectResponse($this->urlGenerator->generate('dashboard'));
         } elseif ($roleValue === 'CLIENT') {
             return new RedirectResponse($this->urlGenerator->generate('app_home_page'));
         }

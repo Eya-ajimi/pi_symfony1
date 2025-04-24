@@ -1,0 +1,101 @@
+{# templates/parking/reservationsAdmin.html.twig #}
+{% extends 'backend/base.html.twig' %}
+
+{% block title %}Parking Reservations | Admin{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('assets/css2/css/styles.min.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('css/parking.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/adminpark.css') }}">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+{% endblock %}
+
+{% block content %}
+    <div class="card" style="margin-top: 100px;>
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="card-title">
+                    <i class="fas fa-calendar-alt me-2"></i>Manage Reservations
+                </h4>
+                <div class="d-flex">
+                    <input type="date" class="form-control me-2" style="width: 200px;">
+                    <button class="btn btn-outline-secondary">
+                        <i class="fas fa-filter me-2"></i>Filter
+                    </button>
+                </div>
+            </div>
+
+            <div class="card" >
+                <div class="card-body">
+                    {% if all_reservations is defined and all_reservations|length > 0 %}
+                        <div class="table-responsive">
+                            <table id="reservationsTable" class="table table-striped table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>User</th>
+                                        <th>Spot</th>
+                                        <th>Start Time</th>
+                                        <th>End Time</th>
+                                        <th>Status</th>
+                                        <th>Vehicle</th>
+                                        <th>Price (TND)</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for reservation in all_reservations %}
+                                        <tr>
+                                            <td>{{ reservation.idReservation }}</td>
+                                            <td>{{ reservation.idUtilisateur }}</td>
+                                            <td>
+                                                {% if reservation.placeParking %}
+                                                    {{ reservation.placeParking.zone }}{{ reservation.placeParking.id }}
+                                                {% else %}
+                                                    N/A
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ reservation.dateReservation|date('Y-m-d H:i') }}</td>
+                                            <td>{{ reservation.dateExpiration|date('Y-m-d H:i') }}</td>
+                                            <td>
+                                                <span class="badge bg-{{ reservation.statut == 'active' ? 'success' : 'danger' }}">
+                                                    {{ reservation.statut|capitalize }}
+                                                </span>
+                                            </td>
+                                            <td>{{ reservation.vehicleType|capitalize }}</td>
+                                            <td>{{ reservation.price }}</td>
+                                            <td>
+                                                <a href="{{ path('admin_reservation_edit', {'id': reservation.idReservation}) }}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a href="{{ path('admin_reservation_delete', {'id': reservation.idReservation}) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure?')">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No reservations found.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#reservationsTable').DataTable();
+        });
+    </script>
+{% endblock %}
