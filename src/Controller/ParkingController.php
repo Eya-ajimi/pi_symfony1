@@ -46,10 +46,32 @@ class ParkingController extends AbstractController
 
         $this->entityManager->flush();
     }
+    private function checkExpiredReservations(): void
+{
+    $expiredReservations = $this->reservationRepository->findExpiredReservations();
     
+    foreach ($expiredReservations as $reservation) {
+        // Update reservation status
+        $reservation->setStatut('expired');
+        
+        // Free up the parking spot
+        $spot = $reservation->getPlaceParking();
+        if ($spot) {
+            $spot->setStatut('free');
+            $this->entityManager->persist($spot);
+        }
+        
+        $this->entityManager->persist($reservation);
+    }
+
+    if (count($expiredReservations) > 0) {
+        $this->entityManager->flush();
+    }
+}
     #[Route('/parking', name: 'app_parking')]
     public function index(Request $request): Response
     {
+        $this->checkExpiredReservations();
         // Default to floor 1
         $floor = $request->query->get('floor', 1);
         $floorValue = 'Level ' . $floor;

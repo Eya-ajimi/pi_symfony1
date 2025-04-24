@@ -76,4 +76,14 @@ class ReservationRepository extends ServiceEntityRepository
 
         return true;
     }
+    public function findExpiredReservations(): array
+    {
+    return $this->createQueryBuilder('r')
+        ->where('r.statut = :status')
+        ->andWhere('r.dateExpiration < :now')
+        ->setParameter('status', 'active')
+        ->setParameter('now', new \DateTime())
+        ->getQuery()
+        ->getResult();
+    }
 }
