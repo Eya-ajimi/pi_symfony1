@@ -124,6 +124,16 @@ class ParkingController extends AbstractController
             // Calculate price based on duration and vehicle type
             $start = $reservation->getDateReservation();
             $end = $reservation->getDateExpiration();
+            $now = new \DateTime();
+        if ($start < $now) {
+            $this->addFlash('error', 'Start time cannot be in the past');
+            return $this->redirectToRoute('app_parking_reserve', ['id' => $spot->getId()]);
+        }
+        
+        if ($end <= $start) {
+            $this->addFlash('error', 'End time must be after start time');
+            return $this->redirectToRoute('app_parking_reserve', ['id' => $spot->getId()]);
+        }
             $duration = $end->diff($start)->h; // Get hours difference
 
             $pricing = [
