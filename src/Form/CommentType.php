@@ -22,7 +22,7 @@ class CommentType extends AbstractType
                 'constraints' => [
                     new NotBlank(['message' => '']),
                     new Regex([
-                        'pattern' => '/\b(shit|fuck|asshole|bitch|dumb|ass|pussy|putain|con|drugs|saloup)\b/i',
+                        'pattern' => '/\b(shit|fuck|asshole|bitch|dumb|ass|pussy|putain|con|merdre|saloup)\b/i',
                         'match' => false,
                         'message' => 'Your comment contains inappropriate language'
                     ])
