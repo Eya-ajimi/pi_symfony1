@@ -11,7 +11,7 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-
+use App\Enums\Role;
 class UtilisateurRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -89,4 +89,34 @@ class UtilisateurRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+
+    /*filter*/
+    public function findFilteredShops(?string $search, array $categories, ?int $rating): array
+{
+    $qb = $this->createQueryBuilder('u')
+        ->leftJoin('u.categorie', 'c')
+        ->where('u.role = :role')
+        ->setParameter('role', Role::SHOPOWNER);
+
+    if ($search) {
+        $qb->andWhere('LOWER(u.nom) LIKE :search OR LOWER(u.prenom) LIKE :search')
+            ->setParameter('search', '%' . strtolower($search) . '%');
+    }
+
+    if (!empty($categories)) {
+        $qb->andWhere('c.nom IN (:categories)')
+            ->setParameter('categories', $categories);
+    }
+
+    if ($rating) {
+        $qb->leftJoin('u.receivedFeedbacks', 'f')
+            ->groupBy('u.id')
+            ->having('AVG(f.rating) >= :rating')
+            ->setParameter('rating', $rating);
+    }
+    
+    return $qb->getQuery()->getResult();
+}
+
 }

@@ -16,56 +16,54 @@ class LikedProduct
     #[ORM\Column(type: 'integer')]
     private ?int $id = null;
 
-    #[ORM\Column(name: 'utilisateurId', type: 'integer')]
-    private int $userId;
+    #[ORM\ManyToOne(targetEntity: Utilisateur::class)]
+    #[ORM\JoinColumn(name: "utilisateurId", referencedColumnName: "id", nullable: false)]
+    private ?Utilisateur $utilisateur = null;
 
-    #[ORM\Column(name: 'produitId', type: 'integer')]
-    private int $productId;
+    #[ORM\ManyToOne(targetEntity: Produit::class)]
+    #[ORM\JoinColumn(name: "produitId", referencedColumnName: "id", nullable: false)]
+    private ?Produit $produit = null;
 
-    #[ORM\Column(name: 'date_like', type: Types::DATETIME_MUTABLE)]
-    private \DateTimeInterface $dateLike;
+    #[ORM\Column(name: "date_like", type: 'datetime')]
+    private ?\DateTimeInterface $date_like = null;
 
-    public function __construct()
-    {
-        $this->dateLike = new \DateTime();
-    }
+    // Getters & Setters...
 
-    // Getters and Setters
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getUserId(): int
+    public function getUtilisateur(): ?Utilisateur
     {
-        return $this->userId;
+        return $this->utilisateur;
     }
 
-    public function setUserId(int $userId): self
+    public function setUtilisateur(?Utilisateur $utilisateur): self
     {
-        $this->userId = $userId;
+        $this->utilisateur = $utilisateur;
         return $this;
     }
 
-    public function getProductId(): int
+    public function getProduit(): ?Produit
     {
-        return $this->productId;
+        return $this->produit;
     }
 
-    public function setProductId(int $productId): self
+    public function setProduit(?Produit $produit): self
     {
-        $this->productId = $productId;
+        $this->produit = $produit;
         return $this;
     }
 
-    public function getDateLike(): \DateTimeInterface
+    public function getDateLike(): ?\DateTimeInterface
     {
-        return $this->dateLike;
+        return $this->date_like;
     }
 
     public function setDateLike(\DateTimeInterface $dateLike): self
     {
-        $this->dateLike = $dateLike;
+        $this->date_like = $dateLike;
         return $this;
     }
 }

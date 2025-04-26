@@ -5,6 +5,8 @@ namespace App\Entity;
 use App\Repository\DiscountRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 #[ORM\Entity(repositoryClass: DiscountRepository::class)]
 class Discount
@@ -22,6 +24,9 @@ class Discount
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTimeInterface $endDate = null;
+
+    #[ORM\OneToMany(targetEntity: Produit::class, mappedBy: 'promotionId')]
+    private Collection $produits;
 
     #[ORM\ManyToOne(targetEntity: Utilisateur::class)]
     #[ORM\JoinColumn(name: 'shop_id', referencedColumnName: 'id')]
@@ -75,5 +80,10 @@ class Discount
     {
         $this->shop = $shop;
         return $this;
+    }
+
+    public function __construct()
+    {
+        $this->produits = new ArrayCollection();
     }
 }

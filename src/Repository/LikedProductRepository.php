@@ -27,23 +27,25 @@ class LikedProductRepository extends ServiceEntityRepository
     public function findOneByUserAndProduct(int $userId, int $productId): ?LikedProduct
     {
         return $this->createQueryBuilder('l')
-            ->andWhere('l.userId = :userId')
-            ->andWhere('l.productId = :productId')
+            ->andWhere('l.utilisateur = :userId')
+            ->andWhere('l.produit = :productId')
             ->setParameter('userId', $userId)
             ->setParameter('productId', $productId)
             ->getQuery()
             ->getOneOrNullResult();
     }
+    
 
     public function findByUser(int $userId): array
     {
         return $this->createQueryBuilder('l')
-            ->andWhere('l.userId = :userId')
+            ->andWhere('l.utilisateur = :userId')
             ->setParameter('userId', $userId)
-            ->orderBy('l.dateLike', 'DESC')
+            ->orderBy('l.date_like', 'DESC')
             ->getQuery()
             ->getResult();
     }
+    
 
     // UPDATE
     public function updateLikeDate(LikedProduct $likedProduct, \DateTimeInterface $newDate): void
@@ -74,25 +76,29 @@ class LikedProductRepository extends ServiceEntityRepository
     }
 
     // Count likes for a product
+
+    /** henee ya maria aandek pb mtaa id  */
     public function countLikesForProduct(int $productId): int
     {
         return $this->createQueryBuilder('l')
             ->select('COUNT(l.id)')
-            ->andWhere('l.productId = :productId')
+            ->andWhere('l.produit = :productId')
             ->setParameter('productId', $productId)
             ->getQuery()
             ->getSingleScalarResult();
     }
+    
+    
 
-
-    public function findByProduct(int $productId): array
-    {
-        return $this->createQueryBuilder('l')
-            ->andWhere('l.productId = :productId')
-            ->setParameter('productId', $productId)
-            ->orderBy('l.dateLike', 'DESC') // Optional: Order by like date if needed
-            ->getQuery()
-            ->getResult();
-    }
+            public function findByProduct(int $productId): array
+            {
+                return $this->createQueryBuilder('l')
+                    ->andWhere('l.produit = :productId')
+                    ->setParameter('productId', $productId)
+                    ->orderBy('l.date_like', 'DESC')
+                    ->getQuery()
+                    ->getResult();
+            }
+            
 
 }

@@ -9,115 +9,56 @@
 
 {% block content %}
     <div class="shops-container">
-        <!-- Filter Section -->
-        <div class="filter-section">
-            <h2><i class="fas fa-filter"></i> Filters</h2>
-            
-            <!-- Search Filter -->
-            <div class="search-filter">
-                <input type="text" placeholder="Search shops...">
-            </div>
-            
-            <!-- Category Filter -->
-            <div class="filter-group">
-                <h3><i class="fas fa-tags"></i> Categories</h3>
-                <ul class="filter-options">
-                    <li>
-                        <label>
-                            <input type="checkbox" checked> Clothing
-                        </label>
-                    </li>
-                    <li>
-                        <label>
-                            <input type="checkbox" checked> Coffee Shops
-                        </label>
-                    </li>
-                    <li>
-                        <label>
-                            <input type="checkbox" checked> Accessories
-                        </label>
-                    </li>
-                    <li>
-                        <label>
-                            <input type="checkbox"> Jewelry
-                        </label>
-                    </li>
-                    <li>
-                        <label>
-                            <input type="checkbox"> Electronics
-                        </label>
-                    </li>
-                </ul>
-            </div>
-            
-            <!-- Rating Filter -->
-            <div class="filter-group">
-                <h3><i class="fas fa-star"></i> Rating</h3>
-                <div class="rating-filter">
-                    <div class="rating-option">
-                        <label>
-                            <input type="radio" name="rating" value="5">
-                            <div class="rating-stars-filter">
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                            </div>
-                        </label>
-                    </div>
-                    <div class="rating-option">
-                        <label>
-                            <input type="radio" name="rating" value="4">
-                            <div class="rating-stars-filter">
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="far fa-star"></i>
-                            </div>
-                        </label>
-                    </div>
-                    <div class="rating-option">
-                        <label>
-                            <input type="radio" name="rating" value="3">
-                            <div class="rating-stars-filter">
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="far fa-star"></i>
-                                <i class="far fa-star"></i>
-                            </div>
-                        </label>
-                    </div>
+        <form method="GET" action="{{ path('app_shops') }}">
+    <!-- Search Filter -->
+    <div class="search-filter">
+        <input type="text" name="search" placeholder="Search shops..." value="{{ app.request.get('search') }}">
+    </div>
+
+    <!-- Category Filter -->
+    <div class="filter-group">
+        <h3><i class="fas fa-tags"></i> Categories</h3>
+        <ul class="filter-options">
+            {% for category in categories %}
+                <li>
+                    <label>
+                        <input type="checkbox" name="categories[]" value="{{ category.nom }}"
+                            {% if category.nom in app.request.get('categories', []) %} checked {% endif %}>
+                        {{ category.nom }}
+                    </label>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Rating Filter -->
+    <div class="filter-group">
+        <h3><i class="fas fa-star"></i> Rating</h3>
+        <div class="rating-filter">
+            {% for i in [5,4,3,2,1] %}
+                <div class="rating-option">
+                    <label>
+                        <input type="radio" name="rating" value="{{ i }}" {% if app.request.get('rating') == i|striptags %} checked {% endif %}>
+                        <div class="rating-stars-filter">
+                            {% for j in 1..5 %}
+                                <i class="{{ j <= i ? 'fas' : 'far' }} fa-star"></i>
+                            {% endfor %}
+                        </div>
+                    </label>
                 </div>
-            </div>
-            
-            <!-- Price Range Filter -->
-          
-            
-            <!-- Open Now Filter -->
-            <div class="filter-group">
-                <h3><i class="fas fa-clock"></i> Availability</h3>
-                <ul class="filter-options">
-                    <li>
-                        <label>
-                            <input type="checkbox"> Open Now
-                        </label>
-                    </li>
-                    <li>
-                        <label>
-                            <input type="checkbox"> With Promotions
-                        </label>
-                    </li>
-                </ul>
-            </div>
-            
-            <!-- Reset Button -->
-            <button class="filter-reset">
-                <i class="fas fa-sync-alt"></i> Reset Filters
-            </button>
+            {% endfor %}
         </div>
+    </div>
+
+    <!-- Bouton de soumission -->
+    <button type="submit" class="filter-reset">
+        <i class="fas fa-search"></i> Apply Filters
+    </button>
+   
+</form>
+
+            
+          
         
         
         <!-- Shops Grid -->

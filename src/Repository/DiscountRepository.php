@@ -22,6 +22,15 @@ class DiscountRepository extends ServiceEntityRepository
             $this->getEntityManager()->flush();
         }
     }
+    
+    public function findByShopId(int $shopId)
+    {
+        return $this->createQueryBuilder('d')
+            ->andWhere('d.shopId = :shopId')
+            ->setParameter('shopId', $shopId)
+            ->getQuery()
+            ->getResult();
+    }
 
     public function remove(Discount $entity, bool $flush = false): void
     {
@@ -43,5 +52,18 @@ class DiscountRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function findActiveDiscountForShop(int $shopId): ?Discount
+{
+    return $this->createQueryBuilder('d')
+        ->andWhere('d.shop = :shopId')
+        ->andWhere('d.startDate <= :today')
+        ->andWhere('d.endDate >= :today')
+        ->setParameter('shopId', $shopId)
+        ->setParameter('today', new \DateTime())
+        ->setMaxResults(1)
+        ->getQuery()
+        ->getOneOrNullResult();
+}
 
 }

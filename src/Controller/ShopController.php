@@ -13,47 +13,57 @@ use Symfony\Component\Routing\Annotation\Route;
 use App\Enums\Role;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormFactoryInterface;
+use App\Repository\CategorieRepository;
 
 #[Route('/client')]
 class ShopController extends AbstractController
 {
+  
     #[Route('/shops', name: 'app_shops')]
-    public function index(
-        UtilisateurRepository $utilisateurRepository,
-        FeedbackRepository $feedbackRepository,
-        Request $request,
-        FormFactoryInterface $formFactory
-    ): Response {
-        $shopOwners = $utilisateurRepository->findAllShopOwners();
-        $fixedUser = $this->getUser();
+public function index(
+    UtilisateurRepository $utilisateurRepository,
+    FeedbackRepository $feedbackRepository,
+    CategorieRepository $categorieRepository,
+    Request $request,
+    FormFactoryInterface $formFactory
+): Response {
+    
+    $shopOwners = $utilisateurRepository->findAllShopOwners();
+    $fixedUser = $this->getUser();
+    // Récupération sécurisée des filtres
+    $search = $request->query->get('search');
+    $categoriesParam = $request->query->all('categories'); 
+    $rating = $request->query->get('rating');
 
-        $feedbackForms = [];
-        $isRatedList = [];
+    // Toutes les catégories
+    $categories = $categorieRepository->findAll();
 
-        if ($fixedUser) {
-            foreach ($shopOwners as $shop) {
-                $existingFeedback = $feedbackRepository->findOneByUserAndShop($fixedUser, $shop);
-                $feedback = $existingFeedback ?? new Feedback();
+    // 🔍 Recherche filtrée
+    $shopOwners = $utilisateurRepository->findFilteredShops($search, $categoriesParam, $rating);
 
-                $feedbackForms[$shop->getId()] = $formFactory->createNamed(
-                    'feedback_' . $shop->getId(),
-                    FeedbackType::class,
-                    $feedback,
-                    ['action' => $this->generateUrl('rate_shop', ['shopId' => $shop->getId()])]
-                )->createView();
+    // Feedback forms
+    $feedbackForms = [];
+    foreach ($shopOwners as $shop) {
+        $existingFeedback = $feedbackRepository->findOneByUserAndShop($fixedUser, $shop);
+        $feedback = $existingFeedback ?? new Feedback();
 
-                $isRatedList[$shop->getId()] = $existingFeedback !== null;
-            }
-        }
-
-        return $this->render('shops/shops.html.twig', [
-            'shopOwners' => $shopOwners,
-            'feedback_forms' => $feedbackForms,
-            'feedback_repo' => $feedbackRepository,
-            'isRatedList' => $isRatedList,
-            'fixedUser' => $fixedUser,
-        ]);
+        $feedbackForms[$shop->getId()] = $formFactory->createNamed(
+            'feedback_' . $shop->getId(),
+            FeedbackType::class,
+            $feedback,
+            ['action' => $this->generateUrl('rate_shop', ['shopId' => $shop->getId()])]
+        )->createView();
     }
+
+    return $this->render('shops/shops.html.twig', [
+        'shopOwners' => $shopOwners,
+        'fixedUser' => $fixedUser,
+        'feedback_forms' => $feedbackForms,
+        'feedback_repo' => $feedbackRepository,
+        'categories' => $categories,
+    ]);
+}
+
 
     #[Route('/shop/rate/{shopId}', name: 'rate_shop', methods: ['POST'])]
     public function rateShop(

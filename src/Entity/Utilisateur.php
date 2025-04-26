@@ -77,6 +77,18 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(name: "numeroTicket", type: "integer", nullable: true)]
     private ?int $numeroTicket = null;
 
+    
+
+
+    #[ORM\OneToMany(mappedBy: 'utilisateur', targetEntity: LikedProduct::class, orphanRemoval: true)]
+private Collection $likes;
+
+public function getLikes(): Collection
+{
+    return $this->likes;
+}
+
+
 
     /**
      * @var Collection<int, Produit>
@@ -319,6 +331,8 @@ private Collection $receivedFeedbacks;
         return $this;
     }
 
+    
+
 
     public function getMotDePasse(): string { return $this->motDePasse; }
     public function setPassword(string $motDePasse): self { $this->motDePasse = $motDePasse; return $this; }
@@ -409,10 +423,6 @@ private Collection $receivedFeedbacks;
     public function getPassword(): string { return $this->motDePasse; }
     public function getSalt(): ?string { return null; }
 
-    public function getFullName(): string
-    {
-        return $this->prenom.' '.$this->nom;
-    }
 
     /******** */
    

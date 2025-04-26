@@ -34,36 +34,35 @@ class ProduitRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    public function findWithFilters(
-        int $shopId,
-        string $searchTerm = '',
-        ?float $minPrice = null,
-        ?float $maxPrice = null,
-        
-    ) {
-        $qb = $this->createQueryBuilder('p')
-            ->where('p.shop = :shopId')
-            ->setParameter('shopId', $shopId);
-    
-        if (!empty($searchTerm)) {
-            $qb->andWhere('p.nom LIKE :searchTerm')
-               ->setParameter('searchTerm', '%'.$searchTerm.'%');
-        }
-    
-        if ($minPrice !== null) {
-            $qb->andWhere('p.prix >= :minPrice')
-               ->setParameter('minPrice', $minPrice);
-        }
-    
-        if ($maxPrice !== null) {
-            $qb->andWhere('p.prix <= :maxPrice')
-               ->setParameter('maxPrice', $maxPrice);
-        }
-    
-        
-    
-        return $qb->getQuery()->getResult();
+
+    public function findByFilters($shopId, $name = null, $minPrice = null, $maxPrice = null, $promotion = null)
+{
+    $qb = $this->createQueryBuilder('p')
+        ->innerJoin('p.shopId', 'u')
+        ->andWhere('u.id = :shopId')
+        ->setParameter('shopId', $shopId);
+
+    if ($name) {
+        $qb->andWhere('LOWER(p.nom) LIKE LOWER(:name)')
+           ->setParameter('name', '%' . $name . '%');
     }
+
+    if ($minPrice !== null && $minPrice !== '') {
+        $qb->andWhere('p.prix >= :minPrice')
+           ->setParameter('minPrice', $minPrice);
+    }
+
+    if ($maxPrice !== null && $maxPrice !== '') {
+        $qb->andWhere('p.prix <= :maxPrice')
+           ->setParameter('maxPrice', $maxPrice);
+    }
+
+    // Bonus pour promo plus tard
+
+    return $qb->orderBy('p.nom', 'ASC')
+              ->getQuery()
+              ->getResult();
+}
 
     // Create (persist) a product
     public function save(Produit $entity, bool $flush = false): void

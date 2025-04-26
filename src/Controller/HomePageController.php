@@ -16,6 +16,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Entity\Schedule;
 
 class HomePageController extends AbstractController
 {
@@ -100,12 +101,27 @@ class HomePageController extends AbstractController
                     $form->handleRequest($request);
                     if ($form->isSubmitted() && $form->isValid()) {
                         $em->persist($reply);
+                
+                        // Vérifie si l'auteur du reply == auteur du post
+                        $post = $comment->getPost();
+                        $postAuthor = $post->getUtilisateur();
+                        $replyAuthor = $reply->getUtilisateur();
+                        $commentAuthor = $comment->getUtilisateur();
+                
+                        if ($replyAuthor === $postAuthor && $replyAuthor !== $commentAuthor) {
+                           
+                            $commentAuthor->setPoints($commentAuthor->getPoints() + 20);
+                            $em->persist($commentAuthor); 
+                        }
+                
+                        dd($commentAuthor);
                         $em->flush();
-
+                
                         $this->addFlash('success', 'Réponse ajoutée !');
                         return $this->redirectToRoute('app_home_page');
                     }
                 }
+                
 
                 $replyForms[$comment->getId()] = $form;
             }
@@ -144,6 +160,10 @@ class HomePageController extends AbstractController
             }
         }
 
+
+           
+
+
         // 7. ATM & View
         $atms = $atmRepository->findAll();
 
@@ -156,6 +176,12 @@ class HomePageController extends AbstractController
             'edit_comment_id' => $request->query->get('edit_comment'),
             'edit_reply_id' => $request->query->get('edit_reply'),
             'atms' => $atms,
+            //'shopData' => $shopData, 
+            
         ]);
     }
+
+
+ 
+
 }

@@ -5,7 +5,7 @@
 {# Include home.css & home.js only for this page #}
 {% block stylesheets %}
     <link rel="stylesheet" href="{{ asset('css/home.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />  
     <style>
         .user-owned {
             border-left: 3px solidrgb(209, 228, 209);
@@ -24,6 +24,9 @@
             color: #ccc;
             cursor: not-allowed;
         }
+
+       
+
     </style>
 {% endblock %}
 
@@ -107,10 +110,34 @@
 
 {% block content %}
 <div class="container">
-    <!-- Left Section: Chatbot Placeholder -->
-    <aside class="left-section">
-        Chatbot Section (Coming Soon)
-    </aside>
+   <!-- Left Section: Chatbot -->
+
+<!-- Bouton flottant pour ouvrir InnoChat -->
+
+<aside class="left-section">
+    <!-- Bulle flottante du chat -->
+    <button id="chat-toggle" class="chat-bubble" onclick="toggleChat()">
+        💬 InnoChat
+        <span id="notification-badge" style="display: none;">🔴</span>
+    </button>
+
+    <!-- Boîte de chat -->
+    <div id="chat-box" class="chat-box" style="display: none;">
+        <div id="chat-container" class="chat-container"></div>
+
+        <div class="input-container">
+            <input id="user-input" type="text" placeholder="Posez votre question..." />
+            <button id="send-button">Envoyer</button>
+        </div>
+    </div>
+</aside>
+
+
+<!-- Link to CSS -->
+<link rel="stylesheet" href="chatbot.css">
+<script src="chatbot.js"></script>
+
+
 
     <!-- Middle Section: Posts -->
     <div class="container">
@@ -330,7 +357,11 @@
     <!-- Right Section: Mall Map & ATMs -->
     <aside class="right-section">
         <div class="mall-map">
-            <img src="{{ asset('logo/mall.jpg') }}" alt="Mall Map">
+            
+
+            <div id="map" style="height: 400px;"></div>
+
+
         </div>
              
         <div class="atm-section">
@@ -364,4 +395,203 @@
         </div>
     </aside>
 </div>
+
+
+<script>
+    // Initialiser la carte (centrée sur le mall)
+    var map = L.map('map').setView([36.8477990, 10.2790317], 17); 
+
+    // Fond de carte OpenStreetMap
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Liste des shops
+    var shops = [
+        {name: "Zara", lat: 36.8479, lng: 10.2792},
+        {name: "Strass", lat: 36.8480, lng: 10.2789},
+        {name: "KFC", lat: 36.8475, lng: 10.2795},
+    ];
+
+    // Heure actuelle
+    var now = new Date();
+    var currentHour = now.getHours();
+    var currentDay = now.getDay(); // 0 = dimanche, 1 = lundi, ..., 6 = samedi
+
+    shops.forEach(function(shop) {
+        // Déterminer si le shop est ouvert ou fermé
+        var isOpen;
+
+        if (currentDay === 0) { 
+            // Dimanche
+            isOpen = (currentHour >= 9 && currentHour < 18);
+        } else {
+            // Autres jours
+            isOpen = (currentHour >= 9 && currentHour < 22);
+        }
+
+        // Choisir une icône différente
+        var iconHtml = isOpen
+            ? '<i class="fas fa-store" style="color:green; font-size:15px;"></i>'
+            : '<i class="fas fa-store-slash" style="color:red; font-size:15px;"></i>';
+
+        var marker = L.marker(
+            [shop.lat, shop.lng],
+            {
+                icon: L.divIcon({
+                    className: 'custom-icon',
+                    html: iconHtml,
+                    iconSize: [25, 40],
+                    iconAnchor: [15, 42],
+                    popupAnchor: [0, -45]
+                })
+            }
+        ).addTo(map);
+
+        marker.bindPopup("<b>" + shop.name + "</b><br>" + (isOpen ? "Open" : "Closed"));
+    });
+
+/* chatbot*/
+const API_KEY = "AIzaSyCbGOkGu1fms8DAOyhQ3TtMsjLvV2TloBg";
+
+const chatContainer = document.getElementById("chat-container");
+const userInput = document.getElementById("user-input");
+const sendButton = document.getElementById("send-button");
+const chatBox = document.getElementById("chat-box");
+const notificationBadge = document.getElementById("notification-badge");
+
+let chatOpen = false;
+let autoCloseTimer;
+
+sendButton.addEventListener("click", sendMessage);
+userInput.addEventListener("keypress", function(e) {
+    if (e.key === "Enter") sendMessage();
+});
+
+function toggleChat() {
+    if (chatBox.style.display === "flex") {
+        chatBox.style.display = "none";
+        chatOpen = false;
+        clearTimeout(autoCloseTimer);
+    } else {
+        chatBox.style.display = "flex";
+        chatBox.style.animation = "pop 0.4s ease";
+        chatOpen = true;
+        notificationBadge.style.display = "none";
+        resetAutoCloseTimer();
+        sendWelcomeMessage();
+    }
+}
+
+function resetAutoCloseTimer() {
+    clearTimeout(autoCloseTimer);
+    autoCloseTimer = setTimeout(() => {
+        chatBox.style.display = "none";
+        chatOpen = false;
+    }, 50000); // 30 secondes
+}
+
+function sendWelcomeMessage() {
+    chatContainer.innerHTML = ''; // vider le chat à l'ouverture
+    addMessage("bot", "👋 Salut, je suis InnoChat ! Posez-moi vos questions !");
+}
+
+async function sendMessage() {
+    const text = userInput.value.trim();
+    if (!text) return;
+
+    addMessage("user", text);
+    userInput.value = "";
+
+    resetAutoCloseTimer();
+
+    const loader = addLoader();
+
+    try {
+       
+
+       const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${API_KEY}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+   body: JSON.stringify({
+ contents: [
+    { role: "user", parts: [{ 
+        text: `Tu es InnoChat, un assistant virtuel pour InnoMall.
+Voici ce que tu dois savoir :
+- InnoMall est un centre commercial avec 100 magasins.
+- Les magasins disponibles sont : Zara, Mango, KFC Stars, Fatales, Bershka, Musimo Duetti, Polo, Adidas, Florison, Cosmito, Papajones, et d'autres.
+- InnoMall propose des cartes de fidélité.
+- Un client peut gagner un produit gratuit après avoir accumulé 3000 points.
+- Si un client te demande s'il y a des promotions, réponds poliment : "Oui, il est probable qu'il y ait des promotions ! Je vous conseille de consulter directement l'application pour voir les offres spécifiques des magasins."
+IMPORTANT :
+- Tu dois répondre uniquement aux questions concernant InnoMall et ses services.
+- Si quelqu'un pose une question hors sujet, réponds poliment : "Je suis désolé, je suis uniquement programmé pour répondre aux questions concernant InnoMall."
+- Reste toujours poli et professionnel dans toutes tes réponses.` 
+    }] },
+    { role: "user", parts: [{ text: text }] }
+]
+
+
+})
+
+});
+
+
+        const data = await response.json();
+        removeLoader(loader);
+
+        if (data.candidates) {
+            const botReply = data.candidates[0].content.parts[0].text;
+            addMessage("bot", botReply);
+
+            if (!chatOpen) {
+                notificationBadge.style.display = "inline";
+            }
+        } else if (data.error) {
+            addMessage("bot", "Erreur: " + data.error.message);
+        } else {
+            addMessage("bot", "Réponse non comprise !");
+        }
+    } catch (error) {
+        console.error("Erreur réseau :", error);
+        removeLoader(loader);
+        addMessage("bot", "Erreur de connexion.");
+    }
+}
+
+function addMessage(sender, text) {
+    const message = document.createElement("div");
+    message.classList.add("message");
+    message.classList.add(sender === "user" ? "user-message" : "bot-message");
+    message.textContent = text;
+    chatContainer.appendChild(message);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+function addLoader() {
+    const loader = document.createElement("div");
+    loader.classList.add("message", "bot-message", "loader");
+    loader.textContent = "Le bot réfléchit...";
+    chatContainer.appendChild(loader);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+    return loader;
+}
+
+function removeLoader(loader) {
+    if (loader) {
+        chatContainer.removeChild(loader);
+    }
+}
+
+
+
+
+
+
+
+</script>
+
+
+
+
 {% endblock %}

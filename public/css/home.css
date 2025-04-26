@@ -625,12 +625,173 @@
 }
 
 .status-active {
-    background-color: #3990b5; /* Green */
+    background-color: #39b577; /* Green */
 }
 
 .status-inactive {
-    background-color: #df9a54; /* Red */
+    background-color: #df5454; /* Red */
 }
 
 
 
+
+/* LEFT SECTION - where the chat is placed */
+.left-section {
+    position: relative;
+    width: 20%;
+    min-width: 300px; /* Ensure it's wide enough for the chat */
+    background: #fefefe;
+    padding: 10px;
+    text-align: center;
+    border-radius: 8px;
+    border-right: 0.5px solid #ddd;
+    min-height: 100vh; /* Make sure it takes the full height */
+    overflow: hidden; /* Hide any unnecessary overflow */
+}
+
+/* Floating chat bubble */
+.chat-bubble {
+    position: fixed; /* FIXED, not absolute! */
+    bottom: 30px;
+    left: 30px;
+    background-color: #ff7f50;
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 12px 22px;
+    font-size: 16px;
+    cursor: pointer;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.3);
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    animation: pulse 2s infinite;
+    z-index: 200;
+}
+
+/* Hover effect for the chat bubble */
+.chat-bubble:hover {
+    background-color: #b35a00;
+    transform: scale(1.05);
+}
+
+/* Chat box container */
+.chat-box {
+    position: absolute; /* Position relative to the left section */
+    top: 20px;  /* Start right below the button */
+    left: 0;
+    width: 100%; /* Take the full width of the left-section */
+    max-width: 350px; /* Limit the width */
+    height: 500px; /* Limit the height */
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding-bottom: 15px;
+    padding-right: 5px;
+    box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    animation: pop 0.5s ease-out;
+}
+
+/* Chat container (messages area) */
+.chat-container {
+    flex: 1;
+    overflow-y: auto;
+    background-color: #eaeaea;
+    color: black;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Input area and send button */
+.input-container {
+    display: flex;
+    gap: 10px;
+}
+
+#user-input {
+    flex: 1;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 15px;
+    transition: border-color 0.3s ease;
+}
+
+/* Focus effect on the input field */
+#user-input:focus {
+    border-color: #ff7f50;
+    outline: none;
+}
+
+/* Send button */
+#send-button {
+    padding: 12px 20px;
+    background-color: #ff7f50;
+    border: none;
+    border-radius: 20px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#send-button:hover {
+    background-color: #ff5722;
+}
+
+/* Message styles */
+.message {
+    padding: 10px;
+    border-radius: 8px;
+    max-width: 80%;
+    opacity: 0;
+    animation: fadeIn 0.5s forwards;
+}
+
+.user-message {
+    background-color: #daf8e3;
+    align-self: flex-end;
+}
+
+.bot-message {
+    background-color: #e0e0e0;
+    align-self: flex-start;
+    position: relative;
+}
+
+/* Loader animation for thinking state */
+.loader {
+    font-style: italic;
+    color: gray;
+}
+
+/* Animation for the chat bubble pulse */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* Animation for chat box opening */
+@keyframes pop {
+    0% { transform: scale(0.8); opacity: 0; }
+    50% { transform: scale(1.05); opacity: 0.8; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* Animation for message fade-in */
+@keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+/* Chatbot thinking animation */
+@keyframes typing {
+    0% { width: 0; }
+    100% { width: 100%; }
+}

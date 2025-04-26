@@ -26,6 +26,8 @@ class Produit
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
 
+    #[ORM\OneToMany(mappedBy: 'produit', targetEntity: LikedProduct::class)]
+    private Collection $likes;
 
     #[ORM\ManyToOne(targetEntity: Discount::class)]
     #[ORM\JoinColumn(name: "promotionId", referencedColumnName: "id")]
@@ -133,6 +135,15 @@ class Produit
         return $this;
     }
 
+    public function isLikedByUser(Utilisateur $user): bool
+{
+    foreach ($this->likes as $like) {
+        if ($like->getUtilisateur() === $user) {
+            return true;
+        }
+    }
+    return false;
+}
 
 
     // As a model View
@@ -177,7 +188,11 @@ class Produit
 
 
 
-
+public function __construct()
+    {
+        $this->paniers = new ArrayCollection();
+        $this->likes = new ArrayCollection();
+    }
     // PARTIE HOUSSEM
 
 
