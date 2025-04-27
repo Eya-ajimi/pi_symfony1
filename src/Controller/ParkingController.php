@@ -16,6 +16,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Knp\Component\Pager\PaginatorInterface;
 class ParkingController extends AbstractController
 {
     private $placeParkingRepository;
@@ -257,33 +258,39 @@ class ParkingController extends AbstractController
 
 
     #[Route('/parking/my-reservations', name: 'app_parking_my_reservations')]
-    public function myReservations(): Response
-    {
-        $user=$this->getUser();
-        // Static user ID 7 for demonstration
+    public function myReservations(
+        Request $request,
+        PaginatorInterface $paginator,
+        ReservationRepository $reservationRepository
+    ): Response {
+        $user = $this->getUser();
         $userId = $user->getId();
-
-        $reservations = $this->reservationRepository->findAllReservationsForUser($userId);
-
-        // Structure the results to match your template
-        $structuredReservations = array_map(function($reservation) {
-            return [
-                'reservation' => $reservation,
-                'spot' => $reservation->getPlaceParking()
-            ];
-        }, $reservations);
-
-        // Calculate statistics
-        $activeCount = count(array_filter($reservations, fn($r) => $r->getStatut() === 'active'));
-        $thisMonthCount = count(array_filter($reservations, fn($r) =>
+    
+        $queryBuilder = $reservationRepository->createQueryBuilder('r')
+            ->leftJoin('r.placeParking', 'p')
+            ->addSelect('p')
+            ->where('r.idUtilisateur = :userId')
+            ->setParameter('userId', $userId)
+            ->orderBy('r.dateReservation', 'DESC');
+    
+        $pagination = $paginator->paginate(
+            $queryBuilder,
+            $request->query->getInt('page', 1),
+            10 // 9adeh mn element nhb nchouf
+        );
+    
+        // Statistics calculations
+        $allReservations = $reservationRepository->findAllReservationsForUser($userId);
+        $activeCount = count(array_filter($allReservations, fn($r) => $r->getStatut() === 'active'));
+        $thisMonthCount = count(array_filter($allReservations, fn($r) => 
             $r->getDateReservation()->format('Y-m') === (new \DateTime())->format('Y-m')
         ));
-
+    
         return $this->render('parking/reservations.html.twig', [
-            'reservations' => $structuredReservations,
+            'pagination' => $pagination,
             'active_count' => $activeCount,
             'this_month_count' => $thisMonthCount,
-            'total_spent' => array_reduce($reservations, fn($total, $r) => $total + $r->getPrice(), 0)
+            'total_spent' => array_reduce($allReservations, fn($total, $r) => $total + $r->getPrice(), 0)
         ]);
     }
 
@@ -505,58 +512,65 @@ class ParkingController extends AbstractController
     }
 
     #[Route('/admin/parking/statistics', name: 'app_parking_statistics')]
-    public function adminStatistics(): Response
-    {
-        $floorValue = 'Level 1';
-        $spots = $this->placeParkingRepository->findBy(['floor' => $floorValue]);
-        $allReservations = $this->reservationRepository->findAll();
+public function adminStatistics(ReservationRepository $reservationRepository): Response
+{
+    // Get all reservations for revenue calculations
+    $allReservations = $reservationRepository->findAll();
+    
+    // Calculate total statistics across all floors
+    $totalSpots = $this->placeParkingRepository->count([]);
+    $availableSpots = $this->placeParkingRepository->count(['statut' => 'free']);
+    $occupiedSpots = $this->placeParkingRepository->count(['statut' => ['taken', 'reserved']]);
+    $occupancyRate = $totalSpots > 0 ? round(($occupiedSpots / $totalSpots) * 100) : 0;
+    $activeReservations = $reservationRepository->count(['statut' => 'active']);
 
-        $totalSpots = count($spots);
-        $availableSpots = $this->placeParkingRepository->count([
-            'floor' => $floorValue,
+    // Calculate revenue
+    $dailyRevenue = 0;
+    $monthlyRevenue = 0;
+    $today = new \DateTime();
+    $thisMonth = new \DateTime('first day of this month');
+    
+    foreach ($allReservations as $reservation) {
+        if ($reservation->getDateReservation() > $today->modify('-1 day')) {
+            $dailyRevenue += $reservation->getPrice();
+        }
+        if ($reservation->getDateReservation() > $thisMonth) {
+            $monthlyRevenue += $reservation->getPrice();
+        }
+    }
+
+    // Get statistics for each floor
+    $floorStats = [];
+    $floors = ['Level 1', 'Level 2', 'Level 3'];
+    
+    foreach ($floors as $floor) {
+        $total = $this->placeParkingRepository->count(['floor' => $floor]);
+        $available = $this->placeParkingRepository->count([
+            'floor' => $floor, 
             'statut' => 'free'
         ]);
-        $occupiedSpots = $this->placeParkingRepository->count([
-            'floor' => $floorValue,
+        $occupied = $this->placeParkingRepository->count([
+            'floor' => $floor, 
             'statut' => ['taken', 'reserved']
         ]);
-        $occupancyRate = $totalSpots > 0 ? round(($totalSpots - $availableSpots) / $totalSpots * 100) : 0;
-        $activeReservations = $this->reservationRepository->count(['statut' => 'active']);
-
-        $dailyRevenue = 0;
-        $monthlyRevenue = 0;
-        foreach ($allReservations as $reservation) {
-            if ($reservation->getDateReservation() > new \DateTime('-1 day')) {
-                $dailyRevenue += $reservation->getPrice();
-            }
-            if ($reservation->getDateReservation() > new \DateTime('-1 month')) {
-                $monthlyRevenue += $reservation->getPrice();
-            }
-        }
-
-        $floorStats = [];
-        $floors = ['Level 1', 'Level 2', 'Level 3'];
-        foreach ($floors as $floor) {
-            $total = $this->placeParkingRepository->count(['floor' => $floor]);
-            $available = $this->placeParkingRepository->count(['floor' => $floor, 'statut' => 'free']);
-            $occupied = $this->placeParkingRepository->count(['floor' => $floor, 'statut' => ['taken', 'reserved']]);
-            $floorStats[] = [
-                'floor' => $floor,
-                'total' => $total,
-                'available' => $available,
-                'occupied' => $occupied,
-                'occupancy_rate' => $total > 0 ? round($occupied / $total * 100) : 0
-            ];
-        }
-
-        return $this->render('parking/statisticsAdmin.html.twig', [
-            'total_spots' => $totalSpots,
-            'available_spots' => $availableSpots,
-            'occupancy_rate' => $occupancyRate,
-            'active_reservations' => $activeReservations,
-            'daily_revenue' => $dailyRevenue,
-            'monthly_revenue' => $monthlyRevenue,
-            'floor_stats' => $floorStats,
-        ]);
+        
+        $floorStats[] = [
+            'floor' => $floor,
+            'total' => $total,
+            'available' => $available,
+            'occupied' => $occupied,
+            'occupancy_rate' => $total > 0 ? round(($occupied / $total) * 100) : 0
+        ];
     }
+
+    return $this->render('parking/statisticsAdmin.html.twig', [
+        'total_spots' => $totalSpots,
+        'available_spots' => $availableSpots,
+        'occupancy_rate' => $occupancyRate,
+        'active_reservations' => $activeReservations,
+        'daily_revenue' => $dailyRevenue,
+        'monthly_revenue' => $monthlyRevenue,
+        'floor_stats' => $floorStats,
+    ]);
+}
 }
