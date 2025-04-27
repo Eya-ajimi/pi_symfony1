@@ -104,25 +104,38 @@
 
             // Pricing calculator
             function updatePrice() {
-                const hours = calculateHours();
-                const baseRate = 5; // TND 5 per hour
-                const vehicleMultiplier = getVehicleMultiplier();
-                const washPrice = getWashPrice();
-                
-                const parkingCost = hours * baseRate * vehicleMultiplier;
-                const totalCost = parkingCost + washPrice;
-                
-                // Update the display
-                document.getElementById('parking-cost').textContent = 'TND ' + parkingCost.toFixed(2);
-                document.getElementById('wash-cost').textContent = 'TND ' + washPrice.toFixed(2);
-                document.getElementById('total-cost').textContent = 'TND ' + totalCost.toFixed(2);
-                
-                // Update the hidden price field in the form
-                const priceField = document.querySelector('[name*="[price]"]');
-                if (priceField) {
-                    priceField.value = totalCost.toFixed(2);
-                }
-            }
+    const hours = calculateHours();
+    const hourlyRates = {
+        'Motorcycle': 3.5,
+        'Compact': 5.0,
+        'SUV': 6.0,
+        'Van': 7.5
+    };
+    
+    const washPrices = {
+        'Basic': 10,
+        'Premium': 20,
+        'Deluxe': 30
+    };
+    
+    const vehicleType = document.querySelector('[name*="[vehicleType]"]').value;
+    const washType = document.querySelector('[name*="[carWashType]"]').value;
+    
+    const parkingCost = hours * hourlyRates[vehicleType];
+    const washCost = washType && washType !== 'None' ? washPrices[washType] : 0;
+    const totalCost = parkingCost + washCost;
+    
+    // Update display
+    document.getElementById('parking-cost').textContent = 'TND ' + parkingCost.toFixed(2);
+    document.getElementById('wash-cost').textContent = 'TND ' + washCost.toFixed(2);
+    document.getElementById('total-cost').textContent = 'TND ' + totalCost.toFixed(2);
+    
+    // Update form field
+    const priceField = document.querySelector('[name*="[price]"]');
+    if (priceField) {
+        priceField.value = totalCost.toFixed(2);
+    }
+}
 
             function calculateHours() {
                 const startInput = document.querySelector('[name*="[dateReservation]"]');
