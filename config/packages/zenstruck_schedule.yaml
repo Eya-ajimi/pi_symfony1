@@ -1,0 +1,8 @@
+# config/packages/zenstruck_schedule.yaml
+zenstruck_schedule:
+    tasks:
+        check_expired_reservations:
+            description: 'Mark expired parking reservations as free'
+            frequency: '* * * * *'  # Every minute
+            task: 'reservations:check-expired'  
+            without_overlapping: ~  # Prevents concurrent execution

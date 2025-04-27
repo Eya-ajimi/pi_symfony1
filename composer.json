@@ -25,6 +25,7 @@
         "symfony/framework-bundle": "6.4.*",
         "symfony/http-client": "6.4.*",
         "symfony/intl": "6.4.*",
+        "symfony/lock": "6.4.*",
         "symfony/mailer": "6.4.*",
         "symfony/mime": "6.4.*",
         "symfony/monolog-bundle": "^3.0",
@@ -45,7 +46,8 @@
         "symfony/yaml": "6.4.*",
         "twig/extra-bundle": "^2.12|^3.0",
         "twig/twig": "^2.12|^3.0",
-        "twilio/sdk": "^8.5"
+        "twilio/sdk": "^8.5",
+        "zenstruck/schedule-bundle": "^1.8"
     },
     "config": {
         "allow-plugins": {
