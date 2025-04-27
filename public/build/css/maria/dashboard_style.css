@@ -213,6 +213,7 @@ header {
     display: flex;
     flex-direction: column;
     gap: 30px;
+    margin-top: 30px;
 }
 
 .content-section {
@@ -321,25 +322,37 @@ header {
     color: #721c24;
 }
 
-/* Charts Container */
 .charts-container {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
+    gap: 30px; /* Increased gap */
+    margin: 40px 0; /* More vertical spacing */
 }
 
 .chart-section {
     background-color: #fff;
-    border-radius: 10px;
-    padding: 20px;
-    box-shadow: 0 4px 10px var(--shadow-color);
+    border-radius: 12px; /* Slightly larger radius */
+    padding: 25px; /* More padding */
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); /* Deeper shadow */
+    height: 500px; /* Fixed height for both charts */
+    display: flex;
+    flex-direction: column;
 }
 
 .chart-container {
-    height: 300px;
+    flex: 1; /* Takes remaining space */
+    min-height: 400px; /* Minimum height */
     position: relative;
+    width: 100%;
 }
 
+/* Specific to pie chart */
+.ratings-chart .chart-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+}
 /* Stock Status Styles */
 .stock-tabs {
     display: flex;
@@ -510,4 +523,5 @@ header {
         opacity: 1;
         transform: translateY(0);
     }
+}
 }

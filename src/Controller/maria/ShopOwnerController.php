@@ -40,35 +40,57 @@ class ShopOwnerController extends AbstractController
 
     // This will be replaced with session ID later
 
-    //Main
     #[Route('/admindashboard', name: 'dashboard')]
     public function dashboard(
         EntityManagerInterface $entityManager,
         FeedbackRepository $feedbackRepository,
-        ProduitRepository $produitRepository
+        ProduitRepository $produitRepository,
+        CommandeRepository $commandeRepository
     ): Response {
-        $currentId=$this->getUser()->getId();
-
-        // Get the current shop owner (using the currentId property we added earlier)
+        $currentId = $this->getUser()->getId();
         $shop = $entityManager->getRepository(Utilisateur::class)->find($currentId);
+
         if (!$shop) {
             throw $this->createNotFoundException('Shop not found');
         }
 
-        // Get average rating
+        // Get dashboard statistics
         $averageRating = $feedbackRepository->getAverageRatingValue($shop);
         $ratingCount = $feedbackRepository->countByShop($shop);
+        $ratingDistribution = $feedbackRepository->getRatingDistribution($shop);
 
-        // Get product count
+        // Get product data
+        $topLikedProducts = $produitRepository->findTopLikedProducts($shop->getId(), 4);
         $productCount = $produitRepository->count(['shopId' => $shop]);
+
+        // Get sales data
+        $topSoldProducts = $produitRepository->findTop10SoldProductsByShop($shop->getId());
+        $salesData = [
+            'labels' => [],
+            'quantities' => []
+        ];
+
+        foreach ($topSoldProducts as $item) {
+            $salesData['labels'][] = $item['product']->getNom();
+            $salesData['quantities'][] = $item['totalQuantity'];
+        }
+
+        // Get stock status data (using properly named repository methods)
+        $lowStockProducts = $produitRepository->findByLowStockAndShop($shop->getId());
+        $outOfStockProducts = $produitRepository->findByOutOfStockAndShop($shop->getId());
 
         return $this->render('maria_templates/admindashboard.html.twig', [
             'averageRating' => $averageRating,
             'ratingCount' => $ratingCount,
             'productCount' => $productCount,
+            'topLikedProducts' => $topLikedProducts,
+            'ratingDistribution' => $ratingDistribution,
+            'salesData' => $salesData,
+            'lowStockProducts' => $lowStockProducts,
+            'outOfStockProducts' => $outOfStockProducts,
+            'shop' => $shop
         ]);
     }
-
     //**************************************************************************************************************************** */
 
     #[Route('/products', name: 'products')]
@@ -77,7 +99,7 @@ class ShopOwnerController extends AbstractController
         ProduitRepository $produitRepository,
         DiscountRepository $discountRepo
     ): Response {
-        $currentId=$this->getUser()->getId();
+        $currentId = $this->getUser()->getId();
         // Get the current shop owner
         $user = $entityManager->getRepository(Utilisateur::class)->find($currentId);
         if (!$user) {
@@ -110,7 +132,7 @@ class ShopOwnerController extends AbstractController
     #[Route('/product/new', name: 'product_new')]
     public function new(Request $request, EntityManagerInterface $em, UtilisateurRepository $utilisateurRepo): Response
     {
-        $currentId=$this->getUser()->getId();
+        $currentId = $this->getUser()->getId();
         $product = new Produit();
         $form = $this->createForm(ProductType::class, $product);
 
@@ -174,7 +196,7 @@ class ShopOwnerController extends AbstractController
         DiscountRepository $discountRepo,
         UtilisateurRepository $utilisateurRepo
     ): Response {
-        $currentId=$this->getUser()->getId();
+        $currentId = $this->getUser()->getId();
         $product = $produitRepo->find($id);
         if (!$product) {
             throw $this->createNotFoundException('Product not found');
@@ -578,21 +600,30 @@ class ShopOwnerController extends AbstractController
         $categories = $categorieRepo->findAll();
 
         if ($request->isMethod('POST')) {
-            $nom         = $request->request->get('nom');
-            $email       = $request->request->get('email');
-            $telephone   = $request->request->get('telephone');
-            $categorie   = $request->request->get('categorie');
+            $nom = $request->request->get('nom');
+            $email = $request->request->get('email');
+            $telephone = $request->request->get('telephone');
+            $categorie = $request->request->get('categorie');
             $description = $request->request->get('description');
-            $password    = $request->request->get('password');
+            $password = $request->request->get('password');
 
-            $categorieObj=null;
-            if ($nom !== null)         { $user->setNom($nom); }
-            if ($email !== null)       { $user->setEmail($email); }
-            if ($telephone !== null)   { $user->setTelephone($telephone); }
-            if ($categorie !== null)   {
-                $categorieObj= $categorieRepo->findOneBy(['nom' => $categorie]);
-                $user->setCategorie($categorieObj); }
-            if ($description !== null) { $user->setDescription($description); }
+            $categorieObj = null;
+            if ($nom !== null) {
+                $user->setNom($nom);
+            }
+            if ($email !== null) {
+                $user->setEmail($email);
+            }
+            if ($telephone !== null) {
+                $user->setTelephone($telephone);
+            }
+            if ($categorie !== null) {
+                $categorieObj = $categorieRepo->findOneBy(['nom' => $categorie]);
+                $user->setCategorie($categorieObj);
+            }
+            if ($description !== null) {
+                $user->setDescription($description);
+            }
 
             if ($password && $password !== '******') {
                 $encodedPassword = $passwordHasher->hashPassword($user, $password);

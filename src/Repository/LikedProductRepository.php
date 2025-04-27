@@ -34,7 +34,7 @@ class LikedProductRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
-    
+
 
     public function findByUser(int $userId): array
     {
@@ -45,7 +45,7 @@ class LikedProductRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
-    
+
 
     // UPDATE
     public function updateLikeDate(LikedProduct $likedProduct, \DateTimeInterface $newDate): void
@@ -82,23 +82,20 @@ class LikedProductRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('l')
             ->select('COUNT(l.id)')
-            ->andWhere('l.produit = :productId')
-            ->setParameter('productId', $productId)
+            ->andWhere('l.produit = :produitId')  // Uses the entity's property name
+            ->setParameter('produitId', $productId)
             ->getQuery()
             ->getSingleScalarResult();
     }
-    
-    
+    public function findByProduct(int $productId): array
+    {
+        return $this->createQueryBuilder('l')
+            ->andWhere('l.produit = :produitId')
+            ->setParameter('produitId', $productId)
+            ->orderBy('l.date_like', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 
-            public function findByProduct(int $productId): array
-            {
-                return $this->createQueryBuilder('l')
-                    ->andWhere('l.produit = :productId')
-                    ->setParameter('productId', $productId)
-                    ->orderBy('l.date_like', 'DESC')
-                    ->getQuery()
-                    ->getResult();
-            }
-            
 
 }
