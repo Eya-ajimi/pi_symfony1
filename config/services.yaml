@@ -1,6 +1,8 @@
 # config/services.yaml
 parameters:
-
+    TWILIO_ACCOUNT_SID: '%env(TWILIO_ACCOUNT_SID)%'
+    TWILIO_AUTH_TOKEN: '%env(TWILIO_AUTH_TOKEN)%'
+    TWILIO_PHONE_NUMBER: '%env(TWILIO_PHONE_NUMBER)%'
     products_directory: '%kernel.project_dir%/public/uploads/products'
 
 services:

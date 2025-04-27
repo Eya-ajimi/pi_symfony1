@@ -5,8 +5,9 @@ namespace App\Controller;
 use App\Entity\PlaceParking;
 use App\Entity\Reservation;
 use App\Form\ReservationType;
-
+use App\Service\TwilioSmsService;
 use App\Form\ParkingSpotType;
+use App\Repository\UtilisateurRepository;
 use App\Repository\PlaceParkingRepository;
 use App\Repository\ReservationRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -125,8 +126,12 @@ class ParkingController extends AbstractController
     }
     
     #[Route('/parking/reserve/{id}', name: 'app_parking_reserve', methods: ['GET', 'POST'])]
-    public function reserveSpot(Request $request, PlaceParking $spot): Response
-    {
+    public function reserveSpot(
+        Request $request, 
+        PlaceParking $spot,
+        TwilioSmsService $smsService,
+        UtilisateurRepository $userRepository
+    ): Response {
         $user=$this->getUser();
         $currentUser=$user->getId();
         // Check if spot is available
@@ -201,7 +206,30 @@ class ParkingController extends AbstractController
             $this->entityManager->persist($reservation);
             $this->entityManager->persist($spot);
             $this->entityManager->flush();
-
+            
+            $user = $userRepository->find($currentUser);
+            $phoneNumber = $user->getTelephone();
+            if ($phoneNumber) {
+                // Format the reservation details for SMS
+                $message = sprintf(
+                    "Thank you for your reservation!\n" .
+                    "Spot: %s%s\n" .
+                    "Floor: %s\n" .
+                    "From: %s\n" .
+                    "To: %s\n" .
+                    "Vehicle: %s\n" .
+                    "Total: %.2f TND",
+                    $spot->getZone(),
+                    $spot->getId(),
+                    str_replace('Level ', '', $spot->getFloor()),
+                    $reservation->getDateReservation()->format('Y-m-d H:i'),
+                    $reservation->getDateExpiration()->format('Y-m-d H:i'),
+                    $reservation->getVehicleType(),
+                    $reservation->getPrice()
+                );
+                // Send SMS
+            $smsService->sendSms($phoneNumber, $message);
+            }
             $this->addFlash('success', 'Reservation created successfully!');
             return $this->redirectToRoute('app_parking');
         }
