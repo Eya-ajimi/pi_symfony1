@@ -58,8 +58,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\JoinColumn(name: 'id_categorie', referencedColumnName: 'id_categorie', nullable: true)]
     private ?Categorie $categorie = null;
 
-    #[ORM\Column(type: 'integer', nullable: true)]
-    private ?int $resetToken = null;
+   
 
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $description = null;
@@ -78,7 +77,45 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         $this->dateInscription = new \DateTimeImmutable();
         $this->role = Role::CLIENT;
     }
+//reset password//
+// src/Entity/Utilisateur.php
+#[ORM\Column(name: "reset_token", type: "string", length: 100, nullable: true)]
+private ?string $resetToken = null;
 
+#[ORM\Column(name: "reset_token_expires_at", type: "datetime_immutable", nullable: true)]
+private ?\DateTimeImmutable $resetTokenExpiresAt = null;
+
+// Ajoutez ces méthodes
+public function getResetToken(): ?string
+{
+    return $this->resetToken;
+}
+
+public function setResetToken(?string $resetToken): self
+{
+    $this->resetToken = $resetToken;
+    return $this;
+}
+
+public function getResetTokenExpiresAt(): ?\DateTimeImmutable
+{
+    return $this->resetTokenExpiresAt;
+}
+
+public function setResetTokenExpiresAt(?\DateTimeImmutable $resetTokenExpiresAt): self
+{
+    $this->resetTokenExpiresAt = $resetTokenExpiresAt;
+    return $this;
+}
+
+public function isResetTokenValid(): bool
+{
+    if (!$this->resetToken || !$this->resetTokenExpiresAt) {
+        return false;
+    }
+    return new \DateTimeImmutable() < $this->resetTokenExpiresAt;
+}
+//fin reset password//
     #[ORM\PrePersist]
     public function setDefaultValues(): void
     {
@@ -270,17 +307,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getResetToken(): ?int
-    {
-        return $this->resetToken;
-    }
-
-    public function setResetToken(?int $resetToken): self
-    {
-        $this->resetToken = $resetToken;
-        return $this;
-    }
-
+   
     public function getDescription(): ?string
     {
         return $this->description;

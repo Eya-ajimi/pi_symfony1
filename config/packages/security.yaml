@@ -22,7 +22,9 @@ security:
             pattern: ^/
             lazy: true
             provider: app_user_provider
-            custom_authenticator: App\Security\AppAuthenticator
+            custom_authenticators:
+                - App\Security\AppAuthenticator
+                - App\Security\GoogleAuthenticator   # ➡️ Ajout pour Google Login
             entry_point: App\Security\AppAuthenticator
             form_login:
                 enable_csrf: true
@@ -45,12 +47,16 @@ security:
                 samesite: lax
 
     access_control:
-    - { path: ^/landing, roles: PUBLIC_ACCESS } 
-    - { path: ^/choose-role, roles: PUBLIC_ACCESS }   
-    - { path: ^/admin, roles: ROLE_ADMIN }
-    - { path: ^/shopowner, roles: ROLE_SHOPOWNER }
-    - { path: ^/client, roles: ROLE_CLIENT }
-    - { path: ^/login, roles: PUBLIC_ACCESS }
-    - { path: ^/signup/shop-owner, roles: PUBLIC_ACCESS }
-    - { path: ^/signup/User, roles: PUBLIC_ACCESS }
-    - { path: ^/, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/landing, roles: PUBLIC_ACCESS }
+        - { path: ^/verify-code, roles: PUBLIC_ACCESS }
+        - { path: ^/choose-role, roles: PUBLIC_ACCESS }
+        - { path: ^/reset-password, roles: PUBLIC_ACCESS }
+        - { path: ^/send-mail, roles: PUBLIC_ACCESS }
+        - { path: ^/admin, roles: ROLE_ADMIN }
+        - { path: ^/shopowner, roles: ROLE_SHOPOWNER }
+        - { path: ^/client, roles: ROLE_CLIENT }
+        - { path: ^/login, roles: PUBLIC_ACCESS }
+        - { path: ^/signup/shop-owner, roles: PUBLIC_ACCESS }
+        - { path: ^/signup/User, roles: PUBLIC_ACCESS }
+        - { path: ^/connect, roles: PUBLIC_ACCESS }             # ➡️ Ajout pour Google Login route
+        - { path: ^/, roles: IS_AUTHENTICATED_FULLY }

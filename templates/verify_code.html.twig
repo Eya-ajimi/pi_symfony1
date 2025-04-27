@@ -1,0 +1,23 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Vérification du Code{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Vérifiez votre compte</h2>
+
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger">{{ message }}</div>
+    {% endfor %}
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+
+    <form method="post">
+        <div class="form-group mb-3">
+            <input type="text" name="verification_code" class="form-control" placeholder="Code de vérification" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Valider</button>
+    </form>
+</div>
+{% endblock %}

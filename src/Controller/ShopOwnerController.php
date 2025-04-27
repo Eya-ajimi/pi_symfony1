@@ -33,7 +33,9 @@ class ShopOwnerController extends AbstractController
             if ($nom !== null)         { $user->setNom($nom); }
             if ($email !== null)       { $user->setEmail($email); }
             if ($telephone !== null)   { $user->setTelephone($telephone); }
-            if ($categorie !== null)   { $user->setCategorie($categorie); }
+            if ($categorie !== null)   {
+                $categorieObj= $categorieRepo->findOneBy(['nom' => $categorie]);
+                $user->setCategorie($categorieObj); }
             if ($description !== null) { $user->setDescription($description); }
 
             if ($password && $password !== '******') {

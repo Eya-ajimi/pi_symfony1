@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Controller;
 
 use App\Form\LoginFormType;
@@ -15,7 +16,7 @@ class LoginController extends AbstractController
     {
         // Get the login error if there is one
         $error = $authenticationUtils->getLastAuthenticationError();
-        
+
         // Last username entered by the user
         $lastUsername = $authenticationUtils->getLastUsername();
 
@@ -24,9 +25,21 @@ class LoginController extends AbstractController
             'email' => $lastUsername,
         ]);
 
-        // If there's an error, add it to the flash messages
-        if ($error) {
-            $this->addFlash('error', $error->getMessageKey());
+        // Stocker le rôle dans la session si présent dans l'URL
+        if ($role = $request->query->get('role')) {
+            $request->getSession()->set('google_auth_role', $role);
+        }
+
+        // Vérification du reCAPTCHA
+        if ($request->isMethod('POST')) {
+            $recaptchaResponse = $request->request->get('g-recaptcha-response');
+            $secret = '6LcmgCYrAAAAAJRRQ4XTqDrQsJKVsQGNhL4uAb5X';
+            $verifyResponse = file_get_contents('https://www.google.com/recaptcha/api/siteverify?secret=' . $secret . '&response=' . $recaptchaResponse);
+            $responseData = json_decode($verifyResponse);
+
+            if (!$responseData->success) {
+                $this->addFlash('error', 'Veuillez valider le reCAPTCHA.');
+            }
         }
 
         return $this->render('auth/login.html.twig', [
