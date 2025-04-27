@@ -15,6 +15,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Dompdf\Dompdf;
 use Symfony\Component\Routing\Annotation\Route;
 use Knp\Component\Pager\PaginatorInterface;
 class ParkingController extends AbstractController
@@ -572,5 +573,85 @@ public function adminStatistics(ReservationRepository $reservationRepository): R
         'monthly_revenue' => $monthlyRevenue,
         'floor_stats' => $floorStats,
     ]);
+}
+#[Route('/admin/parking/statistics/export-pdf', name: 'app_parking_statistics_export_pdf')]
+public function exportStatisticsToPdf(ReservationRepository $reservationRepository): Response
+{
+    // Get all the same data as the regular statistics page
+    $allReservations = $reservationRepository->findAll();
+    
+    $totalSpots = $this->placeParkingRepository->count([]);
+    $availableSpots = $this->placeParkingRepository->count(['statut' => 'free']);
+    $occupiedSpots = $this->placeParkingRepository->count(['statut' => ['taken', 'reserved']]);
+    $occupancyRate = $totalSpots > 0 ? round(($occupiedSpots / $totalSpots) * 100) : 0;
+    $activeReservations = $reservationRepository->count(['statut' => 'active']);
+
+    $dailyRevenue = 0;
+    $monthlyRevenue = 0;
+    $today = new \DateTime();
+    $thisMonth = new \DateTime('first day of this month');
+    
+    foreach ($allReservations as $reservation) {
+        if ($reservation->getDateReservation() > $today->modify('-1 day')) {
+            $dailyRevenue += $reservation->getPrice();
+        }
+        if ($reservation->getDateReservation() > $thisMonth) {
+            $monthlyRevenue += $reservation->getPrice();
+        }
+    }
+
+    $floorStats = [];
+    $floors = ['Level 1', 'Level 2', 'Level 3'];
+    
+    foreach ($floors as $floor) {
+        $total = $this->placeParkingRepository->count(['floor' => $floor]);
+        $available = $this->placeParkingRepository->count([
+            'floor' => $floor, 
+            'statut' => 'free'
+        ]);
+        $occupied = $this->placeParkingRepository->count([
+            'floor' => $floor, 
+            'statut' => ['taken', 'reserved']
+        ]);
+        
+        $floorStats[] = [
+            'floor' => $floor,
+            'total' => $total,
+            'available' => $available,
+            'occupied' => $occupied,
+            'occupancy_rate' => $total > 0 ? round(($occupied / $total) * 100) : 0
+        ];
+    }
+
+    // Render the HTML template for PDF
+    $html = $this->renderView('parking/pdf/statistics_pdf.html.twig', [
+        'total_spots' => $totalSpots,
+        'available_spots' => $availableSpots,
+        'occupancy_rate' => $occupancyRate,
+        'active_reservations' => $activeReservations,
+        'daily_revenue' => $dailyRevenue,
+        'monthly_revenue' => $monthlyRevenue,
+        'floor_stats' => $floorStats,
+        'generated_at' => new \DateTime(),
+    ]);
+
+    // Configure Dompdf
+    $dompdf = new \Dompdf\Dompdf();
+    $dompdf->loadHtml($html);
+    $dompdf->setPaper('A4', 'portrait');
+    $dompdf->render();
+
+    // Generate filename
+    $filename = sprintf('parking-statistics-%s.pdf', date('Y-m-d-H-i-s'));
+
+    // Return the PDF as response
+    return new Response(
+        $dompdf->output(),
+        Response::HTTP_OK,
+        [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => sprintf('attachment; filename="%s"', $filename),
+        ]
+    );
 }
 }

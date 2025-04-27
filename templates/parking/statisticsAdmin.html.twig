@@ -19,9 +19,9 @@
                     <button class="btn btn-primary me-2" onclick="window.print()">
                         <i class="fas fa-print me-2"></i>Print
                     </button>
-                    <button class="btn btn-success">
-                        <i class="fas fa-download me-2"></i>Export
-                    </button>
+                    <a href="{{ path('app_parking_statistics_export_pdf') }}" class="btn btn-success">
+    <i class="fas fa-file-pdf me-2"></i>Export PDF
+</a>
                 </div>
             </div>
 

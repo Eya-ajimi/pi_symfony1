@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Parking Statistics Report</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .header h1 { color: #2c3e50; margin-bottom: 5px; }
+        .header p { color: #7f8c8d; margin-top: 0; }
+        .summary-card { 
+            border: 1px solid #ddd; 
+            border-radius: 5px; 
+            padding: 15px; 
+            margin-bottom: 15px;
+            background-color: #f9f9f9;
+        }
+        .summary-card h3 { margin-top: 0; color: #2c3e50; }
+        .summary-grid { 
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 15px; 
+            margin-bottom: 20px;
+        }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-bottom: 20px;
+        }
+        table, th, td { border: 1px solid #ddd; }
+        th, td { padding: 10px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .footer { 
+            margin-top: 30px; 
+            text-align: right; 
+            font-size: 12px; 
+            color: #7f8c8d;
+        }
+        .progress-bar {
+            height: 20px;
+            background-color: #e0e0e0;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Parking Statistics Report</h1>
+        <p>Generated on {{ generated_at|date('F j, Y H:i') }}</p>
+    </div>
+
+    <div class="summary-grid">
+        <div class="summary-card">
+            <h3>Total Spots</h3>
+            <p style="font-size: 24px; font-weight: bold;">{{ total_spots }}</p>
+        </div>
+        <div class="summary-card">
+            <h3>Available Spots</h3>
+            <p style="font-size: 24px; font-weight: bold; color: #27ae60;">{{ available_spots }}</p>
+        </div>
+        <div class="summary-card">
+            <h3>Occupancy Rate</h3>
+            <p style="font-size: 24px; font-weight: bold; color: #e67e22;">{{ occupancy_rate }}%</p>
+        </div>
+        <div class="summary-card">
+            <h3>Active Reservations</h3>
+            <p style="font-size: 24px; font-weight: bold; color: #3498db;">{{ active_reservations }}</p>
+        </div>
+    </div>
+
+    <div style="margin-bottom: 30px;">
+        <h2 style="border-bottom: 2px solid #2c3e50; padding-bottom: 5px;">Revenue Summary</h2>
+        <div style="display: flex; gap: 20px;">
+            <div style="flex: 1;">
+                <h3>Today's Revenue</h3>
+                <p style="font-size: 20px; color: #e74c3c;">{{ daily_revenue }} TND</p>
+            </div>
+            <div style="flex: 1;">
+                <h3>Monthly Revenue</h3>
+                <p style="font-size: 20px; color: #9b59b6;">{{ monthly_revenue }} TND</p>
+            </div>
+        </div>
+    </div>
+
+    <h2 style="border-bottom: 2px solid #2c3e50; padding-bottom: 5px;">Floor Statistics</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Floor</th>
+                <th>Total Spots</th>
+                <th>Available</th>
+                <th>Occupied</th>
+                <th>Occupancy Rate</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for floor_stat in floor_stats %}
+                <tr>
+                    <td><strong>{{ floor_stat.floor }}</strong></td>
+                    <td>{{ floor_stat.total }}</td>
+                    <td>{{ floor_stat.available }}</td>
+                    <td>{{ floor_stat.occupied }}</td>
+                    <td>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: {{ floor_stat.occupancy_rate }}%; background-color: {{ floor_stat.occupancy_rate > 80 ? '#e74c3c' : floor_stat.occupancy_rate > 50 ? '#e67e22' : '#27ae60' }};">
+                                {{ floor_stat.occupancy_rate }}%
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        {% if floor_stat.occupancy_rate > 80 %}
+                            <span style="color: #e74c3c;">High Occupancy</span>
+                        {% elseif floor_stat.occupancy_rate > 50 %}
+                            <span style="color: #e67e22;">Moderate</span>
+                        {% else %}
+                            <span style="color: #27ae60;">Good Availability</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="footer">
+        <p>InnoMall Smart Parking System - © {{ "now"|date('Y') }}</p>
+    </div>
+</body>
+</html>
