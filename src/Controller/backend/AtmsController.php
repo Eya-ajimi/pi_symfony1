@@ -13,15 +13,22 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
 
-
-
-
-final class AtmsController extends AbstractController{
+use Symfony\UX\Chartjs\Model\Chart;
+use Symfony\UX\Chartjs\Model\ChartData;
+use Symfony\UX\Chartjs\Model\ChartOptions;
+use Symfony\UX\Chartjs\Builder\ChartBuilderInterface;
+// Import the bundle classes
+use CMEN\GoogleChartsBundle\GoogleCharts\Charts\PieChart;
+use Knp\Component\Pager\PaginatorInterface;
+final class AtmsController extends AbstractController
+{
     #[Route('/admin/atms', name: 'app_atms')]
     public function dashboard(
         Request $request,
         EntityManagerInterface $em,
-        AtmRepository $atmRepository
+        AtmRepository $atmRepository,
+        ChartBuilderInterface $chartBuilder,
+        PaginatorInterface $paginator
     ): Response {
         $atm = new Atm();
         $form = $this->createForm(AtmType::class, $atm);
@@ -31,7 +38,6 @@ final class AtmsController extends AbstractController{
             if ($form->isValid()) {
                 $existing = $atmRepository->findOneBy(['bankName' => $atm->getBankName()]);
                 if ($existing) {
-                    // Add validation error directly to the field
                     $form->get('bankName')->addError(new FormError('An ATM with this bank name already exists.'));
                 } else {
                     $em->persist($atm);
@@ -43,13 +49,31 @@ final class AtmsController extends AbstractController{
             }
         }
 
+        $pagination = $paginator->paginate(
+            $atmRepository->createQueryBuilder('a'),
+            $request->query->getInt('page', 1),
+            2 // Show only 2 ATMs per page for testing
+        );
+
+        $activeAtms = $atmRepository->count(['status' => 'active']);
+        $inactiveAtms = $atmRepository->count(['status' => 'inactive']);
+        $totalAtms = $activeAtms + $inactiveAtms;
+        
+
         $atms = $atmRepository->findAll();
 
         return $this->render('backend/atms.html.twig', [
             'atmForm' => $form->createView(),
             'atms' => $atms,
+            'pagination' => $pagination,
+            'activeAtms' => $activeAtms,
+            'inactiveAtms' => $inactiveAtms,
+            'totalAtms'=> $totalAtms
         ]);
     }
+    
+    
+    
 
 
     #[Route('/admin/atm/edit/{id}', name: 'edit_atm')]
@@ -57,7 +81,8 @@ public function editAtm(
     int $id,
     Request $request,
     EntityManagerInterface $em,
-    AtmRepository $atmRepository
+    AtmRepository $atmRepository,
+    PaginatorInterface $paginator
 ): Response {
     $atm = $atmRepository->find($id);
     if (!$atm) {
@@ -73,12 +98,20 @@ public function editAtm(
         return $this->redirectToRoute('app_atms');
     }
 
+
+
+    $pagination = $paginator->paginate(
+        $atmRepository->createQueryBuilder('a'),
+        $request->query->getInt('page', 1),
+        2 // Show only 2 ATMs per page for testing
+    );
     $atms = $atmRepository->findAll();
 
     return $this->render('backend/atms.html.twig', [
         'atmForm' => $form->createView(),
         'atms' => $atms,
         'editingAtmId' => $atm->getId(), // FIXED: use the correct key
+        'pagination' => $pagination,
     ]);
     
 }

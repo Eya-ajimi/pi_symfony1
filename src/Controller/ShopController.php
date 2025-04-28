@@ -72,7 +72,8 @@ public function index(
         UtilisateurRepository $utilisateurRepository,
         FeedbackRepository $feedbackRepository,
         EntityManagerInterface $entityManager,
-        FormFactoryInterface $formFactory
+        FormFactoryInterface $formFactory,
+        CategorieRepository $categorieRepository 
     ): Response {
         $fixedUser = $this->getUser();
         $shop = $utilisateurRepository->find($shopId);
@@ -139,6 +140,7 @@ public function index(
             'feedback_repo' => $feedbackRepository,
             'isRatedList' => $isRatedList,
             'fixedUser' => $fixedUser,
+            'categories' => $categorieRepository->findAll(), 
         ]);
     }
 

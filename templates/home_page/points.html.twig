@@ -1,0 +1,232 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Points - InnoMall{% endblock %}
+
+{% block stylesheets %}
+   
+    <link rel="stylesheet" href="{{ asset('css/points.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        /* Wheel Styles */
+        .wheel-container {
+            position: relative;
+            width: 350px;
+            height: 350px;
+            margin: 2rem auto;
+        }
+        
+        .wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            border: 10px solid #2c3e50;
+            box-shadow: 0 0 0 10px #fff, 
+                        0 0 30px rgba(0,0,0,0.3),
+                        inset 0 0 20px rgba(0,0,0,0.2);
+            transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+            transform: rotate(0deg);
+        }
+        
+        .wheel-section {
+            position: absolute;
+            width: 50%;
+            height: 50%;
+            transform-origin: bottom right;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            clip-path: polygon(0 0, 100% 0, 100% 100%);
+        }
+        
+        .wheel-pointer {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 25px solid transparent;
+            border-right: 25px solid transparent;
+            border-top: 50px solid #e74c3c;
+            z-index: 10;
+            filter: drop-shadow(0 0 5px rgba(0,0,0,0.3));
+        }
+        
+        /* Reward Display */
+        .reward-card {
+            border: none;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        
+        .spin-btn {
+            background: linear-gradient(135deg, #4361ee, #3a0ca3);
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+            color: white;
+        }
+        
+        .reward-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin: 1rem 0;
+        }
+        
+        .confetti-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+    </style>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+        function spinWheel() {
+            const wheel = document.querySelector('.wheel');
+            const spinBtn = document.getElementById('spin-btn');
+            const confettiOverlay = document.createElement('div');
+            confettiOverlay.className = 'confetti-overlay';
+            document.body.appendChild(confettiOverlay);
+            
+            // Disable button during spin
+            spinBtn.disabled = true;
+            spinBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Spinning...';
+            
+            // Calculate random rotation (5 full rotations + random segment)
+            const segments = 8;
+            const segmentAngle = 360 / segments;
+            const extraRotation = 5 * 360;
+            const randomSegment = Math.floor(Math.random() * segments);
+            const targetAngle = extraRotation + (randomSegment * segmentAngle);
+            
+            wheel.style.transform = `rotate(${-targetAngle}deg)`;
+            
+            // Confetti during spin
+            const confettiInterval = setInterval(() => {
+                confetti({
+                    particleCount: 30,
+                    spread: 60,
+                    origin: { y: 0.6 }
+                });
+            }, 300);
+            
+            // After spin completes
+            setTimeout(() => {
+                clearInterval(confettiInterval);
+                confettiOverlay.remove();
+                
+                // Big confetti explosion
+                confetti({
+                    particleCount: 150,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+                
+                // Redirect to show reward
+                window.location.href = "{{ path('app_points') }}?spin=1";
+            }, 4000);
+        }
+    </script>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5 pt-4">
+    <div class="points-card animate__animated animate__fadeIn">
+        <h2 class="points-title">Your Loyalty Points</h2>
+        
+        <div class="points-display">
+            <span class="points-value">{{ currentPoints }}</span>
+            <span class="points-label">Points</span>
+        </div>
+        
+        <div class="progress-container">
+            <div class="progress-labels">
+                <span>0</span>
+                <span>{{ maxPoints }} (Max)</span>
+            </div>
+            <div class="progress" style="height: 10px;">
+                <div class="progress-bar" style="width: {{ progressPercentage }}%"></div>
+            </div>
+        </div>
+        
+        <div class="next-reward">
+            <i class="fas fa-gift me-2"></i>
+            Next Reward: {{ nextReward }}
+            {% if canClaimReward %}
+                <span class="badge bg-success ms-2 animate__animated animate__pulse animate__infinite">Ready to Claim!</span>
+            {% endif %}
+        </div>
+        
+        {% if canClaimReward and not showReward %}
+        <div class="text-center mt-5">
+            <h4 class="mb-4">Spin the wheel to win your reward!</h4>
+            
+            <div class="wheel-container">
+                <div class="wheel-pointer"></div>
+                <div class="wheel">
+                    {% for i in 1..8 %}
+                    <div class="wheel-section" style="
+                        transform: rotate({{ (i-1) * 45 }}deg);
+                        background: hsl({{ (i-1) * 45 }}, 80%, 60%);
+                    ">
+                        <div style="transform: rotate(22.5deg); text-align: center; width: 80px;">
+                            <i class="fas fa-gift mb-1"></i>
+                            <div>Prize {{ i }}</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <button id="spin-btn" class="btn btn-lg spin-btn mt-4" onclick="spinWheel()">
+                <i class="fas fa-sync-alt me-2"></i> Spin the Wheel!
+            </button>
+        </div>
+        {% endif %}
+        
+        {% if showReward and rewardProduct is not null %}
+        <div class="reward-result animate__animated animate__bounceIn mt-5">
+            <div class="card reward-card p-4 text-center">
+                <div class="card-body">
+                    <h3 class="text-primary mb-3">
+                        <i class="fas fa-trophy me-2"></i> Congratulations!
+                    </h3>
+                    <p class="mb-3">You've won:</p>
+                    <div class="reward-name bg-white p-3 rounded shadow-sm">
+                      <strong>{{ rewardProduct.nom }}</strong>
+                    </div>
+                    <div class="d-grid gap-2 mt-4">
+                        <a href="{{ path('app_shops') }}" class="btn btn-primary">
+                            <i class="fas fa-store me-2"></i> Visit Shop to Claim
+                        </a>
+                        <a href="{{ path('app_points') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-arrow-left me-2 red"></i> Back to Points
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

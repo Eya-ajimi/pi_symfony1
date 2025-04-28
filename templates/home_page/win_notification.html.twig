@@ -1,0 +1,92 @@
+{# templates/email/win_notification.html.twig #}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Congratulations!</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #e6f2ff; /* Light sky blue */
+            margin: 0;
+            padding: 20px;
+        }
+        .email-container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: 30px auto;
+            overflow: hidden;
+        }
+        .email-header {
+            background-color:rgb(132, 189, 218); /* Blue ciel */
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .email-header img {
+            width: 80px;
+            margin-bottom: 10px;
+        }
+        .email-header h1 {
+            margin: 10px 0 0;
+            font-size: 28px;
+        }
+        .email-body {
+            padding: 30px 20px;
+            text-align: center;
+            color: #333;
+        }
+        .email-body p {
+            font-size: 18px;
+            margin: 15px 0;
+        }
+        .highlight {
+            color: #ff6600; /* Bright Orange */
+            font-weight: bold;
+        }
+        .button {
+            background-color:rgb(242, 147, 84);
+            color: #ffffff;
+            padding: 12px 25px;
+            margin-top: 25px;
+            text-decoration: none;
+            font-weight: bold;
+            border-radius: 6px;
+            display: inline-block;
+            transition: background-color 0.3s ease;
+        }
+        .button:hover {
+            background-color: #e65c00;
+        }
+        .email-footer {
+            font-size: 13px;
+            color: #666;
+            text-align: center;
+            padding: 20px;
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="email-header">
+            {# You can replace the src below with your logo if you have one #}
+            <img src="{{ asset('assets/logo/innoMall_logo_pi.png') }}" alt="InnoMall Logo">
+            <h1>Congratulations, {{ name }}! 🎉</h1>
+        </div>
+        <div class="email-body">
+            <p>We are thrilled to announce that you have earned <span class="highlight">{{ points }} points</span> in <strong>InnoMall</strong>!</p>
+            <p>Thank you for your active participation. Your engagement makes a difference!</p>
+            <a href="#" class="button">Check Your Rewards</a>
+        </div>
+        <div class="email-footer">
+            <p>Stay active. Stay rewarded. 🚀</p>
+            <p>&copy; {{ "now"|date("Y") }} InnoMall. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

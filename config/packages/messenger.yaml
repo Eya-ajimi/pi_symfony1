@@ -1,29 +1,16 @@
 framework:
     messenger:
-        failure_transport: failed
-
+        # Keep this for other message types if needed
         transports:
-            # https://symfony.com/doc/current/messenger.html#transport-configuration
-            async:
-                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
-                options:
-                    use_notify: true
-                    check_delayed_interval: 60000
-                retry_strategy:
-                    max_retries: 3
-                    multiplier: 2
-            failed: 'doctrine://default?queue_name=failed'
-            # sync: 'sync://'
+            sync: 'sync://'  # Synchronous transport for immediate message processing
 
         default_bus: messenger.bus.default
 
         buses:
-            messenger.bus.default: []
+            messenger.bus.default: []  # Default bus configuration
 
         routing:
-            Symfony\Component\Mailer\Messenger\SendEmailMessage: async
-            Symfony\Component\Notifier\Message\ChatMessage: async
-            Symfony\Component\Notifier\Message\SmsMessage: async
-
-            # Route your messages to the transports
-            # 'App\Message\YourMessage': async
+            # You can remove this part since you're not using Messenger for sending emails
+            # Symfony\Component\Mailer\Messenger\SendEmailMessage: brevo  # Route email messages to brevo transport (Remove this line)
+            # Remove SMS routing if you don't need it
+            # Symfony\Component\Notifier\Message\SmsMessage: sync  # This line is removed or commented out if SMS is not needed

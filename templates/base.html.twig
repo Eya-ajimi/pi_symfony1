@@ -262,6 +262,11 @@
 }
 
 
+.rounded-circle {
+    border-radius: 50%;
+    object-fit: cover; /* important pour que l'image reste bien proportionnée */
+}
+
 
     </style>
 </head>
@@ -291,12 +296,12 @@
              <a href="{{ path('app_show_panier') }}"><span><i class="fas fa-shopping-cart"></i></span></a>
      <div class="user-dropdown-wrapper">
     <span class="user-icon">
-        <i class="fas fa-user"></i>
+       <img src="../assets/css2/images/profile/user-1.jpg" alt="" width="35" height="35" class="rounded-circle">
     </span>
     <div class="user-dropdown">
-        <a href="{{ path('client_dashboard') }}"><i class="fas fa-user-circle me-2"></i> Profil</a>
+        <a href="{{ path('client_dashboard') }}"><img src="../assets/css2/images/profile/user-1.jpg" alt="" width="25" height="25" class="rounded-circle"></i> Profil</a>
         <a href="{{ path('client_dashboard') }}"><i class="fas fa-heart me-2"></i> Favoris</a>
-        <a href="{{ path('client_dashboard') }}"><i class="fas fa-star me-2"></i> Points</a>
+        <a href="{{ path('app_points') }}"><i class="fas fa-star me-2"></i> Points</a>
     </div>
 </div>
 

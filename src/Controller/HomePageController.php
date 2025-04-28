@@ -17,9 +17,17 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Entity\Schedule;
-
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
 class HomePageController extends AbstractController
 {
+    //* impoort the mail interface to send teh mail 
+    private MailerInterface $mailer;
+
+    public function __construct(MailerInterface $mailer)
+    {
+        $this->mailer = $mailer;
+    }
     #[Route('/home', name: 'app_home_page', methods: ['GET', 'POST'])]
     public function index(
         Request $request,
@@ -109,12 +117,34 @@ class HomePageController extends AbstractController
                         $commentAuthor = $comment->getUtilisateur();
                 
                         if ($replyAuthor === $postAuthor && $replyAuthor !== $commentAuthor) {
-                           
                             $commentAuthor->setPoints($commentAuthor->getPoints() + 20);
-                            $em->persist($commentAuthor); 
+                            $em->persist($commentAuthor);
+                            $em->flush();
+                        
+                            // Creation de  colorful and designed email
+                            $email = (new Email())
+                                ->from('ajimieya1@gmail.com')
+                                ->to($commentAuthor->getEmail())
+                                ->subject('🎉 You earned 20 points! 🎉')
+                                ->html(
+                                    $this->renderView('home_page/win_notification.html.twig', [
+                                        'name' => $commentAuthor->getNom(),
+                                        'points' => 20,  // Points earned
+                                    ])
+                                )
+                                ->text(
+                                    "Hi " . $commentAuthor->getNom() . ",\n\n" . 
+                                    "Congratulations! 🎉 Thanks to your participation, you have earned 20 points in InnoMall.\n\n" . 
+                                    "Keep up the great work!"
+                                );
+                        
+                            // Send the email
+                            $this->mailer->send($email);
                         }
+                        
+                        
                 
-                        dd($commentAuthor);
+                        //dd($commentAuthor);
                         $em->flush();
                 
                         $this->addFlash('success', 'Réponse ajoutée !');

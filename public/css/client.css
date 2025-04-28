@@ -1,0 +1,192 @@
+/* Container */
+.container {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 2rem;
+}
+
+/* Welcome Banner */
+.welcome-banner {
+    background: #e6f4f1; /* Soft mint background */
+    padding: 1rem 1.5rem;
+    border-left: 4px solid #4bb0a9; /* InnoMall turquoise */
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    font-size: 1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    color: #2b2b2b;
+}
+
+/* Card */
+.card {
+    background-color: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    margin-bottom: 2rem;
+    border: 1px solid #e0e0e0;
+}
+
+/* Card Header */
+.card-header {
+    background: linear-gradient(90deg, #83c8f2 0%, #4bb0a9 100%);
+    padding: 0.6rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 55px;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+}
+
+.card-header h4 {
+    margin: 0;
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: #ffffff;
+}
+
+/* Card Body */
+.card-body {
+    padding: 2rem;
+}
+
+/* Profile Image */
+.profile-image {
+    display: block;
+    margin: 0 auto 1.5rem;
+    border-radius: 50%;
+    width: 110px;
+    height: 110px;
+    object-fit: cover;
+    border: 4px solid #83c8f2;
+}
+
+/* Form Styles */
+form {
+    margin-top: 1rem;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 0.4rem;
+    color: #333333;
+}
+
+.form-control {
+    padding: 0.6rem 0.8rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background: #f5f7f9;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #4bb0a9;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(75, 176, 169, 0.2);
+    outline: none;
+}
+
+.form-control.editing {
+    background: #ffffff;
+    border-color: #aaa;
+}
+
+.form-control:disabled {
+    background: #f0f0f0;
+    color: #888;
+    cursor: not-allowed;
+}
+
+/* Button Styles */
+.btn {
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    padding: 0.6rem 1.2rem;
+    font-size: 0.95rem;
+    text-align: center;
+    text-decoration: none;
+}
+
+.btn-outline-primary {
+    background: white;
+    color: #4bb0a9;
+    border: 2px solid #4bb0a9;
+}
+
+.btn-outline-primary:hover {
+    background: #1d4542;
+    color: #ffffff;
+}
+
+.btn-success {
+    background: #4bb0a9;
+    color: white;
+    margin-right: 0.5rem;
+}
+
+.btn-success:hover {
+    background: #3aa199;
+}
+
+.btn-cancel {
+    background: #f0f0f0;
+    color: #555;
+}
+
+.btn-cancel:hover {
+    background: #d6d6d6;
+}
+
+.btn-danger {
+    background: #e74c3c;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #c0392b;
+}
+
+/* Action Buttons Container */
+.action-buttons {
+    margin-top: 2rem;
+    display: flex;
+    gap: 0.7rem;
+}
+
+/* Logout Button Container */
+.logout-container {
+    text-align: right;
+    margin-top: 2rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .container {
+        padding: 1rem;
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+}

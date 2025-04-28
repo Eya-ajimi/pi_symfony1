@@ -1,147 +1,227 @@
 {% extends 'backend/base.html.twig' %}
 
 {% block stylesheets %}
-    <link rel="stylesheet" href="{{ asset('assets/css2/css/atms.css') }}">  
-   <link rel="stylesheet" href="{{ asset('assets/css2/css/styles.min.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+	<link rel="stylesheet" href="{{ asset('assets/css2/css/atms.css') }}">
+	<link rel="stylesheet" href="{{ asset('assets/css2/css/styles.min.css') }}">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+	<style>
+		.pagination-wrapper {
+			display: flex;
+			justify-content: flex-end; /* Aligns pagination to the right */
+			margin-top: 2rem;
+			padding-right: 1rem; /* Optional right padding */
+		}
+
+		.pagination {
+			display: flex;
+			gap: 0.5rem;
+			list-style: none;
+			padding: 0;
+			margin: 0;
+		}
+
+		.pagination li {
+			display: inline-block;
+		}
+
+		.pagination a,
+		.pagination span {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			min-width: 2rem;
+			height: 2rem;
+			padding: 0 0.5rem;
+			border-radius: 4px;
+			text-decoration: none;
+			font-size: 0.875rem;
+			color: #4b5563;
+			border: 1px solid #e5e7eb;
+			transition: all 0.2s ease;
+		}
+
+		.pagination a:hover {
+			background-color: #f3f4f6;
+			border-color: #d1d5db;
+		}
+
+		.pagination .active span {
+			background-color: #3b82f6;
+			color: white;
+			border-color: #3b82f6;
+		}
+
+		.pagination .disabled span {
+			color: #9ca3af;
+			border-color: #e5e7eb;
+			cursor: not-allowed;
+		}
+
+		/* Arrow buttons */
+		.pagination .page-item:first-child a,
+		.pagination .page-item:first-child span,
+		.pagination .page-item:last-child a,
+		.pagination .page-item:last-child span {
+			padding: 0 0.75rem;
+		}
+
+		/* Optional: Add icons for prev/next */
+		.pagination .page-item:first-child a:before {
+			content: "←";
+			margin-right: 0.25rem;
+		}
+
+		.pagination .page-item:last-child a:after {
+			content: "→";
+			margin-left: 0.25rem;
+		}
+	</style>
 {% endblock %}
 
+{% block javascripts %}
+	{{ parent() }}
+	{# ← CRUCIAL! This loads the Chart.js JavaScript automatically #}
+{% endblock %}
 
-  
 {% block content %}
 
+	<div class="main-content">
+		<div class="dashboard-header">
+			<h1>Welcome, Admin</h1>
+			<p>Here is an overview of your InnoMall  ATms system.</p>
+		</div>
 
-  <div class="main-content">
-    <div class="dashboard-header">
-      <h1>Welcome, Admin</h1>
-      <p>Here is an overview of your InnoMall system.</p>
-    </div>
+		<div class="cards">
+			<div class="card">
+				<i class="fas fa-users"></i>
+				<h3>Total Users</h3>
+				<p>150</p>
+			</div>
+			<div class="card">
+				<i class="fas fa-money-bill-wave"></i> 
+				<h3>Total ATMs</h3>
+              <p>{{ totalAtms }}</p>
+			</div>
+			<div class="card">
+				<i class="fas fa-check-circle text-success"></i>
+				<h3>Active ATMs</h3>
+        <p>{{ activeAtms }}</p>
+			</div>
+			<div class="card">
+				<i class="fas fa-pause-circle text-danger"></i>
+				<h3>Inactive ATMs</h3>
+        <p>{{ inactiveAtms }}</p>
+			</div>
+		</div>
 
-    <div class="cards">
-      <div class="card">
-        <i class="fas fa-users"></i>
-        <h3>Total Users</h3>
-        <p>150</p>
-      </div>
-      <div class="card">
-        <i class="fas fa-store"></i>
-        <h3>Active Shops</h3>
-        <p>35</p>
-      </div>
-      <div class="card">
-        <i class="fas fa-star"></i>
-        <h3>Ratings Submitted</h3>
-        <p>320</p>
-      </div>
-      <div class="card">
-        <i class="fas fa-comment-dots"></i>
-        <h3>Comments</h3>
-        <p>450</p>
-      </div>
-    </div>
-     <div class="atm-section">
-  <h2>Manage ATMs</h2>
+		{# backend/atms.html.twig #}
 
+		<div class="atm-section">
+			<h2>Manage ATMs</h2>
 
+			<table class="atm-table">
+				<thead>
+					<tr>
+						<th>ID</th>
+						<th>Bank Name</th>
+						<th>Status</th>
+						<th>Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for atm in pagination %}
+						{% if editingAtmId is defined and editingAtmId == atm.id %}
+							<tr class="edit-row">
+								<td>{{ atm.id }}</td>
+								<td colspan="2">
+									{{ form_start(atmForm, {
+                                    'action': path('edit_atm', {'id': atm.id}),
+                                    'attr': { 'class': 'atm-inline-form' }
+                                }) }}
+									<div style="display: flex; gap: 10px;">
+										{{ form_widget(atmForm.bankName, {'attr': {'placeholder': 'Bank Name', 'class': 'form-input'}}) }}
+										{{ form_widget(atmForm.status, {'attr': {'class': 'form-select'}}) }}
+									</div>
+									<div style="margin-top: 10px;">
+										<button class="btn btn-add">
+											<i class="fas fa-check"></i>
+											Save</button>
+										<a href="{{ path('admin_dashboard') }}" class="btn btn-delete">
+											<i class="fas fa-times"></i>
+											Cancel</a>
+									</div>
+									{{ form_end(atmForm) }}
+								</td>
+								<td></td>
+							</tr>
+						{% else %}
+							<tr>
+								<td>{{ atm.id }}</td>
+								<td>{{ atm.bankName }}</td>
+								<td>
+									{{ component('AtmStatus', { status: atm.status }) }}
+								</td>
+								<td>
+									<a href="{{ path('edit_atm', { 'id': atm.id }) }}" class="btn-edit" title="Edit">
+										<i class="fas fa-pen"></i>
+									</a>
+									<a href="{{ path('delete_atm', { 'id': atm.id }) }}" class="btn-delete" title="Delete" onclick="return confirm('Are you sure you want to delete this ATM?');">
+										<i class="fas fa-trash-alt"></i>
+									</a>
+								</td>
+							</tr>
+						{% endif %}
+					{% endfor %}
+				</tbody>
+			</table>
+			<div class="pagination-wrapper">
+				{{ knp_pagination_render(pagination) }}
+			</div>
 
-  <table class="atm-table">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Bank Name</th>
-        <th>Status</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for atm in atms %}
-        {% if editingAtmId is defined and editingAtmId == atm.id %}
-          <tr class="edit-row">
-            <td>{{ atm.id }}</td>
-            <td colspan="2">
-              {{ form_start(atmForm, {
-                'action': path('edit_atm', {'id': atm.id}),
-                'attr': { 'class': 'atm-inline-form' }
-              }) }}
-              <div style="display: flex; gap: 10px;">
-                {{ form_widget(atmForm.bankName, {'attr': {'placeholder': 'Bank Name', 'class': 'form-input'}}) }}
-                {{ form_widget(atmForm.status, {'attr': {'class': 'form-select'}}) }}
-              </div>
-              <div style="margin-top: 10px;">
-                <button class="btn btn-add"><i class="fas fa-check"></i> Save</button>
-                <a href="{{ path('admin_dashboard') }}" class="btn btn-delete"><i class="fas fa-times"></i> Cancel</a>
-              </div>
-              {{ form_end(atmForm) }}
-            </td>
-            <td></td>
-          </tr>
-        {% else %}
-          <tr>
-            <td>{{ atm.id }}</td>
-            <td>{{ atm.bankName }}</td>
-            <td>
-              {% if atm.status == 'active' %}
-                <span style="color: green;"><i class="fas fa-circle"></i> Active</span>
-              {% else %}
-                <span style="color: gray;"><i class="fas fa-circle-notch"></i> Inactive</span>
-              {% endif %}
-            </td>
-            <td>
-              <a href="{{ path('edit_atm', { 'id': atm.id }) }}" class="btn-edit" title="Edit">
-                <i class="fas fa-pen"></i>
-              </a>
-              <a href="{{ path('delete_atm', { 'id': atm.id }) }}" class="btn-delete" title="Delete"
-                 onclick="return confirm('Are you sure you want to delete this ATM?');">
-                <i class="fas fa-trash-alt"></i>
-              </a>
-            </td>
-          </tr>
-        {% endif %}
-      {% endfor %}
-    </tbody>
-  </table>
+			{% if editingAtmId is not defined %}
+				<h2 style="margin-bottom: 20px;">Add New ATM</h2>
 
-  {% if editingAtmId is not defined %}
-      <h2 style="margin-bottom: 20px;">Add New ATM</h2>
+				{{ form_start(atmForm, {
+                'attr': {
+                    'class': 'atm-form-inline',
+                    'novalidate': 'novalidate',
+                    'name': 'atm_form'
+                }
+            }) }}
 
-      {{ form_start(atmForm, {
-          'attr': {
-              'class': 'atm-form-inline',
-              'novalidate': 'novalidate',
-              'name': 'atm_form'
-          }
-      }) }}
+				<div class="atm-inline-row">
+					<div class="form-group input-wrapper small-input">
+						{{ form_widget(atmForm.bankName, {
+                        'attr': {
+                            'class': 'form-input',
+                            'placeholder': 'Bank Name'
+                        }
+                    }) }}
+						{% for error in atmForm.bankName.vars.errors %}
+							<div class="tooltip-error">{{ error.message }}</div>
+						{% endfor %}
+					</div>
 
-      <div class="atm-inline-row">
-          <div class="form-group input-wrapper small-input">
-              {{ form_widget(atmForm.bankName, {
-                  'attr': {
-                      'class': 'form-input',
-                      'placeholder': 'Bank Name'
-                  }
-              }) }}
-              {% for error in atmForm.bankName.vars.errors %}
-                  <div class="tooltip-error">{{ error.message }}</div>
-              {% endfor %}
-          </div>
+					<div class="form-group input-wrapper small-input">
+						{{ form_widget(atmForm.status, {
+                        'attr': {
+                            'class': 'form-select'
+                        }
+                    }) }}
+						{% for error in atmForm.status.vars.errors %}
+							<div class="tooltip-error">{{ error.message }}</div>
+						{% endfor %}
+					</div>
 
-          <div class="form-group input-wrapper small-input">
-              {{ form_widget(atmForm.status, {
-                  'attr': {
-                      'class': 'form-select'
-                  }
-              }) }}
-              {% for error in atmForm.status.vars.errors %}
-                  <div class="tooltip-error">{{ error.message }}</div>
-              {% endfor %}
-          </div>
+					<button type="submit" class="btn-add small-btn">Add</button>
+				</div>
 
-          <button type="submit" class="btn-add small-btn">Add</button>
-      </div>
+				{{ form_end(atmForm) }}
+			{% endif %}
 
-      {{ form_end(atmForm) }}
-  {% endif %}
+		</div>
+	</div>
 
-</div>
 
 {% endblock %}
