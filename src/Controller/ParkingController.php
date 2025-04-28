@@ -128,134 +128,137 @@ class ParkingController extends AbstractController
     }
     
     #[Route('/parking/reserve/{id}', name: 'app_parking_reserve', methods: ['GET', 'POST'])]
-    public function reserveSpot(
-        Request $request, 
-        PlaceParking $spot,
-        TwilioSmsService $smsService,
-        UtilisateurRepository $userRepository
-    ): Response {
-        $user = $this->getUser();
-        $currentUser = $user->getId();
-    
-        if ($spot->getStatut() !== 'free') {
-            $this->addFlash('error', 'This spot is not available for reservation');
+public function reserveSpot(
+    Request $request, 
+    PlaceParking $spot,
+    TwilioSmsService $smsService,
+    UtilisateurRepository $userRepository
+): Response {
+    $user = $this->getUser();
+    $currentUser = $user->getId();
+
+    if ($spot->getStatut() !== 'free') {
+        $this->addFlash('error', 'This spot is not available for reservation');
+        return $this->redirectToRoute('app_parking');
+    }
+
+    $reservation = new Reservation();
+    $reservation->setPlaceParking($spot);
+    $reservation->setIdUtilisateur($currentUser);
+
+    $form = $this->createForm(ReservationType::class, $reservation);
+    $form->handleRequest($request);
+
+    if ($form->isSubmitted() && $form->isValid()) {
+        $start = $reservation->getDateReservation();
+        $end = $reservation->getDateExpiration();
+        $now = new \DateTime();
+        
+        // VichUploader will automatically handle the file upload when you persist the entity
+        // No need to manually set imageFile here as it's already handled by the form
+        
+        // Validation checks
+        if ($start < $now) {
+            $this->addFlash('error', 'Start time cannot be in the past');
+            return $this->redirectToRoute('app_parking_reserve', ['id' => $spot->getId()]);
+        }
+        
+        if ($end <= $start) {
+            $this->addFlash('error', 'End time must be after start time');
+            return $this->redirectToRoute('app_parking_reserve', ['id' => $spot->getId()]);
+        }
+
+        // Calculate duration in hours (rounded up)
+        $interval = $start->diff($end);
+        $hours = $interval->h + ($interval->i > 0 ? 1 : 0); // Only round up if minutes > 0
+        $hours = max(1, $hours); // Minimum 1 hour
+
+        // Pricing configuration
+        $hourlyRates = [
+            'Motorcycle' => 3.5,
+            'Compact' => 5.0,
+            'SUV' => 6.0,
+            'Van' => 7.5
+        ];
+
+        $carWashPrices = [
+            'Basic' => 10,
+            'Premium' => 20,
+            'Deluxe' => 30
+        ];
+
+        // Calculate base parking cost
+        $vehicleType = $reservation->getVehicleType();
+        if (!isset($hourlyRates[$vehicleType])) {
+            $this->addFlash('error', 'Invalid vehicle type selected');
             return $this->redirectToRoute('app_parking');
         }
-    
-        $reservation = new Reservation();
-        $reservation->setPlaceParking($spot);
-        $reservation->setIdUtilisateur($currentUser);
-    
-        $form = $this->createForm(ReservationType::class, $reservation);
-        $form->handleRequest($request);
-    
-        if ($form->isSubmitted() && $form->isValid()) {
-            $start = $reservation->getDateReservation();
-            $end = $reservation->getDateExpiration();
-            $now = new \DateTime();
-            
-            // Validation checks
-            if ($start < $now) {
-                $this->addFlash('error', 'Start time cannot be in the past');
-                return $this->redirectToRoute('app_parking_reserve', ['id' => $spot->getId()]);
-            }
-            
-            if ($end <= $start) {
-                $this->addFlash('error', 'End time must be after start time');
-                return $this->redirectToRoute('app_parking_reserve', ['id' => $spot->getId()]);
-            }
-    
-            // Calculate duration in hours (rounded up)
-            $interval = $start->diff($end);
-            $hours = $interval->h + ($interval->i > 0 ? 1 : 0); // Only round up if minutes > 0
-            $hours = max(1, $hours); // Minimum 1 hour
-    
-            // Pricing configuration
-            $hourlyRates = [
-                'Motorcycle' => 3.5,  // 5 * 0.7 = 3.5
-                'Compact' => 5.0,     // 5 * 1.0 = 5
-                'SUV' => 6.0,         // 5 * 1.2 = 6
-                'Van' => 7.5          // 5 * 1.5 = 7.5
-            ];
-    
-            $carWashPrices = [
-                'Basic' => 10,
-                'Premium' => 20,
-                'Deluxe' => 30
-            ];
-    
-            // Calculate base parking cost
-            $vehicleType = $reservation->getVehicleType();
-            if (!isset($hourlyRates[$vehicleType])) {
-                $this->addFlash('error', 'Invalid vehicle type selected');
+
+        $parkingCost = $hourlyRates[$vehicleType] * $hours;
+
+        // Add car wash if selected
+        $carWashType = $reservation->getCarWashType();
+        $carWashCost = 0;
+        
+        if ($carWashType && $carWashType !== 'None') {
+            if (!isset($carWashPrices[$carWashType])) {
+                $this->addFlash('error', 'Invalid car wash type selected');
                 return $this->redirectToRoute('app_parking');
             }
-    
-            $parkingCost = $hourlyRates[$vehicleType] * $hours;
-    
-            // Add car wash if selected
-            $carWashType = $reservation->getCarWashType();
-            $carWashCost = 0;
-            
-            if ($carWashType && $carWashType !== 'None') {
-                if (!isset($carWashPrices[$carWashType])) {
-                    $this->addFlash('error', 'Invalid car wash type selected');
-                    return $this->redirectToRoute('app_parking');
-                }
-                $carWashCost = $carWashPrices[$carWashType];
-            }
-    
-            $totalPrice = $parkingCost + $carWashCost;
-    
-            // Set the final price
-            $reservation->setPrice($totalPrice);
-            $reservation->setStatut('active');
-            $spot->setStatut('reserved');
-    
-            $this->entityManager->persist($reservation);
-            $this->entityManager->persist($spot);
-            $this->entityManager->flush();
-    
-            // Send SMS confirmation
-            $user = $userRepository->find($currentUser);
-            if ($user && $user->getTelephone()) {
-                $message = sprintf(
-                    "Welcome to InnoMall Smart Parking!\n\n".
-                    "Thank you for choosing our parking services. Here are your reservation details:\n\n" .
-                    "Spot: %s%s Floor %s\n".
-                    "Time: %s - %s\n".
-                    "Vehicle: %s\n".
-                    "Parking: %.2f TND\n".
-                    "Car Wash: %.2f TND\n".
-                    "Total: %.2f TND\n".
-                    "Happy Shopping!",
-                    $spot->getZone(),
-                    $spot->getId(),
-                    str_replace('Level ', '', $spot->getFloor()),
-                    $start->format('d/m H:i'),
-                    $end->format('H:i'),
-                    $vehicleType,
-                    $parkingCost,
-                    $carWashCost,
-                    $totalPrice
-                );
-                
-                $smsService->sendSms($user->getTelephone(), $message);
-            }
-    
-            $this->addFlash('success', sprintf(
-                'Reservation created successfully! Total: %.2f TND',
-                $totalPrice
-            ));
-            
-            return $this->redirectToRoute('app_parking');
+            $carWashCost = $carWashPrices[$carWashType];
         }
-    
-        return $this->render('parking/reservation_form.html.twig', [
-            'spot' => $spot,
-            'form' => $form->createView(),
-        ]);
+
+        $totalPrice = $parkingCost + $carWashCost;
+
+        // Set the final price
+        $reservation->setPrice($totalPrice);
+        $reservation->setStatut('active');
+        $spot->setStatut('reserved');
+
+        $this->entityManager->persist($reservation);
+        $this->entityManager->persist($spot);
+        $this->entityManager->flush();
+
+        // Send SMS confirmation
+        $user = $userRepository->find($currentUser);
+        if ($user && $user->getTelephone()) {
+            $message = sprintf(
+                "Welcome to InnoMall Smart Parking!\n\n".
+                "Thank you for choosing our parking services. Here are your reservation details:\n\n" .
+                "Spot: %s%s Floor %s\n".
+                "Time: %s - %s\n".
+                "Vehicle: %s\n".
+                "Parking: %.2f TND\n".
+                "Car Wash: %.2f TND\n".
+                "Total: %.2f TND\n".
+                "Happy Shopping!",
+                $spot->getZone(),
+                $spot->getId(),
+                str_replace('Level ', '', $spot->getFloor()),
+                $start->format('d/m H:i'),
+                $end->format('H:i'),
+                $vehicleType,
+                $parkingCost,
+                $carWashCost,
+                $totalPrice
+            );
+            
+            $smsService->sendSms($user->getTelephone(), $message);
+        }
+
+        $this->addFlash('success', sprintf(
+            'Reservation created successfully! Total: %.2f TND',
+            $totalPrice
+        ));
+        
+        return $this->redirectToRoute('app_parking');
     }
+
+    return $this->render('parking/reservation_form.html.twig', [
+        'spot' => $spot,
+        'form' => $form->createView(),
+    ]);
+}
 
 
     #[Route('/parking/my-reservations', name: 'app_parking_my_reservations')]

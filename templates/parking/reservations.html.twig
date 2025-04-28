@@ -16,6 +16,21 @@
                 My Reservations
             </h1>
             <p class="subtitle">View and manage your parking reservations</p>
+            
+            <div class="header-stats">
+                <div class="stat-item">
+                    <div class="stat-label">Active Reservations</div>
+                    <div class="stat-value">{{ active_count }}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Total Reservations</div>
+                    <div class="stat-value">{{ pagination.getTotalItemCount }}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">This Month</div>
+                    <div class="stat-value">{{ this_month_count }}</div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -44,9 +59,12 @@
             </button>
         </div>
         
-        <div class="search-container">
-            <i class="fas fa-search search-icon"></i>
-            <input type="text" id="searchInput" class="search-input" placeholder="Search reservations...">
+        <div class="d-flex align-center gap-2">
+            <div id="reservation-count" class="text-small text-muted"></div>
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="searchInput" class="search-input" placeholder="Search reservations...">
+            </div>
         </div>
     </div>
 
@@ -148,15 +166,15 @@
             </table>
             
             <div class="pagination-container">
-                <div class="page-info">
-                    {% set firstItem = (pagination.currentPageNumber - 1) * pagination.itemNumberPerPage + 1 %}
-                    {% set lastItem = min(pagination.currentPageNumber * pagination.itemNumberPerPage, pagination.totalItemCount) %}
-                    Showing {{ firstItem }} - {{ lastItem }} of {{ pagination.totalItemCount }} reservations
-                </div>
-                <div class="pagination">
-                    {{ knp_pagination_render(pagination) }}
-                </div>
-            </div>
+    <div class="page-info">
+        {% set firstItem = (pagination.currentPageNumber - 1) * pagination.itemNumberPerPage + 1 %}
+        {% set lastItem = min(pagination.currentPageNumber * pagination.itemNumberPerPage, pagination.totalItemCount) %}
+        Showing {{ firstItem }} - {{ lastItem }} of {{ pagination.totalItemCount }} reservations
+    </div>
+    <div class="pagination">
+        {{ knp_pagination_render(pagination) }}
+    </div>
+</div>
         {% else %}
             <div class="no-reservations">
                 <i class="fas fa-calendar-times"></i>
@@ -168,10 +186,13 @@
             </div>
         {% endif %}
     </div>
+    
+    
 </div>
 {% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="{{ asset('js/reservations.js') }}"></script>
 {% endblock %}

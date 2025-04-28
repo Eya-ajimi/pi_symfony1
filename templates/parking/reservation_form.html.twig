@@ -4,10 +4,45 @@
 {% block title %}Reserve Parking Spot{% endblock %}
 
 {% block stylesheets %}
-   
     <link rel="stylesheet" href="{{ asset('css/reservationform.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.css">
+    <style>
+        .file-upload-container {
+            margin-bottom: 1rem;
+        }
+        .file-upload-input {
+            display: none;
+        }
+        .file-upload-label {
+            display: inline-block;
+            padding: 10px 15px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .file-upload-label:hover {
+            background-color: var(--primary-dark);
+        }
+        .file-upload-label i {
+            margin-right: 8px;
+        }
+        .file-upload-preview {
+            margin-top: 15px;
+            padding: 15px;
+            border: 2px dashed #ddd;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .file-upload-preview img {
+            max-width: 100%;
+            max-height: 200px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+    </style>
 {% endblock %}
 
 {% block javascripts %}
@@ -15,62 +50,56 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Date pickers and validation
             const startDatePicker = flatpickr("[name*='[dateReservation]']", {
-        enableTime: true,
-        dateFormat: "Y-m-d H:i",
-        minDate: "today",
-        time_24hr: true,
-        onChange: function(selectedDates, dateStr) {
-            endDatePicker.set('minDate', dateStr);
-            validateDates();
-        }
-    });
-
-    const endDatePicker = flatpickr("[name*='[dateExpiration]']", {
-        enableTime: true,
-        dateFormat: "Y-m-d H:i",
-        minDate: "today",
-        time_24hr: true,
-        onChange: function() {
-            validateDates();
-        }
-    });
-
-    function validateDates() {
-    const startInput = document.querySelector("[name*='[dateReservation]']");
-    const endInput = document.querySelector("[name*='[dateExpiration]']");
-    const startDate = startDatePicker.selectedDates[0];
-    const endDate = endDatePicker.selectedDates[0];
-    const errorElement = document.getElementById('date-error');
-    const submitButton = document.querySelector('[name*="[submit]"]');
-    
-    if (startDate && endDate) {
-        if (endDate <= startDate) {
-            errorElement.textContent = "End date must be after start date";
-            errorElement.style.display = 'block';
-            startInput.classList.add('invalid');
-            endInput.classList.add('invalid');
-            submitButton.disabled = true;
-        } else {
-            errorElement.style.display = 'none';
-            startInput.classList.remove('invalid');
-            endInput.classList.remove('invalid');
-            submitButton.disabled = false;
-            updatePrice();
-        }
-    } else {
-        errorElement.style.display = 'none';
-        startInput.classList.remove('invalid');
-        endInput.classList.remove('invalid');
-    }
-}
-            // Initialize date pickers
-            flatpickr(".date-picker", {
                 enableTime: true,
                 dateFormat: "Y-m-d H:i",
                 minDate: "today",
-                time_24hr: true
+                time_24hr: true,
+                onChange: function(selectedDates, dateStr) {
+                    endDatePicker.set('minDate', dateStr);
+                    validateDates();
+                }
             });
+
+            const endDatePicker = flatpickr("[name*='[dateExpiration]']", {
+                enableTime: true,
+                dateFormat: "Y-m-d H:i",
+                minDate: "today",
+                time_24hr: true,
+                onChange: function() {
+                    validateDates();
+                }
+            });
+
+            function validateDates() {
+                const startInput = document.querySelector("[name*='[dateReservation]']");
+                const endInput = document.querySelector("[name*='[dateExpiration]']");
+                const startDate = startDatePicker.selectedDates[0];
+                const endDate = endDatePicker.selectedDates[0];
+                const errorElement = document.getElementById('date-error');
+                const submitButton = document.querySelector('[name*="[submit]"]');
+                
+                if (startDate && endDate) {
+                    if (endDate <= startDate) {
+                        errorElement.textContent = "End date must be after start date";
+                        errorElement.style.display = 'block';
+                        startInput.classList.add('invalid');
+                        endInput.classList.add('invalid');
+                        submitButton.disabled = true;
+                    } else {
+                        errorElement.style.display = 'none';
+                        startInput.classList.remove('invalid');
+                        endInput.classList.remove('invalid');
+                        submitButton.disabled = false;
+                        updatePrice();
+                    }
+                } else {
+                    errorElement.style.display = 'none';
+                    startInput.classList.remove('invalid');
+                    endInput.classList.remove('invalid');
+                }
+            }
 
             // Select default options
             document.querySelector('.vehicle-option[data-value="Compact"]').classList.add('selected');
@@ -104,38 +133,38 @@
 
             // Pricing calculator
             function updatePrice() {
-    const hours = calculateHours();
-    const hourlyRates = {
-        'Motorcycle': 3.5,
-        'Compact': 5.0,
-        'SUV': 6.0,
-        'Van': 7.5
-    };
-    
-    const washPrices = {
-        'Basic': 10,
-        'Premium': 20,
-        'Deluxe': 30
-    };
-    
-    const vehicleType = document.querySelector('[name*="[vehicleType]"]').value;
-    const washType = document.querySelector('[name*="[carWashType]"]').value;
-    
-    const parkingCost = hours * hourlyRates[vehicleType];
-    const washCost = washType && washType !== 'None' ? washPrices[washType] : 0;
-    const totalCost = parkingCost + washCost;
-    
-    // Update display
-    document.getElementById('parking-cost').textContent = 'TND ' + parkingCost.toFixed(2);
-    document.getElementById('wash-cost').textContent = 'TND ' + washCost.toFixed(2);
-    document.getElementById('total-cost').textContent = 'TND ' + totalCost.toFixed(2);
-    
-    // Update form field
-    const priceField = document.querySelector('[name*="[price]"]');
-    if (priceField) {
-        priceField.value = totalCost.toFixed(2);
-    }
-}
+                const hours = calculateHours();
+                const hourlyRates = {
+                    'Motorcycle': 3.5,
+                    'Compact': 5.0,
+                    'SUV': 6.0,
+                    'Van': 7.5
+                };
+                
+                const washPrices = {
+                    'Basic': 10,
+                    'Premium': 20,
+                    'Deluxe': 30
+                };
+                
+                const vehicleType = document.querySelector('[name*="[vehicleType]"]').value;
+                const washType = document.querySelector('[name*="[carWashType]"]').value;
+                
+                const parkingCost = hours * hourlyRates[vehicleType];
+                const washCost = washType && washType !== 'None' ? washPrices[washType] : 0;
+                const totalCost = parkingCost + washCost;
+                
+                // Update display
+                document.getElementById('parking-cost').textContent = 'TND ' + parkingCost.toFixed(2);
+                document.getElementById('wash-cost').textContent = 'TND ' + washCost.toFixed(2);
+                document.getElementById('total-cost').textContent = 'TND ' + totalCost.toFixed(2);
+                
+                // Update form field
+                const priceField = document.querySelector('[name*="[price]"]');
+                if (priceField) {
+                    priceField.value = totalCost.toFixed(2);
+                }
+            }
 
             function calculateHours() {
                 const startInput = document.querySelector('[name*="[dateReservation]"]');
@@ -151,32 +180,30 @@
                 return 1; // Default to 1 hour if dates aren't valid
             }
 
-            function getVehicleMultiplier() {
-                const vehicleType = document.querySelector('[name*="[vehicleType]"]').value;
-                
-                switch(vehicleType) {
-                    case 'Motorcycle': return 0.7;
-                    case 'Compact': return 1.0;
-                    case 'SUV': return 1.2;
-                    case 'Van': return 1.5;
-                    default: return 1.0;
-                }
+            // Image preview functionality
+            const fileInput = document.querySelector('[name*="[imageFile]"]');
+            const previewContainer = document.getElementById('imagePreview');
+            
+            if (fileInput && previewContainer) {
+                fileInput.addEventListener('change', function() {
+                    const file = this.files[0];
+                    
+                    if (file) {
+                        const reader = new FileReader();
+                        
+                        reader.addEventListener('load', function() {
+                            previewContainer.innerHTML = `
+                                <img src="${this.result}" alt="Preview">
+                                <p>${file.name}</p>
+                            `;
+                        });
+                        
+                        reader.readAsDataURL(file);
+                    } else {
+                        previewContainer.innerHTML = '<p>No image selected</p>';
+                    }
+                });
             }
-
-            function getWashPrice() {
-                const washType = document.querySelector('[name*="[carWashType]"]').value;
-                
-                switch(washType) {
-                    case 'Basic': return 10.00;
-                    case 'Premium': return 20.00;
-                    case 'Deluxe': return 30.00;
-                    default: return 0.00;
-                }
-            }
-
-            // Add event listeners to date inputs
-            document.querySelector('[name*="[dateReservation]"]').addEventListener('change', updatePrice);
-            document.querySelector('[name*="[dateExpiration]"]').addEventListener('change', updatePrice);
 
             // Initialize price calculation
             updatePrice();
@@ -204,25 +231,25 @@
                     <h3><i class="fas fa-calendar-alt"></i> Select Date & Time</h3>
                     
                     <div class="form-row">
-    <div class="form-group">
-        {{ form_label(form.dateReservation, 'Arrival Time') }}
-        {{ form_widget(form.dateReservation, {'attr': {
-            'class': 'modern-input date-picker',
-            'placeholder': 'Select arrival date and time'
-        }}) }}
-        <div class="form-hint">When will you arrive?</div>
-    </div>
-    
-    <div class="form-group">
-        {{ form_label(form.dateExpiration, 'Departure Time') }}
-        {{ form_widget(form.dateExpiration, {'attr': {
-            'class': 'modern-input date-picker',
-            'placeholder': 'Select departure date and time'
-        }}) }}
-        <div class="form-hint">When will you leave?</div>
-    </div>
-</div>
-<div id="date-error" class="error-message" style="display: none; color: red;"></div>
+                        <div class="form-group">
+                            {{ form_label(form.dateReservation, 'Arrival Time') }}
+                            {{ form_widget(form.dateReservation, {'attr': {
+                                'class': 'modern-input date-picker',
+                                'placeholder': 'Select arrival date and time'
+                            }}) }}
+                            <div class="form-hint">When will you arrive?</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            {{ form_label(form.dateExpiration, 'Departure Time') }}
+                            {{ form_widget(form.dateExpiration, {'attr': {
+                                'class': 'modern-input date-picker',
+                                'placeholder': 'Select departure date and time'
+                            }}) }}
+                            <div class="form-hint">When will you leave?</div>
+                        </div>
+                    </div>
+                    <div id="date-error" class="error-message" style="display: none; color: red;"></div>
                 </div>
                 
                 <div class="form-section">
@@ -288,6 +315,23 @@
                                 <p>Premium + wax + TND 30</p>
                             </div>
                         </div>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3><i class="fas fa-camera"></i> Upload Image</h3>
+                    <div class="form-group">
+                        <div class="file-upload-container">
+                            {{ form_widget(form.imageFile) }}
+                            <label for="{{ form.imageFile.vars.id }}" class="file-upload-label">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <span>Choose an image file</span>
+                            </label>
+                            <div class="file-upload-preview" id="imagePreview">
+                                <p>No image selected</p>
+                            </div>
+                        </div>
+                        <div class="form-hint">Upload an image if you have special instructions for car wash</div>
                     </div>
                 </div>
                 

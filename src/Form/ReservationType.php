@@ -13,10 +13,12 @@ use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Validator\Constraints\Callback;
 use Symfony\Component\Validator\Constraints\GreaterThan;
+use Symfony\Component\Validator\Constraints\File;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormError;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
 
 class ReservationType extends AbstractType
 {
@@ -69,6 +71,25 @@ class ReservationType extends AbstractType
             ->add('submit', SubmitType::class, [
                 'label' => 'Confirm Reservation',
                 'attr' => ['class' => 'btn btn-primary'],
+            ])
+            ->add('imageFile', FileType::class, [
+                'label' => 'Upload Image (for car wash notes)',
+                'required' => false,
+                'attr' => [
+                    'accept' => 'image/*',
+                    'class' => 'file-upload-input'
+                ],
+                'constraints' => [
+                    new File([
+                        'maxSize' => '2M',
+                        'mimeTypes' => [
+                            'image/jpeg',
+                            'image/png',
+                            'image/gif',
+                        ],
+                        'mimeTypesMessage' => 'Please upload a valid image (JPEG, PNG, GIF)',
+                    ])
+                ],
             ]);
 
         // Add form-level validation
