@@ -1,0 +1,32 @@
+{% extends "maria_templates/base.html.twig" %}
+{% block title %}profile
+{% endblock %}
+
+{% block body %}
+
+
+	<header>
+		Tableau de bord Commerçant
+	</header>
+
+	<div class="container-profile">
+		<div class="welcome-banner">
+			Bienvenue dans l'espace COMMERCANT
+		</div>
+
+		<div class="card">
+			<div class="card-header">
+				<h4>Profil commerçant</h4>
+				<button type="button" id="toggleEdit" class="btn btn-edit btn-sm">
+					<i class="fas fa-edit"></i>
+					Modifier
+				</button>
+			</div>
+			<div class="card-body">
+				<img src="/images/60111.jpg" alt="Photo du magasin" class="profile-image">
+
+
+			</div>
+		</div>
+	</div>
+{% endblock %}

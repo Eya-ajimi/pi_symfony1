@@ -1,21 +1,19 @@
-/* Admin Dashboard Base Styles */
 :root {
   --primary-yellow: #FFF07B;
   --primary-blue: #DBF0FE;
   --primary-purple: #4B49AC;
   --text-dark: #333333;
   --text-light: #FFFFFF;
-
   --border-color: #DDDDDD;
-  --hover-peach: #FFF07B;
-  --hover-blue: #FFF07B;
-
-  --shadow-color: rgba(114, 107, 107, 0.05);
+  --hover-yellow: #FFF07B;
+  --hover-blue: #DBF0FE;
+  --shadow-color: rgba(0, 0, 0, 0.05);
   --sidebar-width: 230px;
   --sidebar-collapsed-width: 70px;
   --menu-item-spacing: 12px;
   --transition-speed: 0.3s;
 }
+
 
 /* Base Styles */
 body {
@@ -25,7 +23,6 @@ body {
   overflow-x: hidden;
   margin: 0;
   padding: 0;
-
 }
 
 a {
@@ -44,27 +41,21 @@ a:focus {
   background: #FFFFFF;
   position: fixed;
   height: 100vh;
-  /* Use viewport height */
   z-index: 999;
   box-shadow: 2px 0 10px var(--shadow-color);
   transition: width var(--transition-speed) ease;
   display: flex;
-  /* Add flexbox */
   flex-direction: column;
-  /* Stack children vertically */
 }
 
 .scroll-view {
   flex: 1;
-  /* Take available space */
   display: flex;
   flex-direction: column;
   min-height: 0;
-  /* Allows for content to shrink if needed */
 }
 
 .right_col {
-
   margin-left: var(--sidebar-width);
   width: calc(100% - var(--sidebar-width));
   margin-top: 60px;
@@ -87,7 +78,6 @@ a:focus {
   z-index: 998;
   transition: left var(--transition-speed) ease;
   padding: 0 20px;
-  /* Add horizontal padding */
   margin: 0;
   display: flex;
   align-items: center;
@@ -99,28 +89,25 @@ a:focus {
   align-items: center;
   height: 100%;
   width: 100%;
-  /* Take full width of top_nav */
 }
 
-/* Toggle button container - stays left */
+/* Toggle button container */
 .nav.toggle {
   display: flex;
   align-items: center;
   height: 100%;
   margin-right: auto;
-  /* Pushes everything else to the right */
 }
 
-/* Navbar content container - goes right */
+/* Navbar content container */
 .nav.navbar-nav {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  /* Align children to the right */
   gap: 15px;
-  /* Space between items */
   height: 100%;
 }
+
 
 .menu_toggle {
   font-size: 20px;
@@ -140,8 +127,6 @@ a:focus {
   transform: rotate(90deg);
 }
 
-
-
 /* User Profile & Notifications */
 .navbar-right {
   display: flex;
@@ -150,6 +135,11 @@ a:focus {
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+/* Dropdown Container Fixes */
+.nav-item.dropdown {
+  position: relative !important;
 }
 
 .user-profile {
@@ -185,14 +175,32 @@ a:focus {
   border-left: 0.3em solid transparent;
 }
 
+/* CONSOLIDATED DROPDOWN STYLES */
 .dropdown-menu {
+  position: absolute !important;
+  top: 100% !important;
+  left: auto !important;
+  right: 0 !important;
+  z-index: 1050 !important;
+  /* Higher than top_nav */
+  min-width: 200px !important;
+  padding: 5px 0 !important;
+  margin: 2px 0 0 !important;
+  border: none !important;
+  border-radius: 8px !important;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1) !important;
+  color: var(--primary-purple) !important;
+  float: none !important;
+  background: #fff !important;
+  display: block !important;
+  transform: translate3d(0, 0, 0) !important;
+}
+
+.dropdown-usermenu {
   min-width: 200px;
-  padding: 5px 0;
-  margin: 0;
-  border: none;
+  padding: 0.5rem 0;
   border-radius: 8px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-  color: var(--primary-purple);
 }
 
 .dropdown-item {
@@ -212,7 +220,8 @@ a:focus {
   width: 20px;
   text-align: center;
   font-size: 0.9rem;
-  color: var(--primary-yellow);
+  color: var(--primary-purple);
+  margin-right: 10px;
 }
 
 .dropdown-divider {
@@ -223,10 +232,17 @@ a:focus {
 /* Notification Styles */
 .info-number {
   position: relative;
-  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   transition: all var(--transition-speed) ease;
   color: var(--primary-purple);
+  background-color: rgba(255, 193, 7, 0.1);
+  /* Soft yellow background */
+  cursor: pointer;
 }
 
 .info-number:hover {
@@ -244,14 +260,37 @@ a:focus {
   color: white;
 }
 
+/* Notification dropdown positioning fix */
+.dropdown-menu-end {
+  right: auto !important;
+  left: 0 !important;
+}
+
 .msg_list {
+  min-width: 300px;
+  max-height: 400px;
+  overflow-y: auto;
   padding: 0;
   width: 300px;
+  z-index: 1060 !important;
+  /* Higher than other dropdowns */
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
 .msg_list li {
   padding: 0;
   margin: 0;
+  list-style: none;
+}
+
+.notification-item {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  transition: background-color 0.2s ease;
+}
+
+.notification-item:hover {
+  background-color: rgba(0, 0, 0, 0.02);
 }
 
 .msg_list .dropdown-item {
@@ -287,8 +326,58 @@ a:focus {
   padding: 5px 0;
 }
 
-/* ⬅SB Menu */
+.notification-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background-color: rgba(255, 193, 7, 0.1);
+  border-radius: 50%;
+}
 
+.notification-content {
+  flex: 1;
+}
+
+.notification-text {
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.see-all-link {
+  color: #007bff;
+  font-size: 0.9rem;
+  transition: color 0.2s ease;
+}
+
+.see-all-link:hover {
+  color: #0056b3;
+  text-decoration: underline;
+}
+
+/* Badge colors */
+.bg-green {
+  background-color: #28a745;
+}
+
+.bg-red {
+  background-color: #dc3545;
+}
+
+/* Fix for nested dropdowns if any */
+.dropdown-submenu {
+  position: relative;
+}
+
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+}
+
+/* ⬅SB Menu */
 .site_title {
   padding: 15px 0;
   display: flex;
@@ -296,7 +385,6 @@ a:focus {
   gap: 10px;
   margin-bottom: 2px;
   flex-shrink: 0;
-  /* Prevent shrinking */
 }
 
 .site_title img {
@@ -306,7 +394,6 @@ a:focus {
 #sidebar-menu {
   margin-top: 5px;
   padding: 0 15px;
-  /* Increased horizontal padding for better spacing */
 }
 
 .menu_section ul {
@@ -327,19 +414,15 @@ a:focus {
   color: var(--text-dark);
   border-radius: 8px;
   background: transparent;
-  /* Removed the red background */
   transition: all var(--transition-speed) ease;
   font-weight: 500;
 }
 
-.nav.side-menu>li>a i {
-  min-width: 25px;
-  margin-right: 10px;
-  /* Slightly increased icon spacing */
-  font-size: 16px;
-  color: var(--primary-purple);
-  transition: all var(--transition-speed) ease;
-  color: var(--text-dark);
+#sidebar-menu .nav.side-menu>li>a i {
+  color: var(--primary-purple) !important;
+  min-width: 20px !important;
+  margin-right: 10px !important;
+  font-size: 14px !important;
 }
 
 .nav.side-menu>li>a:hover {
@@ -356,36 +439,30 @@ a:focus {
 .nav.side-menu>li.active>a {
   background: var(--primary-yellow);
   color: var(--text-dark);
-  /* Changed to light text for better contrast */
   font-weight: 600;
   box-shadow: 0 2px 5px var(--shadow-color);
 }
 
 .nav.side-menu>li.active>a i {
   color: var(--primary-purple);
-  /* Made icon color match text when active */
 }
 
 /* Dropdown Toggle Icon */
 .nav.side-menu>li>a .fa-chevron-down {
   margin-left: auto;
-  /* Push chevron to the right */
   font-size: 12px;
   transition: transform 0.3s ease;
 }
 
 .nav.side-menu>li.active>a .fa-chevron-down {
   transform: rotate(-180deg);
-  /* Rotate chevron when menu is open */
 }
 
 /* Child Menu */
-
 .nav.child_menu {
   padding-left: 15px;
   margin-top: 5px;
   margin-bottom: 10px;
-  /* Added space after submenu */
 }
 
 .nav.child_menu li {
@@ -442,11 +519,9 @@ a:focus {
 }
 
 /* ⬇SB Footer */
-
 .sidebar-footer-update {
   margin-top: 30px;
   padding: 0 15px 20px;
-  /* Increased horizontal padding to match menu */
 }
 
 .sidebar-footer-update ul {
@@ -473,9 +548,7 @@ a:focus {
 .sidebar-footer-update li a i {
   min-width: 25px;
   margin-right: 10px;
-  /* Made consistent with menu icons */
   transition: all var(--transition-speed) ease;
-
 }
 
 .sidebar-footer-update li a:hover {
@@ -484,9 +557,6 @@ a:focus {
   box-shadow: 0 4px 8px rgba(0, 0, 0, .1);
   color: var(--text-dark);
 }
-
-
-
 
 .sidebar-footer-update li a:hover i {
   transform: scale(1.1);
@@ -526,6 +596,8 @@ a:focus {
 .alert .close:hover {
   opacity: 1;
 }
+
+
 
 /* Responsive Styles */
 /* Toggle Behavior */
@@ -685,4 +757,130 @@ body.nav-sm .sidebar-footer-update li a {
 .content-container {
   max-width: 1200px;
   margin: 0 auto;
+}
+
+/* Strengthen the specificity for sidebar menu icons */
+#sidebar-menu .nav.side-menu>li>a i,
+#sidebar-menu .nav.side-menu>li.active>a i,
+#sidebar-menu .nav.side-menu>li:nth-child(n)>a i {
+  min-width: 20px !important;
+  margin-right: 10px !important;
+  font-size: 14px !important;
+  text-align: center !important;
+  color: var(--primary-purple) !important;
+}
+
+/* Add stronger specific styles for hover states */
+#sidebar-menu .nav.side-menu>li>a:hover i,
+#sidebar-menu .nav.side-menu>li:nth-child(n)>a:hover i {
+  color: var(--text-light) !important;
+}
+
+/* Ensure active state consistency */
+#sidebar-menu .nav.side-menu>li.active>a,
+#sidebar-menu .nav.side-menu>li:nth-child(n).active>a {
+  background: var(--primary-yellow) !important;
+  color: var(--text-dark) !important;
+  font-weight: 600 !important;
+  box-shadow: 0 2px 5px var(--shadow-color) !important;
+}
+
+#sidebar-menu .nav.side-menu>li.active>a i,
+#sidebar-menu .nav.side-menu>li:nth-child(n).active>a i {
+  color: var(--primary-purple) !important;
+}
+
+/* Bootstrap 4 specific fix */
+.dropdown-toggle.show+.dropdown-menu,
+.dropdown.show .dropdown-menu {
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Fix for Safari and some mobile browsers */
+@supports (-webkit-overflow-scrolling: touch) {
+  .dropdown-menu {
+    -webkit-transform: none !important;
+    transform: none !important;
+  }
+}
+
+.notification-item.unread {
+  background-color: rgba(0, 123, 255, 0.05);
+}
+
+.notification-item.unread .fw-500 {
+  font-weight: 600;
+}
+
+.notification-item.read {
+  opacity: 0.8;
+}
+
+.notification-item.read .fw-500 {
+  font-weight: normal;
+}
+
+.notification-link {
+  cursor: pointer;
+}
+
+/* Add to your base.css */
+.dropdown-menu {
+  display: none;
+  /* Start hidden */
+}
+
+.show>.dropdown-menu {
+  display: block;
+  /* Only show when has 'show' class */
+}
+
+.dropdown-toggle::after {
+  display: inline-block;
+  margin-left: 0.255em;
+  vertical-align: 0.255em;
+  content: "";
+  border-top: 0.3em solid;
+  border-right: 0.3em solid transparent;
+  border-bottom: 0;
+  border-left: 0.3em solid transparent;
+}
+
+.dropdown-menu {
+  display: none !important;
+}
+
+.dropdown-menu.show {
+  display: block !important;
+}
+
+/* Prevents FA from overwriting colors */
+
+#sidebar-menu .nav.side-menu > li > a i {
+  color: var(--primary-purple) !important;
+  min-width: 20px !important;
+  margin-right: 10px !important;
+  font-size: 14px !important;
+}
+
+/* 1. Target SVG icons specifically */
+#sidebar-menu .nav.side-menu > li > a svg.svg-inline--fa {
+  color: var(--primary-purple) !important;
+  min-width: 20px !important;
+  margin-right: 10px !important;
+  font-size: 14px !important;
+  fill: currentColor !important; /* Critical for SVG icons */
+}
+
+/* 2. Lock the path color */
+#sidebar-menu .nav.side-menu > li > a svg.svg-inline--fa path {
+  fill: currentColor !important;
+}
+
+/* 3. Prevent any other overrides */
+#sidebar-menu .nav.side-menu > li > a .svg-inline--fa {
+  color: inherit !important;
+  fill: inherit !important;
 }

@@ -95,4 +95,72 @@ class CommandeRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+
+    public function findTotalSalesLast7Days(int $shopId): float
+    {
+        $sevenDaysAgo = (new \DateTime())->modify('-7 days')->setTime(0, 0, 0);
+        $today = new \DateTime();
+
+        $result = $this->createQueryBuilder('c')
+            ->select('SUM(c.total) as totalSales')
+            ->join('c.paniers', 'p')
+            ->join('p.idProduit', 'prod')
+            ->where('prod.shopId = :shopId')
+            ->andWhere('c.statut IN (:statuts)')
+            ->andWhere('c.dateCommande BETWEEN :start AND :end')
+            ->setParameter('shopId', $shopId)
+            ->setParameter('statuts', [StatutCommande::payee, StatutCommande::recuperer])
+            ->setParameter('start', $sevenDaysAgo)
+            ->setParameter('end', $today)
+            ->getQuery()
+            ->getSingleScalarResult();  // Returns the sum of total sales
+
+        return (float) $result;
+    }
+
+
+    // better 
+    public function findDailyTotalSalesLast8Days(int $shopId): array
+    {
+
+        $sevenDaysAgo = (new \DateTime())->modify('-8 days')->setTime(0, 0, 0);
+        $today = new \DateTime();
+        // Query to get total sales per day
+        $result = $this->createQueryBuilder('c')
+            ->select([
+                "SUBSTRING(c.dateCommande, 1, 10) as day",
+                "SUM(c.total) as totalSales"
+            ])
+            ->join('c.paniers', 'p')
+            ->join('p.idProduit', 'prod')
+            ->where('prod.shopId = :shopId')
+            ->andWhere('c.statut IN (:statuts)')
+            ->andWhere('c.dateCommande BETWEEN :start AND :end')
+            ->setParameter('shopId', $shopId)
+            ->setParameter('statuts', [StatutCommande::payee, StatutCommande::recuperer])
+            ->setParameter('start', $sevenDaysAgo)
+            ->setParameter('end', $today)
+            ->groupBy('day')
+            ->getQuery()
+            ->getResult();
+        // Convert to associative array (date => total)
+        $dailySales = [];
+        foreach ($result as $row) {
+            $dailySales[$row['day']] = (float) $row['totalSales'];
+        }
+        // Ensure all 8 days are included (even if no sales)
+        $dateIterator = clone $sevenDaysAgo;
+        while ($dateIterator <= $today) {
+            $dayString = $dateIterator->format('Y-m-d');
+            if (!isset($dailySales[$dayString])) {
+                $dailySales[$dayString] = 0.0;
+            }
+            $dateIterator->modify('+1 day');
+        }
+        // Sort by date (ascending)
+        ksort($dailySales);
+        return $dailySales;
+    }
 }
+
+

@@ -19,6 +19,11 @@ services:
     App\EventListener\NoCacheListener:
         tags:
             - { name: kernel.event_listener, event: kernel.response, method: onKernelResponse }  
+    App\EventListener\LowStockNotificationListener:
+        arguments:
+            $mercureHub: '@mercure.hub'
+        tags:
+            - { name: kernel.event_listener, event: product.low_stock, method: __invoke }
     # Charge automatiquement tous les services du dossier src/
     App\:
         resource: '../src/'

@@ -18,6 +18,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Entity\Produit;
+use App\Entity\Notification;
 use App\Entity\Discount;
 use App\Entity\Event;
 use App\Entity\Schedule;
@@ -33,19 +34,24 @@ use App\Form\maria\DiscountType;
 use App\Form\maria\ScheduleType;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use App\Event\LowStockEvent;
+use App\Controller\maria\NotificationController;
+
+
 
 #[Route('/shopOwner')]
 class ShopOwnerController extends AbstractController
 {
-
-    // This will be replaced with session ID later
 
     #[Route('/admindashboard', name: 'dashboard')]
     public function dashboard(
         EntityManagerInterface $entityManager,
         FeedbackRepository $feedbackRepository,
         ProduitRepository $produitRepository,
-        CommandeRepository $commandeRepository
+        CommandeRepository $commandeRepository,
+        DiscountRepository $discountRepository,
+        EventRepository $eventRepository
     ): Response {
         $currentId = $this->getUser()->getId();
         $shop = $entityManager->getRepository(Utilisateur::class)->find($currentId);
@@ -54,7 +60,10 @@ class ShopOwnerController extends AbstractController
             throw $this->createNotFoundException('Shop not found');
         }
 
-        // Get dashboard statistics
+        // Get active discount
+        $activeDiscount = $discountRepository->findActiveDiscountForShop($shop->getId());
+
+        // Get feedback statistics
         $averageRating = $feedbackRepository->getAverageRatingValue($shop);
         $ratingCount = $feedbackRepository->countByShop($shop);
         $ratingDistribution = $feedbackRepository->getRatingDistribution($shop);
@@ -75,9 +84,40 @@ class ShopOwnerController extends AbstractController
             $salesData['quantities'][] = $item['totalQuantity'];
         }
 
-        // Get stock status data (using properly named repository methods)
+        // Get stock status
         $lowStockProducts = $produitRepository->findByLowStockAndShop($shop->getId());
         $outOfStockProducts = $produitRepository->findByOutOfStockAndShop($shop->getId());
+
+        // Get events
+        $relevantEvent = $eventRepository->findRelevantEvents($shop->getId());
+        $eventData = null;
+
+        if (!empty($relevantEvent)) {
+            $firstEvent = $relevantEvent[0];
+            $today = new \DateTime();
+            $startDate = $firstEvent->getDateDebut();
+            $endDate = $firstEvent->getDateFin();
+
+            $eventData = [
+                'name' => $firstEvent->getNomOrganisateur(),
+                'desc' => $firstEvent->getDescription(),
+                'startDate' => $startDate,
+                'endDate' => $endDate,
+                'location' => $firstEvent->getEmplacement(),
+                'daysUntil' => $today->diff($startDate)->days,
+                'isCurrent' => ($today >= $startDate && $today <= $endDate)
+            ];
+        }
+
+        // Get sales statistics - UPDATED SECTION
+        $totalSalesLast7Days = $commandeRepository->findTotalSalesLast7Days($shop->getId());
+        $dailySalesLast8Days = $commandeRepository->findDailyTotalSalesLast8Days($shop->getId());
+
+        // Prepare chart data
+        $weeklySalesChartData = [
+            'labels' => array_keys($dailySalesLast8Days),
+            'data' => array_values($dailySalesLast8Days)
+        ];
 
         return $this->render('maria_templates/admindashboard.html.twig', [
             'averageRating' => $averageRating,
@@ -88,8 +128,21 @@ class ShopOwnerController extends AbstractController
             'salesData' => $salesData,
             'lowStockProducts' => $lowStockProducts,
             'outOfStockProducts' => $outOfStockProducts,
-            'shop' => $shop
+            'shop' => $shop,
+            'activeDiscount' => $activeDiscount,
+            'eventData' => $eventData,
+            'totalSalesLast7Days' => $totalSalesLast7Days,
+            'weeklySalesChartData' => $weeklySalesChartData // Updated variable name
         ]);
+    }
+
+    //todaysummary
+    #[Route('/todaysummary', name: 'todaysummary')]
+    public function todaysummary(): Response
+    {
+        $currentId = $this->getUser()->getId();
+
+        return $this->render('maria_templates/todaysummary.html.twig');
     }
     //**************************************************************************************************************************** */
 
@@ -130,20 +183,24 @@ class ShopOwnerController extends AbstractController
     }
 
     #[Route('/product/new', name: 'product_new')]
-    public function new(Request $request, EntityManagerInterface $em, UtilisateurRepository $utilisateurRepo): Response
-    {
+    public function new(
+        Request $request,
+        EntityManagerInterface $em,
+        UtilisateurRepository $utilisateurRepo,
+        EventDispatcherInterface $dispatcher
+    ): Response {
         $currentId = $this->getUser()->getId();
         $product = new Produit();
         $form = $this->createForm(ProductType::class, $product);
 
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
-            // Get the current shop owner
             $shop = $utilisateurRepo->find($currentId);
             if (!$shop) {
                 throw $this->createNotFoundException('Shop owner not found');
             }
-            $product->setShopId($shop);  // This will now work correctly
+            $product->setShopId($shop);
+
             // Handle file upload
             $imageFile = $form->get('image_url')->getData();
             if ($imageFile) {
@@ -154,20 +211,14 @@ class ShopOwnerController extends AbstractController
                 );
                 $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
 
-                //default saving path
                 $targetDirectory = $this->getParameter('kernel.project_dir') . '/public/resources/assets/product_images/';
 
-                // Create directory if it doesn't exist
                 if (!file_exists($targetDirectory)) {
                     mkdir($targetDirectory, 0777, true);
                 }
 
                 try {
-                    $imageFile->move(
-                        $targetDirectory,
-                        $newFilename
-                    );
-                    // Store relative path in database
+                    $imageFile->move($targetDirectory, $newFilename);
                     $product->setImage_url('resources\assets\product_images\ ' . $newFilename);
                 } catch (FileException $e) {
                     $this->addFlash('error', 'File upload failed: ' . $e->getMessage());
@@ -177,6 +228,21 @@ class ShopOwnerController extends AbstractController
 
             $em->persist($product);
             $em->flush();
+
+            // Check for low stock
+            if ($product->getStock() <= 10) {
+                $notification = new Notification();
+                $notification->setMessage(sprintf(
+                    'Low stock: %s (%d left)',
+                    $product->getNom(),
+                    $product->getStock()
+                ));
+                $notification = new Notification();
+                $notification->setUser($this->getUser());
+
+                $em->persist($notification);
+                $em->flush();
+            }
 
             $this->addFlash('success', 'Product created successfully!');
             return $this->redirectToRoute('products');
@@ -194,7 +260,8 @@ class ShopOwnerController extends AbstractController
         EntityManagerInterface $em,
         ProduitRepository $produitRepo,
         DiscountRepository $discountRepo,
-        UtilisateurRepository $utilisateurRepo
+        UtilisateurRepository $utilisateurRepo,
+        EventDispatcherInterface $dispatcher
     ): Response {
         $currentId = $this->getUser()->getId();
         $product = $produitRepo->find($id);
@@ -204,8 +271,6 @@ class ShopOwnerController extends AbstractController
 
         $shop = $utilisateurRepo->find($currentId);
         $discounts = $discountRepo->findBy(['shop' => $shop]);
-        $count = $discountRepo->count(['shop' => $shop]);
-        dump($count);
 
         $form = $this->createForm(EditProductType::class, $product, [
             'shopId' => $shop,
@@ -224,10 +289,25 @@ class ShopOwnerController extends AbstractController
             }
 
             $em->flush();
+
+            // Check for low stock
+            if ($product->getStock() <= 10) {
+                $notification = new Notification();
+                $notification->setMessage(sprintf(
+                    'Low stock: %s (%d left)',
+                    $product->getNom(),
+                    $product->getStock()
+                ));
+                $notification->setCreatedAt(new \DateTime());
+                $notification->setUser($this->getUser());
+
+                $em->persist($notification);
+                $em->flush();
+            }
+
             return $this->redirectToRoute('products');
         }
 
-        // For AJAX requests to get the form
         if ($request->isXmlHttpRequest()) {
             return $this->render('maria_templates/forms/edit_product_form.html.twig', [
                 'form' => $form->createView()
@@ -710,5 +790,14 @@ class ShopOwnerController extends AbstractController
             'user' => $user,
             'categories' => $categories,
         ]);
+    }
+
+    //ContactAdmin
+    #[Route('/ContactAdmin', name: 'ContactAdmin')]
+    public function ContactAdmin(): Response
+    {
+        $currentId = $this->getUser()->getId();
+
+        return $this->render('maria_templates/ContactAdmin.html.twig');
     }
 }

@@ -6,20 +6,17 @@
     --text-dark: #333333;
     --text-light: #FFFFFF;
     --border-color: #DDDDDD;
-    --hover-peach: #FFF07B;
-    --hover-blue: #FFF07B;
+    --hover-yellow: #FFF07B;
+    --hover-blue: #DBF0FE;
     --shadow-color: rgba(0, 0, 0, 0.05);
     --sidebar-width: 230px;
     --sidebar-collapsed-width: 70px;
     --menu-item-spacing: 12px;
     --transition-speed: 0.3s;
-    --discount-red: #e53935;
-}
+  }
 
 /* General Styles */
 body {
-    font-family: 'Poppins', sans-serif;
-    color: var(--text-dark);
     background-color: #f9f9f9;
 }
 
@@ -28,6 +25,20 @@ body {
     max-width: 1400px;
     margin: 0 auto;
 }
+
+.product-container {
+    padding: 25px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.product-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
 
 /* Dashboard Header - now contains both elements */
 .dashboard-header {
@@ -39,6 +50,7 @@ body {
     flex-wrap: wrap;
     gap: 15px;
 }
+
 
 /* Search Container - modified to fit in header */
 .search-container {
@@ -526,9 +538,10 @@ body {
         grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     }
 
-    .dashboard-header {
+    .discount-header {
         flex-direction: column;
         align-items: flex-start;
+        gap: 10px;
     }
 
     .btn-add {
