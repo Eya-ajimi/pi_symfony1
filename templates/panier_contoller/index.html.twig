@@ -377,7 +377,12 @@
                     {% for item in panierList %}
                         <div class="row-item">
                             <div class="col-img">
-                                <img src="https://i.imgur.com/1GrakTl.jpg" alt="Product">
+                                {% if item.produitDetails.image_url %}
+                                    <img src="{{ asset(item.produitDetails.image_url) }}" alt="{{ item.produitDetails.nom }}">
+                                {% else %}
+                                    <img src="{{ asset('images/default-product.jpg') }}" alt="Default product image">
+                                {% endif %}
+
                             </div>
                             <div class="col-info">
                                 <div class="product-name">{{ item.produitDetails.nom }}</div>

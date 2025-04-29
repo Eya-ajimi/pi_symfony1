@@ -202,23 +202,23 @@ final class PanierContollerController extends AbstractController
     {
         // Récupération du produit
         $produit = $produitRepository->find($idProduit);
-    
+
         if (!$produit) {
             throw $this->createNotFoundException('Produit non trouvé');
         }
-           
+
         // Vérification du stock
         if ($produit->getStock() == 0) {
             $this->addFlash('error', 'Ce produit est hors stock');
             return $this->redirectToRoute('app_show_panier');
         }
-    
+
         // Récupération de l'utilisateur
         $utilisateur = $this->getUser();
-    
+
         // Recherche de la commande en cours
         $commandeEnCours = $this->commandeRepository->findCommandeEnCours($utilisateur);
-    
+
         // Si pas de commande en cours, on en crée une nouvelle
         if (!$commandeEnCours) {
             $commandeEnCours = new Commande();
@@ -226,25 +226,25 @@ final class PanierContollerController extends AbstractController
             $commandeEnCours->setDateCommande(new \DateTime());
             $commandeEnCours->setStatut(StatutCommande::enCours);
             $commandeEnCours->setTotal(0);
-            
+
             // Persist the new Commande first
             $this->entityManager->persist($commandeEnCours);
             $this->entityManager->flush(); // Optional: you could remove this flush and only keep the final one
         }
-    
+
         // Vérification si le produit est déjà dans le panier
         $panierExist = $this->panierRepository->findOneBy([
             'idCommande' => $commandeEnCours->getId(),
             'idProduit' => $produit->getId()
         ]);
-    
+
         if ($panierExist) {
             $this->addFlash('warning', 'Ce produit est déjà dans votre panier');
             return $this->redirectToRoute('shop_products',[
                 'shopId'=>$shopId
             ]);
         }
-    
+
         // Création d'un nouveau panier
         $panier = new Panier();
         $panier->setIdCommande($commandeEnCours);
@@ -252,21 +252,91 @@ final class PanierContollerController extends AbstractController
         $panier->setQuantite(1);
         $panier->setStatut(StatutCommande::enCours);
         $this->entityManager->persist($panier);
-    
+
         // Calcul du prix (avec promotion si applicable)
         $prix = $produit->getPrix();
         if ($produit->getPromotionId() && $produit->getPromotionId()->getDiscountPercentage() > 0) {
             $prix = $prix * (1 - ($produit->getPromotionId()->getDiscountPercentage() / 100));
         }
-    
+
         // Mise à jour du total de la commande
         $commandeEnCours->setTotal($commandeEnCours->getTotal() + $prix);
-    
+
         $this->entityManager->flush();
-    
+
         $this->addFlash('success', 'Produit ajouté au panier avec succès');
         return $this->redirectToRoute('shop_products',[
             'shopId'=>$shopId
         ]);
+    }
+
+
+    #[Route('/client/panier/ajouterPanier/{idProduit}', name: 'app_add_itemLiked')]
+    public function addItemLiked($idProduit, ProduitRepository $produitRepository): Response
+    {
+        // Récupération du produit
+        $produit = $produitRepository->find($idProduit);
+
+        if (!$produit) {
+            throw $this->createNotFoundException('Produit non trouvé');
+        }
+
+        // Vérification du stock
+        if ($produit->getStock() == 0) {
+            $this->addFlash('error', 'Ce produit est hors stock');
+            return $this->redirectToRoute('app_liked_product_and_recommendation');
+        }
+
+        // Récupération de l'utilisateur
+        $utilisateur = $this->getUser();
+
+        // Recherche de la commande en cours
+        $commandeEnCours = $this->commandeRepository->findCommandeEnCours($utilisateur);
+
+        // Si pas de commande en cours, on en crée une nouvelle
+        if (!$commandeEnCours) {
+            $commandeEnCours = new Commande();
+            $commandeEnCours->setIdClient($utilisateur);
+            $commandeEnCours->setDateCommande(new \DateTime());
+            $commandeEnCours->setStatut(StatutCommande::enCours);
+            $commandeEnCours->setTotal(0);
+
+            // Persist the new Commande first
+            $this->entityManager->persist($commandeEnCours);
+            $this->entityManager->flush(); // Optional: you could remove this flush and only keep the final one
+        }
+
+        // Vérification si le produit est déjà dans le panier
+        $panierExist = $this->panierRepository->findOneBy([
+            'idCommande' => $commandeEnCours->getId(),
+            'idProduit' => $produit->getId()
+        ]);
+
+        if ($panierExist) {
+            $this->addFlash('warning', 'Ce produit est déjà dans votre panier');
+            return $this->redirectToRoute('app_liked_product_and_recommendation');
+        }
+
+        // Création d'un nouveau panier
+        $panier = new Panier();
+        $panier->setIdCommande($commandeEnCours);
+        $panier->setIdProduit($produit);
+        $panier->setQuantite(1);
+        $panier->setStatut(StatutCommande::enCours);
+        $this->entityManager->persist($panier);
+
+        // Calcul du prix (avec promotion si applicable)
+        $prix = $produit->getPrix();
+        if ($produit->getPromotionId() && $produit->getPromotionId()->getDiscountPercentage() > 0) {
+            $prix = $prix * (1 - ($produit->getPromotionId()->getDiscountPercentage() / 100));
+        }
+
+        // Mise à jour du total de la commande
+        $commandeEnCours->setTotal($commandeEnCours->getTotal() + $prix);
+
+        $this->entityManager->flush();
+
+        $this->addFlash('success', 'Produit ajouté au panier avec succès');
+        return $this->redirectToRoute('app_liked_product_and_recommendation');
     }
 }

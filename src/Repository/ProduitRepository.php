@@ -36,33 +36,33 @@ class ProduitRepository extends ServiceEntityRepository
 
 
     public function findByFilters($shopId, $name = null, $minPrice = null, $maxPrice = null, $promotion = null)
-{
-    $qb = $this->createQueryBuilder('p')
-        ->innerJoin('p.shopId', 'u')
-        ->andWhere('u.id = :shopId')
-        ->setParameter('shopId', $shopId);
+    {
+        $qb = $this->createQueryBuilder('p')
+            ->innerJoin('p.shopId', 'u')
+            ->andWhere('u.id = :shopId')
+            ->setParameter('shopId', $shopId);
 
-    if ($name) {
-        $qb->andWhere('LOWER(p.nom) LIKE LOWER(:name)')
-           ->setParameter('name', '%' . $name . '%');
+        if ($name) {
+            $qb->andWhere('LOWER(p.nom) LIKE LOWER(:name)')
+                ->setParameter('name', '%' . $name . '%');
+        }
+
+        if ($minPrice !== null && $minPrice !== '') {
+            $qb->andWhere('p.prix >= :minPrice')
+                ->setParameter('minPrice', $minPrice);
+        }
+
+        if ($maxPrice !== null && $maxPrice !== '') {
+            $qb->andWhere('p.prix <= :maxPrice')
+                ->setParameter('maxPrice', $maxPrice);
+        }
+
+        // Bonus pour promo plus tard
+
+        return $qb->orderBy('p.nom', 'ASC')
+            ->getQuery()
+            ->getResult();
     }
-
-    if ($minPrice !== null && $minPrice !== '') {
-        $qb->andWhere('p.prix >= :minPrice')
-           ->setParameter('minPrice', $minPrice);
-    }
-
-    if ($maxPrice !== null && $maxPrice !== '') {
-        $qb->andWhere('p.prix <= :maxPrice')
-           ->setParameter('maxPrice', $maxPrice);
-    }
-
-    // Bonus pour promo plus tard
-
-    return $qb->orderBy('p.nom', 'ASC')
-              ->getQuery()
-              ->getResult();
-}
 
     // Create (persist) a product
     public function save(Produit $entity, bool $flush = false): void
@@ -101,7 +101,6 @@ class ProduitRepository extends ServiceEntityRepository
 
 
     //fazet el likes
-
     public function findByShopIdWithLikeCounts(int $shopId): array
     {
         // First get products by shop
@@ -112,21 +111,26 @@ class ProduitRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
 
+        if (empty($products)) {
+            return [];
+        }
+
         // Get like counts for these products
         $productIds = array_map(fn($p) => $p->getId(), $products);
 
         $likeCounts = $this->getEntityManager()
             ->createQuery('
-                SELECT lp.productId, COUNT(lp.id) as count 
-                FROM App\Entity\LikedProduct lp 
-                WHERE lp.productId IN (:ids) 
-                GROUP BY lp.productId
-            ')
+            SELECT p.id as productId, COUNT(lp.id) as likeCount
+            FROM App\Entity\LikedProduct lp
+            JOIN lp.produit p
+            WHERE p.id IN (:ids)
+            GROUP BY p.id
+        ')
             ->setParameter('ids', $productIds)
             ->getResult();
 
-        // Convert to [productId => count] format
-        $countsMap = array_column($likeCounts, 'count', 'productId');
+        // Convert to [productId => likeCount] format
+        $countsMap = array_column($likeCounts, 'likeCount', 'productId');
 
         // Assign counts to products
         foreach ($products as $product) {
@@ -135,6 +139,8 @@ class ProduitRepository extends ServiceEntityRepository
 
         return $products;
     }
+
+
     public function removeWithRelations(Produit $product, bool $flush = true): void
     {
         $em = $this->getEntityManager();
@@ -157,6 +163,106 @@ class ProduitRepository extends ServiceEntityRepository
             $em->flush();
         }
     }
+
+    public function findTopLikedProducts(int $shopId, int $limit = 4): array
+    {
+        // First get products with their like counts
+        $products = $this->findByShopIdWithLikeCounts($shopId);
+
+        // Sort products by like count (descending)
+        usort($products, function ($a, $b) {
+            return $b->getLikeCount() <=> $a->getLikeCount();
+        });
+
+        // Return only the top $limit products (now 5 by default)
+        return array_slice($products, 0, $limit);
+    }
+
+    // src/Repository/ProduitRepository.php
+    // src/Repository/ProduitRepository.php
+
+    public function findTop10SoldProductsByShop(int $shopId): array
+    {
+        return $this->createQueryBuilder('p')
+            ->select('p as product, SUM(pan.quantite) as totalQuantity')
+            ->join('p.paniers', 'pan')
+            ->join('App\Entity\Commande', 'c', 'WITH', 'pan.idCommande = c.id')
+            ->where('p.shopId = :shopId')
+            ->andWhere('c.statut IN (:statuses)')  // Changed to IN clause
+            ->setParameter('shopId', $shopId)
+            ->setParameter('statuses', ['payee', 'recuperer'])  // Both statuses
+            ->groupBy('p.id')
+            ->orderBy('totalQuantity', 'DESC')
+            ->setMaxResults(10)
+            ->getQuery()
+            ->getResult();
+
+    }
+
+    public function findByLowStockAndShop(int $shopId): array
+    {
+        return $this->createQueryBuilder('p')
+            ->where('p.shopId = :shopId')
+            ->andWhere('p.stock <= 10')
+            ->andWhere('p.stock > 0')
+            ->setParameter('shopId', $shopId)
+            ->orderBy('p.stock', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findByOutOfStockAndShop(int $shopId): array
+    {
+        return $this->createQueryBuilder('p')
+            ->where('p.shopId = :shopId')
+            ->andWhere('p.stock = 0')
+            ->setParameter('shopId', $shopId)
+            ->orderBy('p.nom', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+
+    /************************************************************
+     *
+     * HOUSSEM
+     *
+     */
+
+    /**
+     * Trouve les produits dans les catégories données mais pas dans la liste d'IDs de produits
+     */
+    public function findByCategoriesNotInProducts(array $categoriesIds, array $excludeProductIds): array
+    {
+        $qb = $this->createQueryBuilder('p')
+            ->join('p.shopId', 'u') // Joindre l'utilisateur (shop)
+            ->join('u.categorie', 'c') // Joindre la catégorie de l'utilisateur
+            ->where('c.id IN (:categoriesIds)')
+            ->setParameter('categoriesIds', $categoriesIds);
+
+        if (!empty($excludeProductIds)) {
+            $qb->andWhere('p.id NOT IN (:excludeProductIds)')
+                ->setParameter('excludeProductIds', $excludeProductIds);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Trouve les produits qui ne sont pas dans la liste d'IDs donnée
+     */
+    public function findProductsNotInIds(array $excludeProductIds): array
+    {
+        $qb = $this->createQueryBuilder('p');
+
+        if (!empty($excludeProductIds)) {
+            $qb->where('p.id NOT IN (:excludeProductIds)')
+                ->setParameter('excludeProductIds', $excludeProductIds);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
 }
 
 

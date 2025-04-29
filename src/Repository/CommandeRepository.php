@@ -24,25 +24,28 @@ class CommandeRepository extends ServiceEntityRepository
         ]);
     }
 
-    public function findTodayPaidOrdersByShop(int $shopId)
+    public function findPaidOrdersByShopAndDate(int $shopId, \DateTime $date)
     {
-        $today = (new \DateTime())->format('Y-m-d');
+        $formattedDate = $date->format('Y-m-d');
+
         return $this->createQueryBuilder('c')
-            ->innerJoin('c.paniers', 'p') // Seulement les commandes avec paniers
-            ->innerJoin('p.idProduit', 'prod') // Jointure avec produit
-            ->addSelect('p') // Charge les paniers
-            ->addSelect('prod') // Charge les produits
+            ->innerJoin('c.paniers', 'p') // Only orders with items
+            ->innerJoin('p.idProduit', 'prod') // Join with product
+            ->innerJoin('c.idClient', 'client') // Join with client
+            ->addSelect('p') // Load items
+            ->addSelect('prod') // Load products
+            ->addSelect('client') // Load client data
             ->where('c.statut = :statut')
-            ->andWhere('p.statut = :statut') // Ajout de la condition sur le statut du panier
-            ->andWhere('c.dateCommande = :today')
-            ->andWhere('prod.shopId = :shopId') // Filtre par shop
+            ->andWhere('p.statut = :statut') // Add condition on item status
+            ->andWhere('c.dateCommande = :filterDate')
+            ->andWhere('prod.shopId = :shopId') // Filter by shop
             ->setParameter('statut', StatutCommande::payee)
-            ->setParameter('today', $today)
-            ->setParameter('shopId', $shopId) // Utilisation du paramètre shopId au lieu d'une valeur codée en dur
+            ->setParameter('filterDate', $formattedDate)
+            ->setParameter('shopId', $shopId)
+            ->orderBy('c.dateCommande', 'DESC') // Most recent orders first
             ->getQuery()
             ->getResult();
     }
-
 
 
     public function findWeeklyShopStatistics(\DateTimeInterface $dateInWeek): array
@@ -62,9 +65,9 @@ class CommandeRepository extends ServiceEntityRepository
             ->where('c.statut = :statut')
             ->andWhere('c.dateCommande BETWEEN :start AND :end')
             ->andWhere('shop.role = :role')
-            ->setParameter('statut', StatutCommande::payee)
-            ->setParameter('start', $weekStart)
-            ->setParameter('end', $weekEnd)
+            ->setParameter('statut', StatutCommande::payee->value)
+            ->setParameter('start', $weekStart->format('Y-m-d'))
+            ->setParameter('end', $weekEnd->format('Y-m-d'))
             ->setParameter('role', Role::SHOPOWNER->value)
             ->groupBy('shop.id')
             ->getQuery()
@@ -87,8 +90,8 @@ class CommandeRepository extends ServiceEntityRepository
             ->andWhere('c.dateCommande BETWEEN :start AND :end')
             ->setParameter('shopId', $shopId)
             ->setParameter('statut', StatutCommande::payee)
-            ->setParameter('start', $weekStart)
-            ->setParameter('end', $weekEnd)
+            ->setParameter('start', $weekStart->format('Y-m-d'))
+            ->setParameter('end', $weekEnd->format('Y-m-d'))
             ->groupBy('day')
             ->orderBy('day', 'ASC')
             ->getQuery()

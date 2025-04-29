@@ -3,7 +3,9 @@
 namespace App\Repository;
 
 use App\Entity\LikedProduct;
+use App\Entity\Utilisateur;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 class LikedProductRepository extends ServiceEntityRepository
@@ -34,7 +36,7 @@ class LikedProductRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
-    
+
 
     public function findByUser(int $userId): array
     {
@@ -45,7 +47,7 @@ class LikedProductRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
-    
+
 
     // UPDATE
     public function updateLikeDate(LikedProduct $likedProduct, \DateTimeInterface $newDate): void
@@ -82,23 +84,39 @@ class LikedProductRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('l')
             ->select('COUNT(l.id)')
-            ->andWhere('l.produit = :productId')
-            ->setParameter('productId', $productId)
+            ->andWhere('l.produit = :produitId')  // Uses the entity's property name
+            ->setParameter('produitId', $productId)
             ->getQuery()
             ->getSingleScalarResult();
     }
-    
-    
+    public function findByProduct(int $productId): array
+    {
+        return $this->createQueryBuilder('l')
+            ->andWhere('l.produit = :produitId')
+            ->setParameter('produitId', $productId)
+            ->orderBy('l.date_like', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 
-            public function findByProduct(int $productId): array
-            {
-                return $this->createQueryBuilder('l')
-                    ->andWhere('l.produit = :productId')
-                    ->setParameter('productId', $productId)
-                    ->orderBy('l.date_like', 'DESC')
-                    ->getQuery()
-                    ->getResult();
-            }
-            
+    /**
+     * Crée un QueryBuilder pour récupérer les produits aimés par un utilisateur
+     *
+     * @param Utilisateur $user
+     * @return QueryBuilder
+     */
+    public function createQueryBuilderWithProducts(Utilisateur $user): QueryBuilder
+    {
+        return $this->createQueryBuilder('lp')
+            ->andWhere('lp.utilisateur = :user')
+            ->setParameter('user', $user)
+            ->innerJoin('lp.produit', 'p') // Joindre le produit
+            ->addSelect('p') // Sélectionner le produit pour éviter les requêtes N+1
+            ->leftJoin('p.shopId', 'shop') // Joindre le shop
+            ->addSelect('shop') // Sélectionner le shop
+            ->leftJoin('shop.categorie', 'cat') // Joindre la catégorie
+            ->addSelect('cat'); // Sélectionner la catégorie
+    }
+
 
 }
