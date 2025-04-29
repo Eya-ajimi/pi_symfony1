@@ -5,6 +5,145 @@
     {{ parent() }}
     <link rel="stylesheet" href="{{ asset('styles/events.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-purple: #6f42c1;
+            --primary-purple-light: #8150e6;
+            --primary-purple-dark: #5a35a0;
+        }
+        
+        .content-container {
+            padding: 2rem 0;
+        }
+        
+        .content-card {
+            position: relative;
+            background: #fff;
+            border-radius: 1rem;
+            box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.08);
+            padding: 2.5rem;
+            margin-bottom: 3rem;
+            overflow: hidden;
+        }
+        
+        .brand-badge {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: var(--primary-purple);
+            color: white;
+            padding: 0.4rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 8px rgba(111, 66, 193, 0.3);
+            z-index: 2;
+        }
+        
+        .brand-pattern {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 150px;
+            height: 150px;
+            background-image: radial-gradient(var(--primary-purple-light) 2px, transparent 2px);
+            background-size: 15px 15px;
+            opacity: 0.15;
+            z-index: 1;
+        }
+        
+        h2 {
+            color: var(--primary-purple-dark);
+            font-weight: 600;
+            position: relative;
+            display: inline-block;
+            margin-bottom: 1.5rem !important;
+        }
+        
+        h2:after {
+            content: "";
+            position: absolute;
+            left: 0;
+            bottom: -8px;
+            height: 3px;
+            width: 60px;
+            background: var(--primary-purple);
+            border-radius: 3px;
+        }
+        
+        .form-label {
+            font-weight: 500;
+            color: #495057;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary-purple-light);
+            box-shadow: 0 0 0 0.25rem rgba(111, 66, 193, 0.25);
+        }
+        
+        .btn-success {
+            background-color: var(--primary-purple);
+            border-color: var(--primary-purple);
+            box-shadow: 0 4px 10px rgba(111, 66, 193, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-success:hover, .btn-success:focus {
+            background-color: var(--primary-purple-dark);
+            border-color: var(--primary-purple-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(111, 66, 193, 0.3);
+        }
+        
+        .btn-outline-secondary {
+            color: #6c757d;
+            border-color: #6c757d;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-outline-secondary:hover {
+            background-color: #6c757d;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(108, 117, 125, 0.2);
+        }
+        
+        /* Form card styles */
+        .card.shadow-sm {
+            border-radius: 0.8rem;
+            box-shadow: 0 0.3rem 1rem rgba(0, 0, 0, 0.07) !important;
+            border: 1px solid #f0f0f0;
+            overflow: hidden;
+        }
+        
+        .card.shadow-sm .card-body {
+            padding: 2rem;
+        }
+        
+        .form-text {
+            color: #6c757d;
+            font-style: italic;
+            font-size: 0.8rem;
+        }
+        
+        /* Animation for edit page */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .content-card {
+            animation: fadeInUp 0.5s ease-out forwards;
+        }
+    </style>
 {% endblock %}
 
 {% block body %}
@@ -57,6 +196,14 @@
                                 {{ form_widget(form.emplacement, {'attr': {'class': 'form-control' ~ (form.emplacement.vars.valid ? '' : ' is-invalid')}}) }}
                                 <div class="invalid-feedback">
                                     {{ form_errors(form.emplacement) }}
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                {{ form_label(form.maxParticipants, 'Maximum Participants', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.maxParticipants, {'attr': {'class': 'form-control' ~ (form.maxParticipants.vars.valid ? '' : ' is-invalid'), 'min': 1}}) }}
+                                <small class="form-text text-muted">Leave empty for unlimited participants</small>
+                                <div class="invalid-feedback">
+                                    {{ form_errors(form.maxParticipants) }}
                                 </div>
                             </div>
 

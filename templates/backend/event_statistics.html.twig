@@ -4,13 +4,16 @@
 
 {% block content %}
     <div class="container-fluid">
+        <!-- Header with Year Selector -->
         <div class="d-sm-flex align-items-center justify-content-between mb-4">
             <h1 class="h3 mb-0 text-gray-800">Events Statistics for {{ shop.getFullName() }}</h1>
             <div class="dropdown">
-                <button class="btn btn-primary dropdown-toggle" type="button" id="yearDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    Year: {{ selectedYear }}
+                <button class="btn btn-primary dropdown-toggle shadow-sm" type="button" id="yearDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fas fa-calendar-alt fa-sm mr-2"></i>Year: {{ selectedYear }}
                 </button>
-                <div class="dropdown-menu" aria-labelledby="yearDropdown">
+                <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="yearDropdown">
+                    <h6 class="dropdown-header">Select Year</h6>
+                    <div class="dropdown-divider"></div>
                     {% for year in availableYears %}
                         <a class="dropdown-item {% if year == selectedYear %}active{% endif %}"
                            href="{{ path('app_eventsadmin_statistics', {'id': shop.id, 'year': year}) }}">
@@ -21,6 +24,7 @@
             </div>
         </div>
 
+        <!-- Summary Cards Row -->
         <div class="row">
             <!-- Total Participants Card -->
             <div class="col-xl-3 col-md-6 mb-4">
@@ -40,28 +44,77 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- You can add more summary cards here if needed -->
         </div>
 
-        <!-- Bar Chart -->
-        <div class="card shadow mb-4">
-            <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">Monthly Participants</h6>
+        <div class="row">
+            <!-- Bar Chart -->
+            <div class="col-xl-8 col-lg-7">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                        <h6 class="m-0 font-weight-bold text-primary">Monthly Participants</h6>
+                        <div class="dropdown no-arrow">
+                            <a class="dropdown-toggle" href="#" role="button" id="chartOptionsDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="chartOptionsDropdown">
+                                <div class="dropdown-header">Chart Options:</div>
+                                <a class="dropdown-item" href="#" id="toggleChartSize">Toggle Size</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="#" id="downloadChartPNG">Download PNG</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-bar">
+                            <canvas id="myBarChart"></canvas>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
-                <div class="chart-bar">
-                    <canvas id="myBarChart"></canvas>
+
+            <!-- Top Months Pie Chart -->
+            <div class="col-xl-4 col-lg-5">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Participation Distribution</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-pie pt-4">
+                            <canvas id="myPieChart"></canvas>
+                        </div>
+                        <div class="mt-4 text-center small">
+                            <span class="mr-2">
+                                <i class="fas fa-circle text-primary"></i> First Half
+                            </span>
+                            <span class="mr-2">
+                                <i class="fas fa-circle text-success"></i> Second Half
+                            </span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Detailed Table -->
         <div class="card shadow mb-4">
-            <div class="card-header py-3">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                 <h6 class="m-0 font-weight-bold text-primary">Monthly Breakdown</h6>
+                <div class="dropdown no-arrow">
+                    <a class="dropdown-toggle" href="#" role="button" id="tableOptionsDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="tableOptionsDropdown">
+                        <div class="dropdown-header">Export Options:</div>
+                        <a class="dropdown-item" href="#" id="exportCSV">Export CSV</a>
+                        <a class="dropdown-item" href="#" id="printTable">Print Table</a>
+                    </div>
+                </div>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-bordered" width="100%" cellspacing="0">
+                    <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
                         <thead>
                         <tr class="bg-light">
                             <th>Month</th>
@@ -83,7 +136,7 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <div class="progress">
+                                    <div class="progress progress-sm">
                                         <div class="progress-bar bg-success"
                                              role="progressbar"
                                              style="width: {% if totalParticipants > 0 %}{{ ((stat.participants / totalParticipants) * 100) }}%{% else %}0%{% endif %}"
@@ -108,14 +161,37 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         .chart-bar {
-            height: 400px;
+            height: 300px;  /* Reduced from 400px */
         }
-        .progress {
-            height: 20px;
+        .chart-pie {
+            height: 250px;
+        }
+        .progress-sm {
+            height: 10px;
+            border-radius: 5px;
         }
         .dropdown-menu {
             max-height: 200px;
             overflow-y: auto;
+        }
+        .card {
+            border-radius: 0.35rem;
+        }
+        .table-hover tbody tr:hover {
+            background-color: rgba(78, 115, 223, 0.05);
+        }
+        .animated--fade-in {
+            animation-name: fadeIn;
+            animation-duration: 200ms;
+            animation-timing-function: opacity cubic-bezier(0, 1, 0.4, 1);
+        }
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 1;
+            }
         }
     </style>
 {% endblock %}
@@ -205,6 +281,110 @@
                     }
                 },
             }
+        });
+
+        // Pie Chart - First Half vs Second Half of the year
+        var ctx2 = document.getElementById("myPieChart");
+        var firstHalfData = 0;
+        var secondHalfData = 0;
+        
+        {% for index, stat in monthlyStats|slice(0, 6) %}
+            firstHalfData += {{ stat.participants }};
+        {% endfor %}
+        
+        {% for index, stat in monthlyStats|slice(6, 12) %}
+            secondHalfData += {{ stat.participants }};
+        {% endfor %}
+        
+        var myPieChart = new Chart(ctx2, {
+            type: 'doughnut',
+            data: {
+                labels: ["First Half", "Second Half"],
+                datasets: [{
+                    data: [firstHalfData, secondHalfData],
+                    backgroundColor: ['#4e73df', '#1cc88a'],
+                    hoverBackgroundColor: ['#2e59d9', '#17a673'],
+                    hoverBorderColor: "rgba(234, 236, 244, 1)",
+                }],
+            },
+            options: {
+                maintainAspectRatio: false,
+                tooltips: {
+                    backgroundColor: "rgb(255,255,255)",
+                    bodyFontColor: "#858796",
+                    borderColor: '#dddfeb',
+                    borderWidth: 1,
+                    xPadding: 15,
+                    yPadding: 15,
+                    displayColors: false,
+                    caretPadding: 10,
+                },
+                legend: {
+                    display: false
+                },
+                cutoutPercentage: 70,
+            },
+        });
+
+        // Add toggle functionality for chart size
+        document.getElementById('toggleChartSize').addEventListener('click', function(e) {
+            e.preventDefault();
+            var chartContainer = document.querySelector('.chart-bar');
+            if (chartContainer.style.height === '300px' || chartContainer.style.height === '') {
+                chartContainer.style.height = '450px';
+            } else {
+                chartContainer.style.height = '300px';
+            }
+        });
+
+        // Add download chart as PNG functionality
+        document.getElementById('downloadChartPNG').addEventListener('click', function(e) {
+            e.preventDefault();
+            var link = document.createElement('a');
+            link.download = 'monthly-participants-{{ selectedYear }}.png';
+            link.href = document.getElementById('myBarChart').toDataURL('image/png');
+            link.click();
+        });
+
+        // Add export table as CSV functionality
+        document.getElementById('exportCSV').addEventListener('click', function(e) {
+            e.preventDefault();
+            var table = document.getElementById('dataTable');
+            var rows = table.querySelectorAll('tr');
+            var csv = [];
+            
+            for (var i = 0; i < rows.length; i++) {
+                var row = [], cols = rows[i].querySelectorAll('td, th');
+                for (var j = 0; j < cols.length; j++) {
+                    // Clean the text and handle the visual progress bar column
+                    var data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, '').replace(/\s+/g, ' ');
+                    if (j === 3 && i > 0) { // Skip the visual column for data rows
+                        continue;
+                    }
+                    row.push('"' + data + '"');
+                }
+                csv.push(row.join(','));
+            }
+            
+            var csvContent = 'data:text/csv;charset=utf-8,' + csv.join('\n');
+            var encodedUri = encodeURI(csvContent);
+            var link = document.createElement('a');
+            link.setAttribute('href', encodedUri);
+            link.setAttribute('download', 'monthly-stats-{{ selectedYear }}.csv');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+
+        // Add print table functionality
+        document.getElementById('printTable').addEventListener('click', function(e) {
+            e.preventDefault();
+            var printContents = document.getElementById('dataTable').outerHTML;
+            var originalContents = document.body.innerHTML;
+            document.body.innerHTML = '<h2 class="text-center mb-4">Monthly Participants Statistics - {{ selectedYear }}</h2>' + printContents;
+            window.print();
+            document.body.innerHTML = originalContents;
+            location.reload();
         });
     </script>
 {% endblock %}

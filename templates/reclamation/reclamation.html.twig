@@ -4,131 +4,285 @@
 {% block title %}Submit a Complaint{% endblock %}
 
 {% block stylesheets %}
-   
     <link rel="stylesheet" href="{{ asset('css/reclamation.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 {% endblock %}
 
-
-
 {% block content %}
-
     <style>
+        :root {
+            --primary: #3498db;
+            --primary-light: #5dade2;
+            --primary-dark: #2980b9;
+            --secondary: #f39c12;
+            --text-dark: #2c3e50;
+            --text-light: #7f8c8d;
+            --bg-light: #f9f9f9;
+            --success: #2ecc71;
+            --error: #e74c3c;
+            --white: #ffffff;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            --radius: 12px;
+        }
+        
         .reclamation-container {
             max-width: 800px;
-            margin: 40px auto;
-            padding: 40px;
-            background-color: #ffffff;
-            border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            font-family: 'Poppins', sans-serif;
-        }
-
-        .reclamation-title {
-            text-align: center;
-            font-size: 28px;
-            font-weight: 600;
-            color: #2C3E50;
-            margin-bottom: 40px;
+            margin: 60px auto;
+            padding: 60px;
+            background-color: var(--white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
             position: relative;
+            overflow: hidden;
         }
-
-        .reclamation-title::after {
-            content: '';
+        
+        .shape {
             position: absolute;
-            bottom: -15px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80px;
-            height: 4px;
-            background: linear-gradient(to right, #F9A66A, #F9844A);
-            border-radius: 2px;
+            border-radius: 50%;
+            z-index: 0;
         }
-
-        .reclamation-form .form-group {
-            margin-bottom: 25px;
+        
+        .shape-1 {
+            width: 150px;
+            height: 150px;
+            background: linear-gradient(135deg, var(--primary-light), var(--primary));
+            top: -75px;
+            right: -75px;
+            opacity: 0.7;
         }
-
-        .reclamation-form label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: #4a5568;
+        
+        .shape-2 {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, var(--secondary), #e67e22);
+            bottom: -50px;
+            left: -50px;
+            opacity: 0.6;
         }
-
-        .reclamation-form .form-control {
-            width: 100%;
-            padding: 12px 16px;
+        
+        .form-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .reclamation-header {
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        
+        .reclamation-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 12px;
+        }
+        
+        .reclamation-subtitle {
             font-size: 16px;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            background-color: #f8fafc;
+            color: var(--text-light);
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .alert {
+            padding: 16px;
+            border-radius: var(--radius);
+            margin-bottom: 25px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+        }
+        
+        .alert i {
+            margin-right: 12px;
+            font-size: 20px;
+        }
+        
+        .alert-success {
+            background-color: rgba(46, 204, 113, 0.15);
+            color: var(--success);
+            border-left: 4px solid var(--success);
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: var(--text-dark);
+            font-size: 15px;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 15px 20px;
+            font-size: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: var(--radius);
+            background-color: var(--white);
             transition: all 0.3s ease;
         }
-
-        .reclamation-form .form-control:focus {
-            border-color: #F9A66A;
-            box-shadow: 0 0 0 3px rgba(249, 166, 106, 0.2);
+        
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.15);
             outline: none;
         }
-
-        .reclamation-form textarea.form-control {
-            min-height: 180px;
+        
+        textarea.form-control {
+            min-height: 200px;
             resize: vertical;
         }
-
+        
+        .shop-input-wrapper {
+            position: relative;
+        }
+        
+        .shop-input-wrapper i {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            right: 20px;
+            color: var(--text-light);
+        }
+        
         .btn-submit {
             width: 100%;
-            padding: 14px 28px;
-            font-size: 16px;
+            padding: 16px;
+            font-size: 18px;
             font-weight: 600;
-            color: white;
-            background: linear-gradient(to right, #F9A66A, #F9844A);
+            color: var(--white);
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             border: none;
-            border-radius: 8px;
+            border-radius: var(--radius);
             cursor: pointer;
             transition: all 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
         }
-
+        
         .btn-submit:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(41, 128, 185, 0.3);
         }
+        
+        .btn-submit:active {
+            transform: translateY(-1px);
+        }
+        
+        .form-error {
+            color: var(--error);
+            font-size: 14px;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .form-error i {
+            margin-right: 6px;
+        }
+        
         .invalid-feedback {
-            color: red;
-            font-size: 0.875em;
+            color: var(--error);
+            font-size: 14px;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
         }
-
+        
+        .invalid-feedback i {
+            margin-right: 6px;
+        }
+        
+        .is-invalid {
+            border-color: var(--error) !important;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .form-group:nth-child(1) { animation-delay: 0.1s; }
+        .form-group:nth-child(2) { animation-delay: 0.2s; }
+        .form-group:nth-child(3) { animation-delay: 0.3s; }
+        
         @media (max-width: 768px) {
             .reclamation-container {
-                margin: 20px;
+                margin: 30px 15px;
                 padding: 30px 20px;
+            }
+            
+            .reclamation-title {
+                font-size: 24px;
+            }
+            
+            .reclamation-subtitle {
+                font-size: 14px;
+            }
+            
+            .form-control {
+                padding: 12px 16px;
             }
         }
     </style>
 
     <div class="reclamation-container">
-        <h1 class="reclamation-title">Soumettre une réclamation</h1>
-        {{ form_start(form, {'attr': {'class': 'reclamation-form', 'novalidate': 'novalidate'}}) }}
-        {{ form_start(form, {'attr': {'class': 'reclamation-form'}}) }}
-            <div class="form-group">
-                {{ form_label(form.description) }}
-                {{ form_widget(form.description, {'attr': {'class': 'form-control'}}) }}
-                <div class="invalid-feedback">
-                    {{ form_errors(form.description) }}
-                </div>
-            </div>
-
-            <div class="form-group">
-                {{ form_label(form.nomshop) }}
-                {{ form_widget(form.nomshop, {'attr': {'class': 'form-control'}}) }}
-                <div class="invalid-feedback">
-                    {{ form_errors(form.nomshop) }}
-                </div>
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        
+        <div class="form-content">
+            <div class="reclamation-header">
+                <h1 class="reclamation-title">Submit Your Complaint</h1>
+                <p class="reclamation-subtitle">We value your feedback and will address your concerns promptly.</p>
             </div>
             
-            <div class="form-group">
-                {{ form_widget(form.submit) }}
-            </div>
-        {{ form_end(form) }}
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i>
+                    <span>{{ message }}</span>
+                </div>
+            {% endfor %}
+            
+            {{ form_start(form, {'attr': {'class': 'reclamation-form', 'novalidate': 'novalidate'}}) }}
+                <div class="form-group">
+                    {{ form_label(form.description, null, {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.description, {'attr': {
+                        'class': form.description.vars.errors|length ? 'form-control is-invalid' : 'form-control',
+                        'placeholder': 'Please provide details about your complaint...'
+                    }}) }}
+                    {% if form.description.vars.errors|length %}
+                        <div class="invalid-feedback">
+                            <i class="fas fa-exclamation-circle"></i>
+                            {{ form_errors(form.description) }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form_label(form.nomshop, null, {'label_attr': {'class': 'form-label'}}) }}
+                    <div class="shop-input-wrapper">
+                        {{ form_widget(form.nomshop, {'attr': {
+                            'class': form.nomshop.vars.errors|length ? 'form-control is-invalid' : 'form-control',
+                            'placeholder': 'Enter the name of the shop'
+                        }}) }}
+                        <i class="fas fa-store"></i>
+                    </div>
+                    {% if form.nomshop.vars.errors|length %}
+                        <div class="invalid-feedback">
+                            <i class="fas fa-exclamation-circle"></i>
+                            {{ form_errors(form.nomshop) }}
+                        </div>
+                    {% endif %}
+                </div>
+                
+            {{ form_end(form) }}
+        </div>
     </div>
 {% endblock %}

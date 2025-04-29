@@ -14,6 +14,7 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Callback;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Symfony\Component\Form\FormInterface;
+use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 
 class EventType extends AbstractType
 {
@@ -63,6 +64,14 @@ class EventType extends AbstractType
             ->add('save', SubmitType::class, [
                 'label' => 'Confirm',
                 'attr' => ['class' => 'btn btn-primary mt-3']
+            ])
+            ->add('maxParticipants', IntegerType::class, [
+                'required' => false,
+                'label' => 'Maximum Participants',
+                'attr' => [
+                    'min' => 1,
+                    'placeholder' => 'Leave empty for unlimited'
+                ]
             ]);
     }
 

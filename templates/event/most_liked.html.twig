@@ -1,0 +1,458 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Most Liked Events - InnoMall{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('css/events.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #f4a261;
+            --primary-dark: #e76f51;
+            --secondary-color: #2a9d8f;
+            --accent-color: #e9c46a;
+            --bg-light: #f8f9fa;
+            --bg-dark: #264653;
+            --text-dark: #222525;
+            --text-light: #6b7280;
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --transition: all 0.3s ease;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .dashboard-header {
+            background: linear-gradient(to right, var(--bg-dark), var(--secondary-color));
+            padding: 2.5rem 2rem;
+            border-radius: 0 0 1.5rem 1.5rem;
+            margin-bottom: 2rem;
+            position: relative;
+            color: white;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .dashboard-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            border-radius: 0 0 1.5rem 1.5rem;
+            z-index: 0;
+        }
+
+        .dashboard-header-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .page-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .events-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .event-card {
+            background-color: white;
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .event-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .event-ribbon {
+            position: absolute;
+            top: 1rem;
+            right: -1.5rem;
+            background: var(--accent-color);
+            color: var(--text-dark);
+            padding: 0.25rem 2rem;
+            transform: rotate(45deg);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: var(--shadow-sm);
+            z-index: 2;
+        }
+
+        .event-header {
+            position: relative;
+            background: linear-gradient(45deg, var(--secondary-color), var(--primary-color));
+            padding: 1.5rem;
+            color: white;
+        }
+
+        .event-organizer {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .badge-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .event-badge {
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            backdrop-filter: blur(10px);
+        }
+
+        .event-body {
+            padding: 1.5rem;
+            flex-grow: 1;
+        }
+
+        .event-description {
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .event-meta-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .event-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 0;
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .event-meta i {
+            width: 1.5rem;
+            height: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--bg-light);
+            color: var(--primary-color);
+            border-radius: 50%;
+        }
+
+        .event-meta:not(:last-child) {
+            border-bottom: 1px dashed var(--border-color);
+        }
+
+        .event-footer {
+            padding: 1rem 1.5rem;
+            background-color: var(--bg-light);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .like-count-display {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .like-badge {
+            background-color: rgba(231, 111, 81, 0.1);
+            color: var(--primary-dark);
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .like-badge i {
+            color: var(--primary-dark);
+        }
+
+        .event-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .event-button {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background-color: white;
+            color: var(--text-dark);
+            border: 1px solid var(--border-color);
+        }
+
+        .like-button {
+            color: var(--primary-dark);
+        }
+
+        .like-button.liked {
+            background-color: var(--primary-dark);
+            color: white;
+            border-color: var(--primary-dark);
+        }
+
+        .like-button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .share-button {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .share-button:hover {
+            background-color: #238b7e;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .no-events-container {
+            display: flex;
+            justify-content: center;
+            padding: 4rem 2rem;
+            width: 100%;
+        }
+
+        .no-events-message {
+            text-align: center;
+            padding: 3rem;
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: var(--shadow-md);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .no-events-icon {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-light);
+            opacity: 0.5;
+        }
+
+        .no-events-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-dark);
+        }
+
+        .no-events-subtitle {
+            color: var(--text-light);
+            margin-bottom: 2rem;
+        }
+
+        .discover-button {
+            background: linear-gradient(to right, var(--primary-color), var(--primary-dark));
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .discover-button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        @media (max-width: 768px) {
+            .events-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .dashboard-header {
+                padding: 2rem 1.5rem;
+            }
+            
+            .page-title {
+                font-size: 2rem;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <div class="dashboard-header-content">
+        <h1 class="page-title">Most Liked Events</h1>
+    </div>
+</div>
+
+<div class="container">
+    {% if mostLikedEvents|length > 0 %}
+        <div class="events-container">
+            {% for item in mostLikedEvents %}
+                {% set event = item.event %}
+                {% set likeCount = item.likeCount %}
+                {% set position = loop.index %}
+                
+                <div class="event-card">
+                    {% if position <= 3 %}
+                        <div class="event-ribbon">Top {{ position }}</div>
+                    {% endif %}
+                    
+                    <div class="event-header">
+                        <h3 class="event-organizer">{{ event.organisateur.nom }} {{ event.organisateur.prenom }}</h3>
+                        
+                        <div class="badge-container">
+                            <span class="event-badge">
+                                <i class="fas fa-calendar-alt mr-1"></i> {{ event.dateDebut|date('d M') }} - {{ event.dateFin|date('d M Y') }}
+                            </span>
+                            <span class="event-badge">
+                                <i class="fas fa-map-marker-alt mr-1"></i> {{ event.emplacement }}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="event-body">
+                        <p class="event-description">{{ event.description }}</p>
+                        
+                        <div class="event-meta-list">
+                            <div class="event-meta">
+                                <i class="far fa-calendar-alt"></i>
+                                <span>{{ event.dateDebut|date('d M Y') }} - {{ event.dateFin|date('d M Y') }}</span>
+                            </div>
+                            
+                            <div class="event-meta">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>{{ event.emplacement }}</span>
+                            </div>
+                            
+                            <div class="event-meta">
+                                <i class="fas fa-users"></i>
+                                <span>
+                                    {% set totalParticipants = 0 %}
+                                    {% for client in event.eventClients %}
+                                        {% set totalParticipants = totalParticipants + client.places %}
+                                    {% endfor %}
+                                    {{ totalParticipants }} participants
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="event-footer">
+                        <div class="like-count-display">
+                            <span class="like-badge">
+                                <i class="fas fa-heart"></i> {{ likeCount }}
+                            </span>
+                        </div>
+                        
+                        <div class="event-actions">
+                            <form action="{{ path('app_event_like', {id: event.id}) }}" method="post">
+                                <input type="hidden" name="_csrf_token" value="{{ csrf_token('like-event') }}">
+                                <button type="submit" class="event-button like-button {% if event.isLikedByUser(app.user) %}liked{% endif %}">
+                                    <i class="{% if event.isLikedByUser(app.user) %}fas{% else %}far{% endif %} fa-heart"></i>
+                                    <span>{{ event.isLikedByUser(app.user) ? 'Liked' : 'Like' }}</span>
+                                </button>
+                            </form>
+                            <button class="event-button share-button">
+                                <i class="fas fa-share-alt"></i>
+                                <span>Share</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="no-events-container">
+            <div class="no-events-message">
+                <div class="no-events-icon">
+                    <i class="fas fa-heart-broken"></i>
+                </div>
+                <h3 class="no-events-title">No Liked Events Yet</h3>
+                <p class="no-events-subtitle">Be the first to like events and discover trending activities at InnoMall</p>
+                <a href="{{ path('app_events') }}" class="discover-button">
+                    <i class="fas fa-compass"></i>
+                    <span>Discover Events</span>
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Animate cards on page load
+        const eventCards = document.querySelectorAll('.event-card');
+        eventCards.forEach((card, index) => {
+            setTimeout(() => {
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, index * 100);
+        });
+        
+        // Initialize share buttons
+        const shareButtons = document.querySelectorAll('.share-button');
+        shareButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // In a real implementation, this would open a share dialog
+                alert('Share functionality would be implemented here');
+            });
+        });
+    });
+</script>
+{% endblock %}

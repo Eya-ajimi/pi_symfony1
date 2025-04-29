@@ -423,6 +423,10 @@ private Collection $receivedFeedbacks;
     public function getPassword(): string { return $this->motDePasse; }
     public function getSalt(): ?string { return null; }
 
+    public function getFullName(): string
+    {
+        return $this->prenom.' '.$this->nom;
+    }
 
     /******** */
    

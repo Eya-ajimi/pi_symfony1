@@ -63,8 +63,8 @@ final class EventsadminController extends AbstractController
 
             foreach ($events as $event) {
                 // Check if event overlaps with this month
-                $eventStart = new \DateTime($event->getDateDebut());
-                $eventEnd = new \DateTime($event->getDateFin());
+                $eventStart = new \DateTime($event->getDateDebutString());
+                $eventEnd = new \DateTime($event->getDateFinString());
 
                 if ($eventStart <= $monthEnd && $eventEnd >= $monthStart) {
                     // Get participants for this event
@@ -90,7 +90,7 @@ final class EventsadminController extends AbstractController
         // Get years with events for dropdown
         $years = [];
         foreach ($events as $event) {
-            $year = (new \DateTime($event->getDateDebut()))->format('Y');
+            $year = (new \DateTime($event->getDateDebutString()))->format('Y');
             if (!in_array($year, $years)) {
                 $years[] = $year;
             }

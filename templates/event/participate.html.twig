@@ -1,0 +1,517 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Réserver des places - InnoMall{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('css/events.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #3b82f6;
+            --secondary-color: #f59e0b;
+            --accent-color: #8b5cf6;
+            --light-bg: #f9fafb;
+            --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            background: linear-gradient(135deg, #f6f7f9 0%, #e9edf5 100%);
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .participate-container {
+            max-width: 800px;
+            margin: 3rem auto;
+            padding: 0;
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header-banner {
+            padding: 2rem;
+            background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+            color: white;
+            text-align: center;
+        }
+
+        .header-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .header-subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .event-details {
+            padding: 2rem;
+            position: relative;
+        }
+
+        .event-title {
+            font-weight: 700;
+            font-size: 1.75rem;
+            color: #1f2937;
+            margin-bottom: 1rem;
+        }
+
+        .event-description {
+            color: #6b7280;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .event-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .meta-item {
+            flex: 1;
+            min-width: 120px;
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border-radius: 10px;
+            background-color: var(--light-bg);
+            transition: all 0.3s ease;
+        }
+
+        .meta-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .meta-icon {
+            font-size: 1.25rem;
+            color: var(--primary-color);
+            margin-right: 0.75rem;
+        }
+
+        .meta-content {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .meta-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+        }
+
+        .meta-value {
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .form-section {
+            padding: 2rem;
+            background-color: var(--light-bg);
+            border-radius: 16px 16px 0 0;
+        }
+
+        .form-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: #1f2937;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .counter-control {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+
+        .counter-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: white;
+            border: 2px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.25rem;
+            color: #1f2937;
+            transition: all 0.3s ease;
+        }
+
+        .counter-btn:hover {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .counter-value {
+            width: 60px;
+            text-align: center;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .error-message {
+            color: #dc2626;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            display: block;
+            text-align: center;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn-primary {
+            flex: 1;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+            border: none;
+            padding: 1rem;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-secondary {
+            flex: 1;
+            background: white;
+            border: 2px solid #e5e7eb;
+            padding: 1rem;
+            border-radius: 10px;
+            color: #6b7280;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .btn-secondary:hover {
+            background: #f9fafb;
+            color: #1f2937;
+            transform: translateY(-3px);
+        }
+
+        .seats-availability {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .availability-title {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            text-align: center;
+            color: #1f2937;
+        }
+
+        .availability-bar {
+            height: 20px;
+            background-color: #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .availability-progress {
+            height: 100%;
+            background: linear-gradient(to right, #10b981, #3b82f6);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        .availability-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .availability-status {
+            margin-top: 1rem;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .status-available {
+            color: #10b981;
+        }
+
+        .status-limited {
+            color: #f59e0b;
+        }
+
+        .status-full {
+            color: #ef4444;
+        }
+
+        .seats-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .seat-icon {
+            width: 16px;
+            height: 16px;
+            text-align: center;
+            line-height: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .seat-icon.active {
+            color: var(--primary-color);
+            transform: scale(1.2);
+        }
+
+        @media (max-width: 640px) {
+            .event-meta {
+                flex-direction: column;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="participate-container">
+    <div class="header-banner">
+        <h1 class="header-title">Réserver des places</h1>
+        <p class="header-subtitle">Événement InnoMall</p>
+    </div>
+    
+    <div class="event-details">        
+        <h2 class="event-title">{{ event.organisateur.nom }}</h2>
+        <p class="event-description">{{ event.description }}</p>
+        
+        <div class="event-meta">
+            <div class="meta-item">
+                <div class="meta-icon">
+                    <i class="far fa-calendar-alt"></i>
+                </div>
+                <div class="meta-content">
+                    <span class="meta-label">Début</span>
+                    <span class="meta-value">{{ event.dateDebut|date('d M Y') }}</span>
+                </div>
+            </div>
+            
+            <div class="meta-item">
+                <div class="meta-icon">
+                    <i class="far fa-calendar-check"></i>
+                </div>
+                <div class="meta-content">
+                    <span class="meta-label">Fin</span>
+                    <span class="meta-value">{{ event.dateFin|date('d M Y') }}</span>
+                </div>
+            </div>
+            
+            <div class="meta-item">
+                <div class="meta-icon">
+                    <i class="fas fa-map-marker-alt"></i>
+                </div>
+                <div class="meta-content">
+                    <span class="meta-label">Lieu</span>
+                    <span class="meta-value">{{ event.emplacement }}</span>
+                </div>
+            </div>
+        </div>
+        
+        {% set totalParticipants = 0 %}
+        {% for client in event.eventClients %}
+            {% set totalParticipants = totalParticipants + client.places %}
+        {% endfor %}
+        
+        <div class="seats-availability">
+            <h4 class="availability-title">Disponibilité des places</h4>
+            
+            {% if event.maxParticipants %}
+                {% set percentFilled = (totalParticipants / event.maxParticipants) * 100 %}
+                {% set remainingPlaces = event.maxParticipants - totalParticipants %}
+                
+                <div class="availability-bar">
+                    <div class="availability-progress" style="width: {{ percentFilled }}%"></div>
+                </div>
+                
+                <div class="availability-labels">
+                    <span>0</span>
+                    <span>{{ event.maxParticipants }}</span>
+                </div>
+                
+                <div class="availability-status 
+                    {% if remainingPlaces <= 0 %}
+                        status-full
+                    {% elseif remainingPlaces <= 5 %}
+                        status-limited
+                    {% else %}
+                        status-available
+                    {% endif %}">
+                    {% if remainingPlaces <= 0 %}
+                        <i class="fas fa-exclamation-circle"></i> Complet - Aucune place disponible
+                    {% elseif remainingPlaces <= 5 %}
+                        <i class="fas fa-exclamation-triangle"></i> Plus que {{ remainingPlaces }} place{% if remainingPlaces > 1 %}s{% endif %} disponible{% if remainingPlaces > 1 %}s{% endif %}
+                    {% else %}
+                        <i class="fas fa-check-circle"></i> {{ remainingPlaces }} place{% if remainingPlaces > 1 %}s{% endif %} disponible{% if remainingPlaces > 1 %}s{% endif %}
+                    {% endif %}
+                </div>
+            {% else %}
+                <div class="availability-status status-available">
+                    <i class="fas fa-info-circle"></i> Places illimitées
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="form-section">
+        <h3 class="form-title">Combien de places souhaitez-vous réserver?</h3>
+        
+        <form method="post" novalidate>
+            <div class="form-group">
+                
+                
+                <div class="counter-control">
+                    <button type="button" id="decrement" class="counter-btn">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <input type="number" 
+                           id="places" 
+                           name="places" 
+                           min="1" 
+                           max="5" 
+                           value="{{ existingParticipation ? 1 : 1 }}" 
+                           class="counter-value"
+                           required
+                           readonly>
+                    <button type="button" id="increment" class="counter-btn">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+                
+                <div class="seats-indicator" id="seats-visualization">
+                    <div class="seat-icon active"><i class="fas fa-user"></i></div>
+                    <div class="seat-icon"><i class="fas fa-user"></i></div>
+                    <div class="seat-icon"><i class="fas fa-user"></i></div>
+                    <div class="seat-icon"><i class="fas fa-user"></i></div>
+                    <div class="seat-icon"><i class="fas fa-user"></i></div>
+                </div>
+                
+                <div id="places-error" class="error-message"></div>
+            </div>
+            
+            <div class="btn-group">
+                <button type="submit" class="btn-primary" id="submit-btn">
+                    <i class="fas fa-check-circle"></i> Confirmer la réservation
+                </button>
+                <a href="{{ path('app_events') }}" class="btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Retour aux événements
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const placesInput = document.getElementById('places');
+        const decrementBtn = document.getElementById('decrement');
+        const incrementBtn = document.getElementById('increment');
+        const seatsVisualization = document.getElementById('seats-visualization');
+        const errorElement = document.getElementById('places-error');
+        const submitBtn = document.getElementById('submit-btn');
+        
+        function updateSeatsVisualization() {
+            const value = parseInt(placesInput.value);
+            const seatIcons = seatsVisualization.querySelectorAll('.seat-icon');
+            
+            seatIcons.forEach((seat, index) => {
+                if (index < value) {
+                    seat.classList.add('active');
+                } else {
+                    seat.classList.remove('active');
+                }
+            });
+        }
+        
+        function validatePlaces() {
+            const value = parseInt(placesInput.value);
+            
+            // Reset styles
+            errorElement.textContent = '';
+            submitBtn.disabled = false;
+            
+            // Validate range
+            if (value < 1 || value > 5) {
+                errorElement.textContent = value < 1 ? 
+                    'Veuillez sélectionner au moins 1 place' : 
+                    'Maximum 5 places par réservation';
+                submitBtn.disabled = true;
+                return false;
+            }
+            
+            return true;
+        }
+        
+        // Initialize
+        updateSeatsVisualization();
+        
+        // Decrement button
+        decrementBtn.addEventListener('click', function() {
+            const currentValue = parseInt(placesInput.value);
+            if (currentValue > 1) {
+                placesInput.value = currentValue - 1;
+                updateSeatsVisualization();
+                validatePlaces();
+            }
+        });
+        
+        // Increment button
+        incrementBtn.addEventListener('click', function() {
+            const currentValue = parseInt(placesInput.value);
+            if (currentValue < 5) {
+                placesInput.value = currentValue + 1;
+                updateSeatsVisualization();
+                validatePlaces();
+            }
+        });
+        
+        // Form submission
+        document.querySelector('form').addEventListener('submit', function(e) {
+            if (!validatePlaces()) {
+                e.preventDefault();
+            }
+        });
+    });
+</script>
+{% endblock %}

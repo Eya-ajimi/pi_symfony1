@@ -1,0 +1,49 @@
+{# templates/emails/reclamation_reply.html.twig #}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Reclamation Reply</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #f8f9fa; padding: 20px; text-align: center; }
+        .content { padding: 20px; }
+        .footer { margin-top: 20px; padding: 10px; text-align: center; font-size: 0.9em; color: #6c757d; }
+        blockquote { 
+            background-color: #f8f9fa; 
+            border-left: 4px solid #007bff; 
+            padding: 10px 15px; 
+            margin: 15px 0; 
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Your Reclamation Response</h2>
+        </div>
+        
+        <div class="content">
+            <p>Hello {{ recipient_name }},</p>
+            
+            <p>We have processed your reclamation with the following description:</p>
+            
+            <blockquote>
+                {{ description }}
+            </blockquote>
+            
+            <p>Our response:</p>
+            
+            <blockquote>
+                {{ reply }}
+            </blockquote>
+        </div>
+        
+        <div class="footer">
+            <p>Thank you for contacting us.</p>
+            <p>Best regards,<br>Your Support Team</p>
+        </div>
+    </div>
+</body>
+</html>

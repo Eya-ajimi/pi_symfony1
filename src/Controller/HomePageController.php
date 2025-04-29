@@ -123,7 +123,7 @@ class HomePageController extends AbstractController
                         
                             // Creation de  colorful and designed email
                             $email = (new Email())
-                                ->from('ajimieya1@gmail.com')
+                                ->from('Innomall.esprit@gmail.com')
                                 ->to($commentAuthor->getEmail())
                                 ->subject('🎉 You earned 20 points! 🎉')
                                 ->html(

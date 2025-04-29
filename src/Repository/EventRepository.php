@@ -2,6 +2,7 @@
 namespace App\Repository;
 
 use App\Entity\Event;
+use App\Entity\EventClient;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -17,6 +18,8 @@ class EventRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('e')
             ->leftJoin('e.organisateur', 'o')
             ->addSelect('o')
+            ->leftJoin('e.likes', 'l')
+            ->addSelect('l')
             ->getQuery()
             ->getResult();
     }
@@ -31,6 +34,8 @@ class EventRepository extends ServiceEntityRepository
             ->setParameter('date', $dateStr)
             ->leftJoin('e.organisateur', 'o')
             ->addSelect('o')
+            ->leftJoin('e.likes', 'l')
+            ->addSelect('l')
             ->getQuery()
             ->getResult();
     }
@@ -86,4 +91,20 @@ class EventRepository extends ServiceEntityRepository
 
         return array_values($monthlyStats);
     }
+    public function countParticipants(int $eventId): int
+    {
+        return $this->_em->getRepository(EventClient::class)
+            ->getTotalParticipantsCount($eventId);
+    }
+
+    public function findEventsWithLikeCount()
+    {
+        return $this->createQueryBuilder('e')
+            ->leftJoin('e.likes', 'l')
+            ->addSelect('COUNT(l.id) as likeCount')
+            ->groupBy('e.id')
+            ->getQuery()
+            ->getResult();
+    }
+    
 }

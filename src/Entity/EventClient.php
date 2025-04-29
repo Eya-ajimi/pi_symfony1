@@ -21,6 +21,9 @@ class EventClient
     #[ORM\Column(length: 255)]
     private ?string $date = null;
 
+    #[ORM\Column(type: 'integer')]
+    private int $places = 1;
+
     public function getDate(): ?string { return $this->date; }
     public function setDate(string $date): self { $this->date = $date; return $this; }
 
@@ -43,6 +46,16 @@ class EventClient
     public function setIdEvent(?Event $idEvent): static
     {
         $this->idEvent = $idEvent;
+        return $this;
+    }
+    public function getPlaces(): int
+    {
+        return $this->places;
+    }
+
+    public function setPlaces(int $places): self
+    {
+        $this->places = $places;
         return $this;
     }
 }

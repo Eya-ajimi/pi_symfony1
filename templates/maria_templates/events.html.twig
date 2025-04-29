@@ -3,8 +3,263 @@
 
 {% block stylesheets %}
     {{ parent() }}
-    <link rel="stylesheet" href="{{ asset('styles/events.css') }}">
+    <link rel="stylesheet" href="{{ asset('build/css/oussema/events.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-purple: #6f42c1;
+            --primary-purple-light: #8150e6;
+            --primary-purple-dark: #5a35a0;
+        }
+        
+        .content-container {
+            padding: 2rem 0;
+        }
+        
+        .content-card {
+            position: relative;
+            background: #fff;
+            border-radius: 1rem;
+            box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.08);
+            padding: 2.5rem;
+            margin-bottom: 3rem;
+            overflow: hidden;
+        }
+        
+        .brand-badge {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: var(--primary-purple);
+            color: white;
+            padding: 0.4rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 8px rgba(111, 66, 193, 0.3);
+            z-index: 2;
+        }
+        
+        .brand-pattern {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 150px;
+            height: 150px;
+            background-image: radial-gradient(var(--primary-purple-light) 2px, transparent 2px);
+            background-size: 15px 15px;
+            opacity: 0.15;
+            z-index: 1;
+        }
+        
+        h2 {
+            color: var(--primary-purple-dark);
+            font-weight: 600;
+            position: relative;
+            display: inline-block;
+            margin-bottom: 1.5rem !important;
+        }
+        
+        h2:after {
+            content: "";
+            position: absolute;
+            left: 0;
+            bottom: -8px;
+            height: 3px;
+            width: 60px;
+            background: var(--primary-purple);
+            border-radius: 3px;
+        }
+        
+        .form-label {
+            font-weight: 500;
+            color: #495057;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary-purple-light);
+            box-shadow: 0 0 0 0.25rem rgba(111, 66, 193, 0.25);
+        }
+        
+        .btn-success {
+            background-color: var(--primary-purple);
+            border-color: var(--primary-purple);
+            box-shadow: 0 4px 10px rgba(111, 66, 193, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-success:hover, .btn-success:focus {
+            background-color: var(--primary-purple-dark);
+            border-color: var(--primary-purple-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(111, 66, 193, 0.3);
+        }
+        
+        .event-card {
+            position: relative;
+            border: none;
+            border-radius: 0.8rem;
+            overflow: hidden;
+            box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .event-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.15);
+        }
+        
+        .event-card .card-header {
+            background: linear-gradient(135deg, var(--primary-purple), var(--primary-purple-dark));
+            color: white;
+            font-weight: 600;
+            border: none;
+            padding: 1rem;
+            font-size: 1.1rem;
+        }
+        
+        .event-card .card-body {
+            padding: 1.5rem;
+            position: relative;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .card-decoration {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--primary-purple-light);
+            opacity: 0.2;
+        }
+        
+        .card-decoration:nth-child(1) {
+            top: 15px;
+            right: 15px;
+            width: 25px;
+            height: 25px;
+        }
+        
+        .card-decoration:nth-child(2) {
+            top: 35px;
+            right: 35px;
+            width: 15px;
+            height: 15px;
+        }
+        
+        .card-decoration:nth-child(3) {
+            top: 25px;
+            right: 60px;
+            width: 10px;
+            height: 10px;
+        }
+        
+        .card-text {
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+            color: #495057;
+        }
+        
+        .location-badge {
+            display: inline-block;
+            background: #f0f1ff;
+            color: var(--primary-purple-dark);
+            padding: 0.5rem 0.8rem;
+            border-radius: 0.5rem;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(111, 66, 193, 0.1);
+        }
+        
+        .date-pill {
+            display: flex;
+            align-items: center;
+            background: #f8f9fa;
+            padding: 0.5rem 0.8rem;
+            border-radius: 0.5rem;
+            font-size: 0.85rem;
+            color: #495057;
+            margin-top: auto;
+            margin-bottom: 0.5rem;
+            border-left: 3px solid var(--primary-purple);
+        }
+        
+        .date-pill i {
+            color: var(--primary-purple);
+            margin-right: 0.5rem;
+        }
+        
+        .event-card .card-footer {
+            background-color: #f8f9fa;
+            border-top: 1px solid #edf2f7;
+            padding: 1rem;
+        }
+        
+        .event-actions {
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .btn-outline-primary {
+            color: var(--primary-purple);
+            border-color: var(--primary-purple);
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: var(--primary-purple);
+            border-color: var(--primary-purple);
+            color: white;
+        }
+        
+        .btn-outline-danger:hover {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        
+        
+        .alert-info {
+            background-color: #e6f3ff;
+            border-color: #b8daff;
+            color: #0c5460;
+            display: flex;
+            align-items: center;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+        }
+        
+        .alert-info i {
+            font-size: 1.5rem;
+            margin-right: 1rem;
+            color: var(--primary-purple);
+        }
+        
+        /* Form card styles */
+        .card.shadow-sm {
+            border-radius: 0.8rem;
+            box-shadow: 0 0.3rem 1rem rgba(0, 0, 0, 0.07) !important;
+            border: 1px solid #f0f0f0;
+            overflow: hidden;
+        }
+        
+        .card.shadow-sm .card-body {
+            padding: 2rem;
+        }
+        
+        .form-text {
+            color: #6c757d;
+            font-style: italic;
+            font-size: 0.8rem;
+        }
+    </style>
 {% endblock %}
 
 {% block body %}
@@ -59,6 +314,14 @@
                                     {{ form_errors(form.emplacement) }}
                                 </div>
                             </div>
+                            <div class="mb-3">
+                                {{ form_label(form.maxParticipants, 'Maximum Participants', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.maxParticipants, {'attr': {'class': 'form-control' ~ (form.maxParticipants.vars.valid ? '' : ' is-invalid'), 'min': 1}}) }}
+                                <small class="form-text text-muted">Leave empty for unlimited participants</small>
+                                <div class="invalid-feedback">
+                                    {{ form_errors(form.maxParticipants) }}
+                                </div>
+                            </div>
 
                             <div class="d-flex justify-content-end mt-4">
                                 <button type="submit" class="btn btn-success">
@@ -78,10 +341,8 @@
         <div class="row">
             {% for event in events %}
                 <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="card event-card">
-                        {% if loop.first %}
-                            <div class="featured-tag">Featured</div>
-                        {% endif %}
+                    <div class="event-card">
+        
                         <div class="card-header">
                             {{ event.nomOrganisateur }}
                         </div>

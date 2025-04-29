@@ -33,4 +33,15 @@ class EventClientRepository extends ServiceEntityRepository
         $this->getEntityManager()->persist($eventClient);
         $this->getEntityManager()->flush();
     }
+    public function getTotalParticipantsCount(int $eventId): int
+    {
+        $result = $this->createQueryBuilder('ec')
+            ->select('SUM(ec.places) as total')
+            ->where('ec.idEvent = :eventId')
+            ->setParameter('eventId', $eventId)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return $result ? (int)$result : 0;
+    }
 }

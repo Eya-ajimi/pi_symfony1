@@ -6,6 +6,8 @@ namespace App\Entity;
 use App\Entity\Utilisateur;
 use Doctrine\ORM\Mapping as ORM;
 use DateTimeImmutable;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 #[ORM\Entity]
 #[ORM\Table(name: "event")]
@@ -34,6 +36,48 @@ class Event
 
     #[ORM\Column(type: "string", length: 50)]
     private string $emplacement;
+
+    #[ORM\Column(name: "max_participants", type: "integer", nullable: true)]
+    private ?int $maxParticipants = null;
+
+    #[ORM\OneToMany(targetEntity: EventClient::class, mappedBy: 'idEvent')]
+    private Collection $eventClients;
+
+    #[ORM\OneToMany(targetEntity: EventLike::class, mappedBy: 'event')]
+    private Collection $likes;
+
+    public function __construct()
+    {
+        $this->eventClients = new ArrayCollection();
+        $this->likes = new ArrayCollection();
+    }
+
+    public function getEventClients(): Collection
+    {
+        return $this->eventClients;
+    }
+
+    public function addEventClient(EventClient $eventClient): self
+    {
+        if (!$this->eventClients->contains($eventClient)) {
+            $this->eventClients[] = $eventClient;
+            $eventClient->setIdEvent($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEventClient(EventClient $eventClient): self
+    {
+        if ($this->eventClients->removeElement($eventClient)) {
+            // set the owning side to null (unless already changed)
+            if ($eventClient->getIdEvent() === $this) {
+                $eventClient->setIdEvent(null);
+            }
+        }
+
+        return $this;
+    }
 
     // Getters and Setters
     public function getId(): ?int
@@ -132,5 +176,50 @@ class Event
     {
         $this->emplacement = $emplacement;
         return $this;
+    }
+    public function getMaxParticipants(): ?int
+    {
+        return $this->maxParticipants;
+    }
+
+    public function setMaxParticipants(?int $maxParticipants): self
+    {
+        $this->maxParticipants = $maxParticipants;
+        return $this;
+    }
+    public function getLikes(): Collection
+    {
+        return $this->likes;
+    }
+
+    public function addLike(EventLike $like): self
+    {
+        if (!$this->likes->contains($like)) {
+            $this->likes[] = $like;
+            $like->setEvent($this);
+        }
+        return $this;
+    }
+
+    public function removeLike(EventLike $like): self
+    {
+        if ($this->likes->removeElement($like)) {
+            if ($like->getEvent() === $this) {
+                $like->setEvent(null);
+            }
+        }
+        return $this;
+    }
+
+    public function isLikedByUser(Utilisateur $user): bool
+    {
+        return $this->likes->exists(function($key, $like) use ($user) {
+            return $like->getUser()->getId() === $user->getId();
+        });
+    }
+
+    public function getLikeCount(): int
+    {
+        return $this->likes->count();
     }
 }

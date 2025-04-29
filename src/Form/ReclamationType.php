@@ -3,6 +3,7 @@
 namespace App\Form;
 
 use App\Entity\Reclamation;
+use App\Validator\Constraints\NoBadWords;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -10,7 +11,6 @@ use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Validator\Constraints\NotBlank;
-use Symfony\Component\Validator\Constraints\Length;
 
 class ReclamationType extends AbstractType
 {
@@ -19,33 +19,36 @@ class ReclamationType extends AbstractType
         $builder
             ->add('description', TextareaType::class, [
                 'label' => 'Complaint Details',
-                'required' => true, // Explicitly mark as required
+                'required' => true,
                 'constraints' => [
                     new NotBlank([
-                        'message' => 'Veuillez saisir une description de la réclamation.',
+                        'message' => 'Please enter a description of your complaint.',
                     ]),
+                    new NoBadWords(),
                 ],
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'Décrivez votre réclamation en détail...',
+                    'placeholder' => 'Describe your complaint in detail...',
                     'rows' => 5,
                 ],
             ])
             ->add('nomshop', TextType::class, [
                 'label' => 'Shop Name',
-                'required' => true, // Explicitly mark as required
+                'required' => true,
                 'constraints' => [
                     new NotBlank([
-                        'message' => 'Veuillez saisir le nom du magasin.',
+                        'message' => 'Please enter the shop name.',
                     ]),
+                    new NoBadWords(),
                 ],
                 'attr' => [
                     'class' => 'form-control',
-                    'placeholder' => 'Entrez le nom du magasin',
+                    'placeholder' => 'Enter the shop name',
                 ],
             ])
             ->add('submit', SubmitType::class, [
-                'label' => 'Soumettre la réclamation',
+                'label' => '<i class="fas fa-paper-plane"></i> Submit Complaint',
+                'label_html' => true, // Important! Allows HTML inside label
                 'attr' => ['class' => 'btn-submit'],
             ]);
     }
@@ -54,7 +57,6 @@ class ReclamationType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Reclamation::class,
-            'attr' => ['novalidate' => 'novalidate'], 
         ]);
     }
 }
