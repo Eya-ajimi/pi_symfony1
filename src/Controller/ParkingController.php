@@ -5,8 +5,9 @@ namespace App\Controller;
 use App\Entity\PlaceParking;
 use App\Entity\Reservation;
 use App\Form\ReservationType;
-
+use App\Service\TwilioSmsService;
 use App\Form\ParkingSpotType;
+use App\Repository\UtilisateurRepository;
 use App\Repository\PlaceParkingRepository;
 use App\Repository\ReservationRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -14,7 +15,9 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Dompdf\Dompdf;
 use Symfony\Component\Routing\Annotation\Route;
+use Knp\Component\Pager\PaginatorInterface;
 class ParkingController extends AbstractController
 {
     private $placeParkingRepository;
@@ -125,28 +128,36 @@ class ParkingController extends AbstractController
     }
     
     #[Route('/parking/reserve/{id}', name: 'app_parking_reserve', methods: ['GET', 'POST'])]
-    public function reserveSpot(Request $request, PlaceParking $spot): Response
-    {
-        $user=$this->getUser();
-        $currentUser=$user->getId();
-        // Check if spot is available
-        if ($spot->getStatut() !== 'free') {
-            $this->addFlash('error', 'This spot is not available for reservation');
-            return $this->redirectToRoute('app_parking');
-        }
+public function reserveSpot(
+    Request $request, 
+    PlaceParking $spot,
+    TwilioSmsService $smsService,
+    UtilisateurRepository $userRepository
+): Response {
+    $user = $this->getUser();
+    $currentUser = $user->getId();
 
-        $reservation = new Reservation();
-        $reservation->setPlaceParking($spot);
-        $reservation->setIdUtilisateur($currentUser); 
+    if ($spot->getStatut() !== 'free') {
+        $this->addFlash('error', 'This spot is not available for reservation');
+        return $this->redirectToRoute('app_parking');
+    }
 
-        $form = $this->createForm(ReservationType::class, $reservation);
-        $form->handleRequest($request);
+    $reservation = new Reservation();
+    $reservation->setPlaceParking($spot);
+    $reservation->setIdUtilisateur($currentUser);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            // Calculate price based on duration and vehicle type
-            $start = $reservation->getDateReservation();
-            $end = $reservation->getDateExpiration();
-            $now = new \DateTime();
+    $form = $this->createForm(ReservationType::class, $reservation);
+    $form->handleRequest($request);
+
+    if ($form->isSubmitted() && $form->isValid()) {
+        $start = $reservation->getDateReservation();
+        $end = $reservation->getDateExpiration();
+        $now = new \DateTime();
+        
+        // VichUploader will automatically handle the file upload when you persist the entity
+        // No need to manually set imageFile here as it's already handled by the form
+        
+        // Validation checks
         if ($start < $now) {
             $this->addFlash('error', 'Start time cannot be in the past');
             return $this->redirectToRoute('app_parking_reserve', ['id' => $spot->getId()]);
@@ -156,91 +167,134 @@ class ParkingController extends AbstractController
             $this->addFlash('error', 'End time must be after start time');
             return $this->redirectToRoute('app_parking_reserve', ['id' => $spot->getId()]);
         }
-            $duration = $end->diff($start)->h; // Get hours difference
 
-            $pricing = [
-                'Motorcycle' => 3,  // Changed from 'motorcycle'
-                'Compact' => 5,     // Changed from 'sedan'
-                'SUV' => 7,         // Changed from 'suv'
-                'Van' => 8          // Changed from 'van'
-            ];
+        // Calculate duration in hours (rounded up)
+        $interval = $start->diff($end);
+        $hours = $interval->h + ($interval->i > 0 ? 1 : 0); // Only round up if minutes > 0
+        $hours = max(1, $hours); // Minimum 1 hour
 
-            $vehicleType = $reservation->getVehicleType();
-            if (!array_key_exists($vehicleType, $pricing)) {
-                $this->addFlash('error', 'Invalid vehicle type selected');
-                return $this->redirectToRoute('app_parking');
-            }
-            $basePrice = $pricing[$vehicleType] * $duration;
+        // Pricing configuration
+        $hourlyRates = [
+            'Motorcycle' => 3.5,
+            'Compact' => 5.0,
+            'SUV' => 6.0,
+            'Van' => 7.5
+        ];
 
+        $carWashPrices = [
+            'Basic' => 10,
+            'Premium' => 20,
+            'Deluxe' => 30
+        ];
 
-            // Add car wash price if selected
-            $carWashOptions = [
-                'Basic' => 8.99,    // Changed from 'basic'
-                'Premium' => 14.99, // Changed from 'premium'
-                'Deluxe' => 19.99   // Changed from 'deluxe'
-            ];
-
-            $carWashType = $reservation->getCarWashType();
-            if ($carWashType && $carWashType !== 'None') {
-                if (!array_key_exists($carWashType, $carWashOptions)) {
-                    $this->addFlash('error', 'Invalid car wash type selected');
-                    return $this->redirectToRoute('app_parking');
-                }
-                $basePrice += $carWashOptions[$carWashType];
-            }
-            if ($carWashType && isset($carWashOptions[$carWashType])) {
-                $basePrice += $carWashOptions[$carWashType];
-            }
-
-            $reservation->setPrice($basePrice);
-            $reservation->setStatut('active');
-
-            // Update parking spot status
-            $spot->setStatut('reserved');
-
-            $this->entityManager->persist($reservation);
-            $this->entityManager->persist($spot);
-            $this->entityManager->flush();
-
-            $this->addFlash('success', 'Reservation created successfully!');
+        // Calculate base parking cost
+        $vehicleType = $reservation->getVehicleType();
+        if (!isset($hourlyRates[$vehicleType])) {
+            $this->addFlash('error', 'Invalid vehicle type selected');
             return $this->redirectToRoute('app_parking');
         }
 
-        return $this->render('parking/reservation_form.html.twig', [
-            'spot' => $spot,
-            'form' => $form->createView(),
-        ]);
+        $parkingCost = $hourlyRates[$vehicleType] * $hours;
+
+        // Add car wash if selected
+        $carWashType = $reservation->getCarWashType();
+        $carWashCost = 0;
+        
+        if ($carWashType && $carWashType !== 'None') {
+            if (!isset($carWashPrices[$carWashType])) {
+                $this->addFlash('error', 'Invalid car wash type selected');
+                return $this->redirectToRoute('app_parking');
+            }
+            $carWashCost = $carWashPrices[$carWashType];
+        }
+
+        $totalPrice = $parkingCost + $carWashCost;
+
+        // Set the final price
+        $reservation->setPrice($totalPrice);
+        $reservation->setStatut('active');
+        $spot->setStatut('reserved');
+
+        $this->entityManager->persist($reservation);
+        $this->entityManager->persist($spot);
+        $this->entityManager->flush();
+
+        // Send SMS confirmation
+        $user = $userRepository->find($currentUser);
+        if ($user && $user->getTelephone()) {
+            $message = sprintf(
+                "Welcome to InnoMall Smart Parking!\n\n".
+                "Thank you for choosing our parking services. Here are your reservation details:\n\n" .
+                "Spot: %s%s Floor %s\n".
+                "Time: %s - %s\n".
+                "Vehicle: %s\n".
+                "Parking: %.2f TND\n".
+                "Car Wash: %.2f TND\n".
+                "Total: %.2f TND\n".
+                "Happy Shopping!",
+                $spot->getZone(),
+                $spot->getId(),
+                str_replace('Level ', '', $spot->getFloor()),
+                $start->format('d/m H:i'),
+                $end->format('H:i'),
+                $vehicleType,
+                $parkingCost,
+                $carWashCost,
+                $totalPrice
+            );
+            
+            $smsService->sendSms($user->getTelephone(), $message);
+        }
+
+        $this->addFlash('success', sprintf(
+            'Reservation created successfully! Total: %.2f TND',
+            $totalPrice
+        ));
+        
+        return $this->redirectToRoute('app_parking');
     }
+
+    return $this->render('parking/reservation_form.html.twig', [
+        'spot' => $spot,
+        'form' => $form->createView(),
+    ]);
+}
 
 
     #[Route('/parking/my-reservations', name: 'app_parking_my_reservations')]
-    public function myReservations(): Response
-    {
-        $user=$this->getUser();
-        // Static user ID 7 for demonstration
+    public function myReservations(
+        Request $request,
+        PaginatorInterface $paginator,
+        ReservationRepository $reservationRepository
+    ): Response {
+        $user = $this->getUser();
         $userId = $user->getId();
-
-        $reservations = $this->reservationRepository->findAllReservationsForUser($userId);
-
-        // Structure the results to match your template
-        $structuredReservations = array_map(function($reservation) {
-            return [
-                'reservation' => $reservation,
-                'spot' => $reservation->getPlaceParking()
-            ];
-        }, $reservations);
-
-        // Calculate statistics
-        $activeCount = count(array_filter($reservations, fn($r) => $r->getStatut() === 'active'));
-        $thisMonthCount = count(array_filter($reservations, fn($r) =>
+    
+        $queryBuilder = $reservationRepository->createQueryBuilder('r')
+            ->leftJoin('r.placeParking', 'p')
+            ->addSelect('p')
+            ->where('r.idUtilisateur = :userId')
+            ->setParameter('userId', $userId)
+            ->orderBy('r.dateReservation', 'DESC');
+    
+        $pagination = $paginator->paginate(
+            $queryBuilder,
+            $request->query->getInt('page', 1),
+            10 // 9adeh mn element nhb nchouf
+        );
+    
+        // Statistics calculations
+        $allReservations = $reservationRepository->findAllReservationsForUser($userId);
+        $activeCount = count(array_filter($allReservations, fn($r) => $r->getStatut() === 'active'));
+        $thisMonthCount = count(array_filter($allReservations, fn($r) => 
             $r->getDateReservation()->format('Y-m') === (new \DateTime())->format('Y-m')
         ));
-
+    
         return $this->render('parking/reservations.html.twig', [
-            'reservations' => $structuredReservations,
+            'pagination' => $pagination,
             'active_count' => $activeCount,
             'this_month_count' => $thisMonthCount,
-            'total_spent' => array_reduce($reservations, fn($total, $r) => $total + $r->getPrice(), 0)
+            'total_spent' => array_reduce($allReservations, fn($total, $r) => $total + $r->getPrice(), 0)
         ]);
     }
 
@@ -462,58 +516,145 @@ class ParkingController extends AbstractController
     }
 
     #[Route('/admin/parking/statistics', name: 'app_parking_statistics')]
-    public function adminStatistics(): Response
-    {
-        $floorValue = 'Level 1';
-        $spots = $this->placeParkingRepository->findBy(['floor' => $floorValue]);
-        $allReservations = $this->reservationRepository->findAll();
+public function adminStatistics(ReservationRepository $reservationRepository): Response
+{
+    // Get all reservations for revenue calculations
+    $allReservations = $reservationRepository->findAll();
+    
+    // Calculate total statistics across all floors
+    $totalSpots = $this->placeParkingRepository->count([]);
+    $availableSpots = $this->placeParkingRepository->count(['statut' => 'free']);
+    $occupiedSpots = $this->placeParkingRepository->count(['statut' => ['taken', 'reserved']]);
+    $occupancyRate = $totalSpots > 0 ? round(($occupiedSpots / $totalSpots) * 100) : 0;
+    $activeReservations = $reservationRepository->count(['statut' => 'active']);
 
-        $totalSpots = count($spots);
-        $availableSpots = $this->placeParkingRepository->count([
-            'floor' => $floorValue,
+    // Calculate revenue
+    $dailyRevenue = 0;
+    $monthlyRevenue = 0;
+    $today = new \DateTime();
+    $thisMonth = new \DateTime('first day of this month');
+    
+    foreach ($allReservations as $reservation) {
+        if ($reservation->getDateReservation() > $today->modify('-1 day')) {
+            $dailyRevenue += $reservation->getPrice();
+        }
+        if ($reservation->getDateReservation() > $thisMonth) {
+            $monthlyRevenue += $reservation->getPrice();
+        }
+    }
+
+    // Get statistics for each floor
+    $floorStats = [];
+    $floors = ['Level 1', 'Level 2', 'Level 3'];
+    
+    foreach ($floors as $floor) {
+        $total = $this->placeParkingRepository->count(['floor' => $floor]);
+        $available = $this->placeParkingRepository->count([
+            'floor' => $floor, 
             'statut' => 'free'
         ]);
-        $occupiedSpots = $this->placeParkingRepository->count([
-            'floor' => $floorValue,
+        $occupied = $this->placeParkingRepository->count([
+            'floor' => $floor, 
             'statut' => ['taken', 'reserved']
         ]);
-        $occupancyRate = $totalSpots > 0 ? round(($totalSpots - $availableSpots) / $totalSpots * 100) : 0;
-        $activeReservations = $this->reservationRepository->count(['statut' => 'active']);
-
-        $dailyRevenue = 0;
-        $monthlyRevenue = 0;
-        foreach ($allReservations as $reservation) {
-            if ($reservation->getDateReservation() > new \DateTime('-1 day')) {
-                $dailyRevenue += $reservation->getPrice();
-            }
-            if ($reservation->getDateReservation() > new \DateTime('-1 month')) {
-                $monthlyRevenue += $reservation->getPrice();
-            }
-        }
-
-        $floorStats = [];
-        $floors = ['Level 1', 'Level 2', 'Level 3'];
-        foreach ($floors as $floor) {
-            $total = $this->placeParkingRepository->count(['floor' => $floor]);
-            $available = $this->placeParkingRepository->count(['floor' => $floor, 'statut' => 'free']);
-            $occupied = $this->placeParkingRepository->count(['floor' => $floor, 'statut' => ['taken', 'reserved']]);
-            $floorStats[] = [
-                'floor' => $floor,
-                'total' => $total,
-                'available' => $available,
-                'occupied' => $occupied,
-                'occupancy_rate' => $total > 0 ? round($occupied / $total * 100) : 0
-            ];
-        }
-
-        return $this->render('parking/statisticsAdmin.html.twig', [
-            'total_spots' => $totalSpots,
-            'available_spots' => $availableSpots,
-            'occupancy_rate' => $occupancyRate,
-            'active_reservations' => $activeReservations,
-            'daily_revenue' => $dailyRevenue,
-            'monthly_revenue' => $monthlyRevenue,
-            'floor_stats' => $floorStats,
-        ]);
+        
+        $floorStats[] = [
+            'floor' => $floor,
+            'total' => $total,
+            'available' => $available,
+            'occupied' => $occupied,
+            'occupancy_rate' => $total > 0 ? round(($occupied / $total) * 100) : 0
+        ];
     }
+
+    return $this->render('parking/statisticsAdmin.html.twig', [
+        'total_spots' => $totalSpots,
+        'available_spots' => $availableSpots,
+        'occupancy_rate' => $occupancyRate,
+        'active_reservations' => $activeReservations,
+        'daily_revenue' => $dailyRevenue,
+        'monthly_revenue' => $monthlyRevenue,
+        'floor_stats' => $floorStats,
+    ]);
+}
+#[Route('/admin/parking/statistics/export-pdf', name: 'app_parking_statistics_export_pdf')]
+public function exportStatisticsToPdf(ReservationRepository $reservationRepository): Response
+{
+    // Get all the same data as the regular statistics page
+    $allReservations = $reservationRepository->findAll();
+    
+    $totalSpots = $this->placeParkingRepository->count([]);
+    $availableSpots = $this->placeParkingRepository->count(['statut' => 'free']);
+    $occupiedSpots = $this->placeParkingRepository->count(['statut' => ['taken', 'reserved']]);
+    $occupancyRate = $totalSpots > 0 ? round(($occupiedSpots / $totalSpots) * 100) : 0;
+    $activeReservations = $reservationRepository->count(['statut' => 'active']);
+
+    $dailyRevenue = 0;
+    $monthlyRevenue = 0;
+    $today = new \DateTime();
+    $thisMonth = new \DateTime('first day of this month');
+    
+    foreach ($allReservations as $reservation) {
+        if ($reservation->getDateReservation() > $today->modify('-1 day')) {
+            $dailyRevenue += $reservation->getPrice();
+        }
+        if ($reservation->getDateReservation() > $thisMonth) {
+            $monthlyRevenue += $reservation->getPrice();
+        }
+    }
+
+    $floorStats = [];
+    $floors = ['Level 1', 'Level 2', 'Level 3'];
+    
+    foreach ($floors as $floor) {
+        $total = $this->placeParkingRepository->count(['floor' => $floor]);
+        $available = $this->placeParkingRepository->count([
+            'floor' => $floor, 
+            'statut' => 'free'
+        ]);
+        $occupied = $this->placeParkingRepository->count([
+            'floor' => $floor, 
+            'statut' => ['taken', 'reserved']
+        ]);
+        
+        $floorStats[] = [
+            'floor' => $floor,
+            'total' => $total,
+            'available' => $available,
+            'occupied' => $occupied,
+            'occupancy_rate' => $total > 0 ? round(($occupied / $total) * 100) : 0
+        ];
+    }
+
+    // Render the HTML template for PDF
+    $html = $this->renderView('parking/pdf/statistics_pdf.html.twig', [
+        'total_spots' => $totalSpots,
+        'available_spots' => $availableSpots,
+        'occupancy_rate' => $occupancyRate,
+        'active_reservations' => $activeReservations,
+        'daily_revenue' => $dailyRevenue,
+        'monthly_revenue' => $monthlyRevenue,
+        'floor_stats' => $floorStats,
+        'generated_at' => new \DateTime(),
+    ]);
+
+    // Configure Dompdf
+    $dompdf = new \Dompdf\Dompdf();
+    $dompdf->loadHtml($html);
+    $dompdf->setPaper('A4', 'portrait');
+    $dompdf->render();
+
+    // Generate filename
+    $filename = sprintf('parking-statistics-%s.pdf', date('Y-m-d-H-i-s'));
+
+    // Return the PDF as response
+    return new Response(
+        $dompdf->output(),
+        Response::HTTP_OK,
+        [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => sprintf('attachment; filename="%s"', $filename),
+        ]
+    );
+}
 }
