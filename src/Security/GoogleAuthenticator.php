@@ -83,7 +83,7 @@ class GoogleAuthenticator extends OAuth2Authenticator implements AuthenticationE
         return match ($user->getRole()) {
             Role::SHOPOWNER => new RedirectResponse($this->router->generate('shopowner_dashboard')),
             Role::CLIENT => new RedirectResponse($this->router->generate('client_dashboard')),
-            default => new RedirectResponse($this->router->generate('app_home')),
+            default => new RedirectResponse($this->router->generate('app_signup_user')),
         };
     }
 
