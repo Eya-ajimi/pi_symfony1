@@ -4,7 +4,7 @@ parameters:
     TWILIO_AUTH_TOKEN: '%env(TWILIO_AUTH_TOKEN)%'
     TWILIO_PHONE_NUMBER: '%env(TWILIO_PHONE_NUMBER)%'
     products_directory: '%kernel.project_dir%/public/uploads/products'
-
+    google_recaptcha_site_key: '%env(GOOGLE_RECAPTCHA_SITE_KEY)%'
 services:
     # Configuration par défaut pour tous les services
     _defaults:

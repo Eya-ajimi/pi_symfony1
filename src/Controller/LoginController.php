@@ -13,26 +13,39 @@ class LoginController extends AbstractController
     #[Route('/login', name: 'app_login')]
     public function login(AuthenticationUtils $authenticationUtils, Request $request): Response
     {
-        // Get the login error if there is one
+        $user = $this->getUser();
+        if($this->getUser()){
+            $roleValue = $user->getRole()->value;
+            if ($roleValue === 'ADMIN') {
+                return $this->redirectToRoute('app_admin_dashboard1');
+            } elseif ($roleValue === 'SHOPOWNER') {
+                return $this->redirectToRoute('dashboard');
+               
+            } else {
+                return $this->redirectToRoute('app_home_page');
+            }
+        }
+        else{
         $error = $authenticationUtils->getLastAuthenticationError();
-        
-        // Last username entered by the user
         $lastUsername = $authenticationUtils->getLastUsername();
 
-        // Create the login form
         $form = $this->createForm(LoginFormType::class, [
             'email' => $lastUsername,
         ]);
 
-        // If there's an error, add it to the flash messages
-        if ($error) {
-            $this->addFlash('error', $error->getMessageKey());
+        // Récupérer le rôle pour login avec Google
+        if ($role = $request->query->get('role')) {
+            $request->getSession()->set('google_auth_role', $role);
         }
+
+        // Vérification manuelle de reCAPTCHA si formulaire POST
+    
 
         return $this->render('aziz/auth/login.html.twig', [
             'loginForm' => $form->createView(),
-            'error' => $error
+            'error' => $error,
         ]);
+    }
     }
 
     #[Route('/logout', name: 'app_logout')]

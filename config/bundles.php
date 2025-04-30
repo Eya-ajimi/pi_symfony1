@@ -19,4 +19,6 @@ return [
     Symfony\UX\TwigComponent\TwigComponentBundle::class => ['all' => true],
     Zenstruck\ScheduleBundle\ZenstruckScheduleBundle::class => ['all' => true],
     Vich\UploaderBundle\VichUploaderBundle::class => ['all' => true],
+    SymfonyCasts\Bundle\ResetPassword\SymfonyCastsResetPasswordBundle::class => ['all' => true],
+    KnpU\OAuth2ClientBundle\KnpUOAuth2ClientBundle::class => ['all' => true],
 ];

@@ -1,0 +1,73 @@
+{# templates/reset_password/check_email.html.twig #}
+{% extends 'aziz/base.html.twig' %}
+
+{% block title %}Email envoyé{% endblock %}
+
+{% block content %}
+<main class="main-content mt-0">
+  <div class="page-header align-items-start min-vh-100"
+       style="background-image: url('{{ asset('images/back.jpg') }}');
+              background-size: cover;
+              background-position: center;">
+    <span class="mask" style="background: none;"></span>
+
+    <div class="container my-auto">
+      <div class="row justify-content-center">
+        <div class="col-lg-5 col-md-7">
+          <div class="card border-0 shadow-lg rounded-4 animate-card"
+               style="
+                 background: rgba(255, 255, 255, 0.15);
+                 backdrop-filter: blur(15px);
+                 -webkit-backdrop-filter: blur(15px);
+                 border: 1px solid rgba(255, 255, 255, 0.2);
+                 box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+               ">
+            <div class="card-header text-white text-center py-4 rounded-top-4"
+                 style="background: rgba(0, 0, 0, 0.6);">
+              <h4 class="mb-0 fw-bold text-white">
+                <i class="fas fa-envelope-open-text me-2 text-white"></i>Email envoyé
+              </h4>
+            </div>
+            <div class="card-body px-4 py-4">
+              <p class="text-white">
+                Si un compte correspondant à votre adresse email existe, un email vient d'être envoyé contenant un lien que vous pouvez utiliser pour réinitialiser votre mot de passe.
+                Ce lien expirera dans {{ resetToken.expirationMessageKey|trans(resetToken.expirationMessageData, 'ResetPasswordBundle') }}.
+              </p>
+              <p class="text-muted">
+                Si vous ne recevez pas d'email, vérifiez votre dossier spam ou
+                <a href="{{ path('app_forgot_password_request') }}" class="text-decoration-none">essayez à nouveau</a>.
+              </p>
+              <div class="text-center mt-3">
+                <a href="{{ path('app_login') }}" class="btn btn-dark w-100 fw-bold" style="transition: all 0.3s ease;">
+                  <i class="fas fa-arrow-left me-1"></i>Retour à la connexion
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+{# Font Awesome pour les icônes #}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+{# ✨ Animation fade-in + slide-up pour la card #}
+<style>
+  @keyframes fadeSlideCard {
+    0% {
+      opacity: 0;
+      transform: translateY(40px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .animate-card {
+    animation: fadeSlideCard 0.9s ease-out forwards;
+    opacity: 0;
+  }
+</style>
+{% endblock %}

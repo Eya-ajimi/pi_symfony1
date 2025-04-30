@@ -43,6 +43,26 @@ class FeedbackRepository extends ServiceEntityRepository
         return $result ? (float) $result : 0;
     }
     
-    
+    public function getRatingDistribution(Utilisateur $shop): array
+    {
+        $result = $this->createQueryBuilder('f')
+            ->select('f.rating, COUNT(f.id) as count')
+            ->where('f.shop = :shop')
+            ->setParameter('shop', $shop)
+            ->groupBy('f.rating')
+            ->orderBy('f.rating', 'DESC')
+            ->getQuery()
+            ->getResult();
+
+        // Initialize with zeros for all possible ratings
+        $distribution = [5 => 0, 4 => 0, 3 => 0, 2 => 0, 1 => 0];
+
+        // Fill with actual counts
+        foreach ($result as $row) {
+            $distribution[(int) $row['rating']] = (int) $row['count'];
+        }
+
+        return $distribution;
+    }
     
 }

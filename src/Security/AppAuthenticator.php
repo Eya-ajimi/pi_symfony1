@@ -2,7 +2,6 @@
 namespace App\Security;
 
 use App\Entity\Utilisateur;
-use App\Enums\Role;
 use App\Repository\UtilisateurRepository;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -11,10 +10,6 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationException;
-use Symfony\Component\Security\Core\Exception\InvalidCsrfTokenException;
-use Symfony\Component\Security\Core\Security;
-use Symfony\Component\Security\Csrf\CsrfToken;
-use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Security\Http\Authenticator\AbstractLoginFormAuthenticator;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\CsrfTokenBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
@@ -33,7 +28,6 @@ class AppAuthenticator extends AbstractLoginFormAuthenticator implements Authent
     public function __construct(
         private UrlGeneratorInterface $urlGenerator,
         private UtilisateurRepository $userRepository,
-        private CsrfTokenManagerInterface $csrfTokenManager,
         private LoggerInterface $logger
     ) {}
 
@@ -41,102 +35,75 @@ class AppAuthenticator extends AbstractLoginFormAuthenticator implements Authent
     {
         return new RedirectResponse($this->urlGenerator->generate(self::LOGIN_ROUTE));
     }
+
     public function authenticate(Request $request): Passport
     {
-        $formData = $request->request->all('login_form');
-        $email = $formData['email'] ?? '';
-        $password = $formData['mot_de_passe'] ?? '';
-        $csrfToken = $request->request->get('_csrf_token');
+        $formData    = $request->request->all('login_form');
+        $email       = $formData['email'] ?? '';
+        $password    = $formData['mot_de_passe'] ?? '';
+        $csrfToken   = $request->request->get('_csrf_token');
+        $recaptcha   = $request->request->get('g-recaptcha-response', '');
 
-        $this->logger->info('Login attempt', [
-            'email' => $email,
-            'has_password' => !empty($password),
-            'csrf_token' => $csrfToken,
-            'form_data' => $formData
-        ]);
+        // ── Vérification reCAPTCHA ─────────────────────────────────────────────────
+        $secret = $_ENV['RECAPTCHA_SECRET_KEY'];
+        $resp = file_get_contents(
+            'https://www.google.com/recaptcha/api/siteverify?'
+            .'secret='.urlencode($secret)
+            .'&response='.urlencode($recaptcha)
+        );
+        $data = json_decode($resp);
+        if (empty($data) || !($data->success ?? false)) {
+            // cette exception sera interceptée dans onAuthenticationFailure()
+            throw new CustomUserMessageAuthenticationException('Veuillez valider le reCAPTCHA.');
+        }
+        // ────────────────────────────────────────────────────────────────────────────
 
         if (empty($email) || empty($password)) {
-            $this->logger->error('Missing credentials', [
-                'email_empty' => empty($email),
-                'password_empty' => empty($password),
-                'form_data' => $formData
-            ]);
             throw new CustomUserMessageAuthenticationException('Veuillez remplir tous les champs.');
         }
 
         return new Passport(
             new UserBadge($email, function($userIdentifier) {
-                $this->logger->info('Looking for user', ['email' => $userIdentifier]);
-                $user = $this->userRepository->findOneBy(['email' => $userIdentifier]);
-                
+                $user = $this->userRepository->findOneBy(['email'=>$userIdentifier]);
                 if (!$user) {
-                    $this->logger->error('User not found', ['email' => $userIdentifier]);
-                    throw new CustomUserMessageAuthenticationException('Identifiants incorrects.');
+                    throw new CustomUserMessageAuthenticationException('Adresse email inconnue.');
                 }
-
-                $this->logger->info('User found with role', [
-                    'email' => $user->getEmail(),
-                    'role' => $user->getRole()->value,
-                    'role_name' => $user->getRole()->name,
-                    'status' => $user->getStatut()
-                ]);
-
                 if (!$user->isActive()) {
-                    $this->logger->error('User account is not active', ['email' => $userIdentifier]);
                     throw new CustomUserMessageAuthenticationException('Votre compte est désactivé.');
                 }
-
                 return $user;
             }),
             new PasswordCredentials($password),
-            [
-                new CsrfTokenBadge('authenticate', $csrfToken),
-            ]
+            [ new CsrfTokenBadge('authenticate', $csrfToken) ]
         );
     }
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
         $user = $token->getUser();
-        
-        if (!$user instanceof Utilisateur) {
-            $this->logger->error('Invalid user type', [
-                'user_type' => gettype($user),
-                'user_class' => is_object($user) ? get_class($user) : 'not an object'
-            ]);
-            return new RedirectResponse($this->urlGenerator->generate('app_login'));
-        }
-    
-        $roleValue = $user->getRole()->value;
-        
-        // Debug output
-        $this->logger->critical('DEBUG - Authentication success details', [
-            'user_email' => $user->getEmail(),
-            'role_value' => $roleValue,
-            'returned_roles' => $user->getRoles(),
-        ]);
+        $role = $user instanceof Utilisateur ? $user->getRole()->value : null;
 
-        // Check role value directly
-        if ($roleValue === 'ADMIN') {
-            return new RedirectResponse($this->urlGenerator->generate('app_admin_dashboard1'));
-        } elseif ($roleValue === 'SHOPOWNER') {
-            return new RedirectResponse($this->urlGenerator->generate('dashboard'));
-        } elseif ($roleValue === 'CLIENT') {
-            return new RedirectResponse($this->urlGenerator->generate('app_home_page'));
-        }
+        if ($role === 'ADMIN')     return new RedirectResponse($this->urlGenerator->generate('app_admin_dashboard1'));
+        if ($role === 'SHOPOWNER') return new RedirectResponse($this->urlGenerator->generate('dashboard'));
+        if ($role === 'CLIENT')    return new RedirectResponse($this->urlGenerator->generate('app_home_page'));
 
-        return new RedirectResponse($this->urlGenerator->generate('app_login'));
+        return new RedirectResponse($this->urlGenerator->generate(self::LOGIN_ROUTE));
     }
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): Response
     {
-        $this->logger->error('Authentication failed', [
-            'exception' => $exception->getMessage(),
-            'email' => $request->request->get('email'),
-            'trace' => $exception->getTraceAsString()
-        ]);
+        $message = $exception->getMessage();
 
-        return parent::onAuthenticationFailure($request, $exception);
+        // Si c'est l'erreur reCAPTCHA, on la range dans 'recaptcha_error'
+        if ($message === 'Veuillez valider le reCAPTCHA.') {
+            $request->getSession()->getFlashBag()->add('recaptcha_error', $message);
+        } else {
+            // sinon (email/mot de passe), on la range dans 'error'
+            $request->getSession()->getFlashBag()->add('error', $message);
+        }
+
+        // Redirige vers la page de login pour ré-afficher le formulaire + flashs
+        return new RedirectResponse($this->getLoginUrl($request));
     }
 
     protected function getLoginUrl(Request $request): string

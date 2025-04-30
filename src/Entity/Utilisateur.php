@@ -62,8 +62,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     private ?Categorie $categorie = null;
 
 
-    #[ORM\Column(name: "reset_token", type: "integer", nullable: true)]
-    private ?int $resetToken = null;
+   
 
     #[ORM\Column(name: "description", type: "text", nullable: true)]
     private ?string $description = null;
@@ -387,9 +386,7 @@ private Collection $receivedFeedbacks;
         return $this;
     }
 
-    public function getResetToken(): ?int { return $this->resetToken; }
-    public function setResetToken(?int $resetToken): self { $this->resetToken = $resetToken; return $this; }
-
+    
     public function getDescription(): ?string { return $this->description; }
     public function setDescription(?string $description): self { $this->description = $description; return $this; }
 
@@ -429,6 +426,47 @@ private Collection $receivedFeedbacks;
     }
 
     /******** */
+
+
+    //reset password//
+// src/Entity/Utilisateur.php
+#[ORM\Column(name: "reset_token", type: "string", length: 100, nullable: true)]
+private ?string $resetToken = null;
+
+#[ORM\Column(name: "reset_token_expires_at", type: "datetime_immutable", nullable: true)]
+private ?\DateTimeImmutable $resetTokenExpiresAt = null;
+
+// Ajoutez ces méthodes
+public function getResetToken(): ?string
+{
+    return $this->resetToken;
+}
+
+public function setResetToken(?string $resetToken): self
+{
+    $this->resetToken = $resetToken;
+    return $this;
+}
+
+public function getResetTokenExpiresAt(): ?\DateTimeImmutable
+{
+    return $this->resetTokenExpiresAt;
+}
+
+public function setResetTokenExpiresAt(?\DateTimeImmutable $resetTokenExpiresAt): self
+{
+    $this->resetTokenExpiresAt = $resetTokenExpiresAt;
+    return $this;
+}
+
+public function isResetTokenValid(): bool
+{
+    if (!$this->resetToken || !$this->resetTokenExpiresAt) {
+        return false;
+    }
+    return new \DateTimeImmutable() < $this->resetTokenExpiresAt;
+}
+//fin reset password//
    
 
 }

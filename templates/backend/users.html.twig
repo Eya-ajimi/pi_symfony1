@@ -1,402 +1,603 @@
 {% extends 'backend/base.html.twig' %}
 
 {% block stylesheets %}
- <link rel="stylesheet" href="{{ asset('assets/css2/css/styles.min.css') }}">
- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('assets/css2/css/styles.min.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
- <style>
-  /* Reset et base */
-  * {
-   margin: 0;
-   padding: 0;
-   box-sizing: border-box;
-  }
+    <style>
+     /* Reset et base */
+     * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+     }
 
-  body {
-   background-color: #f1f1f1;
-   padding: 30px;
-   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-   line-height: 1.5;
-   color: #333;
-  }
+     body {
+      background-color: #f1f1f1;
+      padding: 30px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.5;
+      color: #333;
+     }
 
-  /* Conteneur principal */
-  .container {
-   width: 100%;
-   max-width: 1140px;
-   margin: 0 auto;
-   padding: 0 15px;
-   padding-top: 70px;
-  }
+     /* Conteneur principal */
+     .container {
+      width: 100%;
+      max-width: 1140px;
+      margin: 0 auto;
+      padding: 0 15px;
+      padding-top: 70px;
+     }
 
-  /* Système de grille */
-  .row {
-   display: flex;
-   flex-wrap: wrap;
-   margin: 0 -15px;
-  }
+     /* Système de grille */
+     .row {
+      display: flex;
+      flex-wrap: wrap;
+      margin: 0 -15px;
+     }
 
-  .col-md-4 {
-   width: calc(33.333% - 30px);
-   margin: 0 15px;
-  }
+     .col-md-4 {
+      width: calc(33.333% - 30px);
+      margin: 0 15px;
+     }
 
-  /* Alertes */
-  .alert {
-   padding: 12px 20px;
-   margin-bottom: 15px;
-   border-radius: 4px;
-  }
+     /* Alertes */
+     .alert {
+      padding: 12px 20px;
+      margin-bottom: 15px;
+      border-radius: 4px;
+     }
 
-  .alert-success {
-   background-color: #5c8fb1;
-   color: white;
-   border: none;
-   font-weight: 500;
-  }
+     .alert-success {
+      background-color: #5c8fb1;
+      color: white;
+      border: none;
+      font-weight: 500;
+     }
 
-  .text-center {
-   text-align: center;
-  }
+     .text-center {
+      text-align: center;
+     }
 
-  /* Animation */
-  .animate__animated {
-   animation-duration: 1s;
-   animation-fill-mode: both;
-  }
+     /* Animation */
+     .animate__animated {
+      animation-duration: 1s;
+      animation-fill-mode: both;
+     }
 
-  .animate__fadeIn {
-   animation-name: fadeIn;
-  }
+     .animate__fadeIn {
+      animation-name: fadeIn;
+     }
 
-  .animate__fadeInDown {
-   animation-name: fadeInDown;
-  }
+     .animate__fadeInDown {
+      animation-name: fadeInDown;
+     }
 
-  .animate__fadeInUp {
-   animation-name: fadeInUp;
-  }
+     .animate__fadeInUp {
+      animation-name: fadeInUp;
+     }
 
-  .animate__faster {
-   animation-duration: 0.5s;
-  }
+     .animate__faster {
+      animation-duration: 0.5s;
+     }
 
-  .animate__delay-1s {
-   animation-delay: 0.25s;
-  }
+     .animate__delay-1s {
+      animation-delay: 0.25s;
+     }
 
-  .animate__delay-2s {
-   animation-delay: 0.5s;
-  }
+     .animate__delay-2s {
+      animation-delay: 0.5s;
+     }
 
-  @keyframes fadeIn {
-   from { opacity: 0; }
-   to { opacity: 1; }
-  }
+     @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+     }
 
-  @keyframes fadeInDown {
-   from {
-    opacity: 0;
-    transform: translate3d(0, -20px, 0);
-   }
-   to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-   }
-  }
+     @keyframes fadeInDown {
+      from {
+       opacity: 0;
+       transform: translate3d(0, -20px, 0);
+      }
+      to {
+       opacity: 1;
+       transform: translate3d(0, 0, 0);
+      }
+     }
 
-  @keyframes fadeInUp {
-   from {
-    opacity: 0;
-    transform: translate3d(0, 20px, 0);
-   }
-   to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-   }
-  }
+     @keyframes fadeInUp {
+      from {
+       opacity: 0;
+       transform: translate3d(0, 20px, 0);
+      }
+      to {
+       opacity: 1;
+       transform: translate3d(0, 0, 0);
+      }
+     }
 
-  /* Cartes */
-  .card {
-   border-radius: 12px;
-   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-   background-color: white;
-   margin-bottom: 20px;
-   overflow: hidden;
-  }
+     /* Cartes */
+     .card {
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      background-color: white;
+      margin-bottom: 20px;
+      overflow: hidden;
+     }
 
-  .mb-4 {
-   margin-bottom: 24px;
-  }
+     .mb-4 {
+      margin-bottom: 24px;
+     }
 
-  .card-header {
-   background-color: #5c8fb1;
-   color: white;
-   padding: 15px;
-   border-radius: 12px 12px 0 0;
-  }
+     .card-header {
+      background-color: #5c8fb1;
+      color: white;
+      padding: 15px;
+      border-radius: 12px 12px 0 0;
+     }
 
-  .card-body {
-   padding: 20px;
-  }
+     .card-body {
+      padding: 20px;
+     }
 
-  /* Boutons */
-  .btn {
-   display: inline-block;
-   font-weight: 400;
-   text-align: center;
-   white-space: nowrap;
-   vertical-align: middle;
-   user-select: none;
-   border: 1px solid transparent;
-   padding: 0.375rem 0.75rem;
-   font-size: 1rem;
-   line-height: 1.5;
-   border-radius: 0.25rem;
-   cursor: pointer;
-   text-decoration: none;
-   transition: all 0.2s ease-in-out;
-  }
+     /* Boutons */
+     .btn {
+      display: inline-block;
+      font-weight: 400;
+      text-align: center;
+      white-space: nowrap;
+      vertical-align: middle;
+      user-select: none;
+      border: 1px solid transparent;
+      padding: 0.375rem 0.75rem;
+      font-size: 1rem;
+      line-height: 1.5;
+      border-radius: 0.25rem;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s ease-in-out;
+     }
 
-  .btn-sm {
-   padding: 0.25rem 0.5rem;
-   font-size: 0.875rem;
-   line-height: 1.5;
-   border-radius: 0.2rem;
-  }
+     .btn-sm {
+      padding: 0.25rem 0.5rem;
+      font-size: 0.875rem;
+      line-height: 1.5;
+      border-radius: 0.2rem;
+     }
 
-  .btn-warning {
-   background-color: #f4a261;
-   border-color: #f4a261;
-   color: white;
-  }
+     .btn-warning {
+      background-color: #f4a261;
+      border-color: #f4a261;
+      color: white;
+     }
 
-  .btn-warning:hover {
-   background-color: #e38c3b;
-  }
+     .btn-warning:hover {
+      background-color: #e38c3b;
+     }
 
-  .btn-danger {
-   background-color: #c0392b;
-   border-color: #c0392b;
-   color: white;
-  }
+     .btn-danger {
+      background-color: #c0392b;
+      border-color: #c0392b;
+      color: white;
+     }
 
-  .btn-danger:hover {
-   background-color: #a93226;
-  }
+     .btn-danger:hover {
+      background-color: #a93226;
+     }
 
-  .mt-3 {
-   margin-top: 16px;
-  }
+     .mt-3 {
+      margin-top: 16px;
+     }
 
-  .me-1 {
-   margin-right: 4px;
-  }
+     .me-1 {
+      margin-right: 4px;
+     }
 
-  /* Tableaux */
-  .table-responsive {
-   overflow-x: auto;
-  }
+     /* Tableaux */
+     .table-responsive {
+      overflow-x: auto;
+     }
 
-  .table {
-   width: 100%;
-   border-collapse: collapse;
-   margin-bottom: 1rem;
-  }
+     .table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1rem;
+     }
 
-  .table th,
-  .table td {
-   padding: 12px 15px;
-   border-bottom: 1px solid #dee2e6;
-  }
+     .table th,
+     .table td {
+      padding: 12px 15px;
+      border-bottom: 1px solid #dee2e6;
+     }
 
-  .table thead th {
-   background-color: #5c8fb1;
-   color: white;
-   text-align: center;
-   border-bottom: 2px solid #dee2e6;
-   vertical-align: bottom;
-  }
+     .table thead th {
+      background-color: #5c8fb1;
+      color: white;
+      text-align: center;
+      border-bottom: 2px solid #dee2e6;
+      vertical-align: bottom;
+     }
 
-  .table-striped tbody tr:nth-of-type(odd) {
-   background-color: rgba(0, 0, 0, 0.05);
-  }
+     .table-striped tbody tr:nth-of-type(odd) {
+      background-color: rgba(0, 0, 0, 0.05);
+     }
 
-  .table tbody td {
-   text-align: center;
-   vertical-align: middle;
-  }
+     .table tbody td {
+      text-align: center;
+      vertical-align: middle;
+     }
 
-  .status-icon {
-   font-size: 1.1em;
-  }
+     .status-icon {
+      font-size: 1.1em;
+     }
 
-  .status-active {
-   color: #2ecc71;
-  }
+     .status-active {
+      color: #2ecc71;
+     }
 
-  .status-inactive {
-   color: #bdc3c7;
-  }
+     .status-inactive {
+      color: #bdc3c7;
+     }
 
-  /* Stats cartes */
-  .g-4 {
-   gap: -7px;
-  }
+     /* Stats cartes */
+     .g-4 {
+      gap: -7px;
+     }
 
-  .stats-card {
-   background-color: white;
-   border-radius: 12px;
-   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-   padding: 20px;
-   text-align: center;
-   transition: transform 0.3s ease;
-  }
+     .stats-card {
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      padding: 20px;
+      text-align: center;
+      transition: transform 0.3s ease;
+     }
 
-  .stats-card:hover {
-   transform: translateY(-5px);
-  }
+     .stats-card:hover {
+      transform: translateY(-5px);
+     }
 
-  .stats-card i {
-   font-size: 2rem;
-   margin-bottom: 10px;
-   color: #5c8fb1;
-  }
+     .stats-card i {
+      font-size: 2rem;
+      margin-bottom: 10px;
+      color: #5c8fb1;
+     }
 
-  .stats-card h5 {
-   margin: 0;
-   font-size: 1rem;
-   color: #5c8fb1;
-  }
+     .stats-card h5 {
+      margin: 0;
+      font-size: 1rem;
+      color: #5c8fb1;
+     }
 
-  .stats-card p {
-   font-size: 1.6rem;
-   font-weight: bold;
-   margin: 0;
-  }
+     .stats-card p {
+      font-size: 1.6rem;
+      font-weight: bold;
+      margin: 0;
+     }
 
-  /* Responsive */
-  @media (max-width: 768px) {
-   .col-md-4 {
-    width: 100%;
-    margin-bottom: 20px;
-   }
+     /* Responsive */
+     @media (max-width: 768px) {
+      .col-md-4 {
+       width: 100%;
+       margin-bottom: 20px;
+      }
 
-   .row {
-    flex-direction: column;
-   }
-  }
- </style>
+      .row {
+       flex-direction: column;
+      }
+     }
 
- <!-- Font Awesome -->
- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+     .main-content {
+        padding-top: 6rem; /* Add more top padding */
+     }
+
+     .stats-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 0.15rem 1.75rem rgba(0, 0, 0, 0.15);
+        transition: transform 0.3s ease;
+     }
+
+     .stats-card:hover {
+        transform: translateY(-5px);
+     }
+
+     .stats-card i {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        color: #4e73df;
+     }
+
+     .sortable {
+        cursor: pointer;
+        position: relative;
+        padding-right: 20px !important;
+        user-select: none;
+     }
+     
+     .sortable::after {
+        content: '↕';
+        position: absolute;
+        right: 5px;
+        color: #999;
+     }
+     
+     .sortable.asc::after {
+        content: '↑';
+        color: #4e73df;
+     }
+     
+     .sortable.desc::after {
+        content: '↓';
+        color: #4e73df;
+     }
+    </style>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 {% endblock %}
 
 {% block content %}
-  <main class="container-fluid py-4">
-  <div class="container">
-  {% for message in app.flashes('success') %}
-   <div class="alert alert-success text-center animate__animated animate__fadeInDown">{{ message }}</div>
-  {% endfor %}
+<div class="container-fluid main-content">
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success text-center animate__animated animate__fadeInDown">{{ message }}</div>
+    {% endfor %}
 
-
-
-  <!-- Cartes statistiques -->
-  <div class="row g-4 mb-4 text-center">
-   <div class="col-md-4">
-    <div class="stats-card animate__animated animate__fadeInUp animate__faster">
-     <i class="fas fa-users"></i>
-     <h5>Total Utilisateurs</h5>
-     <p>{{ nombreTotal }}</p>
-    </div>
-   </div>
-   <div class="col-md-4">
-    <div class="stats-card animate__animated animate__fadeInUp animate__delay-1s">
-     <i class="fas fa-user"></i>
-     <h5>Clients</h5>
-     <p>{{ nombreClients }}</p>
-    </div>
-   </div>
-   <div class="col-md-4">
-    <div class="stats-card animate__animated animate__fadeInUp animate__delay-2s">
-     <i class="fas fa-store"></i>
-     <h5>Commerçants</h5>
-     <p>{{ nombreCommercants }}</p>
-    </div>
-   </div>
-  </div>
-
-  <!-- Liste des utilisateurs -->
-  <div class="card animate__animated animate__fadeIn">
-   <div class="card-header text-center">
-    <h4>Liste des utilisateurs</h4>
-   </div>
-   <div class="card-body">
-    <div class="table-responsive">
-     <table class="table table-striped align-middle">
-      <thead>
-      <tr>
-       <th>ID</th>
-       <th>Email</th>
-       <th>Nom</th>
-       <th>Rôle</th>
-       <th>Statut</th>
-       <th>Actions</th>
-      </tr>
-      </thead>
-      <tbody>
-      {% for utilisateur in utilisateurs %}
-       <tr>
-        <td>{{ utilisateur.id }}</td>
-        <td>{{ utilisateur.email }}</td>
-        <td>{{ utilisateur.prenom }} {{ utilisateur.nom }}</td>
-        <td>{{ utilisateur.role.value }}</td>
-        <td>
-         {% if utilisateur.isActive %}
-          <i class="fas fa-circle status-icon status-active"></i> Actif
-         {% else %}
-          <i class="fas fa-circle status-icon status-inactive"></i> Inactif
-         {% endif %}
-        </td>
-        <td>
-         <a href="{{ path('app_user_edit', {'id': utilisateur.id}) }}" class="btn btn-sm btn-warning me-1">
-          <i class="fas fa-edit"></i>
-         </a>
-         <form method="post"
-               action="{{ path('admin_delete_user', {'id': utilisateur.id}) }}"
-               style="display:inline-block"
-               onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?');">
-          <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ utilisateur.id) }}">
-          <button class="btn btn-sm btn-danger">
-           <i class="fas fa-trash"></i>
-          </button>
-         </form>
-        </td>
-       </tr>
-      {% else %}
-       <tr>
-        <td colspan="6">Aucun utilisateur trouvé.</td>
-       </tr>
-      {% endfor %}
-      </tbody>
-     </table>
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="stats-card">
+                <i class="fas fa-users"></i>
+                <h5>Total Utilisateurs</h5>
+                <p>{{ nombreTotal }}</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stats-card">
+                <i class="fas fa-user"></i>
+                <h5>Clients</h5>
+                <p>{{ nombreClients }}</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stats-card">
+                <i class="fas fa-store"></i>
+                <h5>Commerçants</h5>
+                <p>{{ nombreCommercants }}</p>
+            </div>
+        </div>
     </div>
 
-    <a href="{{ path('app_logout') }}" class="btn btn-danger mt-3">
-     <i class="fas fa-sign-out-alt"></i> Déconnexion
-    </a>
-   </div>
-  </div>
- </div>
-  </main>
+    <!-- Users Table with Search -->
+    <div class="card">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="card-title mb-0">Liste des utilisateurs</h4>
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <input type="text" id="searchInput" class="form-control" placeholder="Rechercher un utilisateur...">
+                        <button class="btn btn-primary" type="button" id="searchButton">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped" id="usersTable">
+                    <thead>
+                        <tr>
+                            <th class="sortable" data-sort="id">ID</th>
+                            <th class="sortable" data-sort="email">Email</th>
+                            <th class="sortable" data-sort="nom">Nom</th>
+                            <th class="sortable" data-sort="role">Rôle</th>
+                            <th class="sortable" data-sort="status">Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                    {% for utilisateur in utilisateurs %}
+                        <tr>
+                            <td data-value="{{ utilisateur.id }}">{{ utilisateur.id }}</td>
+                            <td data-value="{{ utilisateur.email }}">{{ utilisateur.email }}</td>
+                            <td data-value="{{ utilisateur.prenom }} {{ utilisateur.nom }}">{{ utilisateur.prenom }} {{ utilisateur.nom }}</td>
+                            <td data-value="{{ utilisateur.role.value }}">{{ utilisateur.role.value }}</td>
+                            <td data-value="{{ utilisateur.isActive ? 1 : 0 }}">
+                                {% if utilisateur.isActive %}
+                                    <i class="fas fa-circle status-icon status-active"></i> Actif
+                                {% else %}
+                                    <i class="fas fa-circle status-icon status-inactive"></i> Inactif
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ path('app_user_edit', {'id': utilisateur.id}) }}" class="btn btn-sm btn-warning me-1">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form method="post" action="{{ path('admin_delete_user', {'id': utilisateur.id}) }}" 
+                                      style="display:inline-block" 
+                                      onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ utilisateur.id) }}">
+                                    <button class="btn btn-sm btn-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center">Aucun utilisateur trouvé.</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
-{% block js %}
- <script>
-  // Fonctions JavaScript pour remplacer les fonctionnalités de Bootstrap si nécessaire
-  document.addEventListener('DOMContentLoaded', function() {
-   // On peut ajouter ici du JavaScript pour des fonctionnalités spécifiques
-   // comme des alertes auto-fermantes, des confirmations personnalisées, etc.
-  });
- </script>
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('searchInput');
+        const searchButton = document.getElementById('searchButton');
+        const usersTableBody = document.getElementById('usersTableBody');
+
+        function performSearch() {
+            const searchTerm = searchInput.value.trim();
+            
+            // Show loading indicator
+            usersTableBody.innerHTML = '<tr><td colspan="6" class="text-center"><i class="fas fa-spinner fa-spin"></i> Chargement...</td></tr>';
+            
+            // Make the AJAX request
+            fetch(`{{ path('admin_search_users') }}?q=${encodeURIComponent(searchTerm)}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erreur réseau');
+                    }
+                    return response.json();
+                })
+                .then(users => {
+                    // Clear the table body
+                    usersTableBody.innerHTML = '';
+                    
+                    if (users.length === 0) {
+                        usersTableBody.innerHTML = '<tr><td colspan="6" class="text-center">Aucun utilisateur trouvé</td></tr>';
+                        return;
+                    }
+                    
+                    // Add each user to the table
+                    users.forEach(user => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${user.id}</td>
+                            <td>${user.email}</td>
+                            <td>${user.prenom} ${user.nom}</td>
+                            <td>${user.role}</td>
+                            <td>
+                                <i class="fas fa-circle status-icon ${user.isActive ? 'status-active' : 'status-inactive'}"></i>
+                                ${user.isActive ? 'Actif' : 'Inactif'}
+                            </td>
+                            <td>
+                                <a href="${'{{ path('app_user_edit', {'id': 'USER_ID'}) }}'.replace('USER_ID', user.id)}" 
+                                   class="btn btn-sm btn-warning me-1">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form method="post" 
+                                      action="${'{{ path('admin_delete_user', {'id': 'USER_ID'}) }}'.replace('USER_ID', user.id)}"
+                                      style="display:inline-block" 
+                                      onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?');">
+                                    <input type="hidden" name="_token" value="${user.csrfToken}">
+                                    <button class="btn btn-sm btn-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        `;
+                        usersTableBody.appendChild(row);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    usersTableBody.innerHTML = `
+                        <tr>
+                            <td colspan="6" class="text-center text-danger">
+                                <i class="fas fa-exclamation-circle"></i> 
+                                Une erreur est survenue lors de la recherche
+                            </td>
+                        </tr>
+                    `;
+                });
+        }
+
+        // Event listeners
+        searchButton.addEventListener('click', performSearch);
+        
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                performSearch();
+            }
+        });
+
+        // Debounced search as you type
+        let debounceTimer;
+        searchInput.addEventListener('input', function() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(performSearch, 300);
+        });
+
+        // Sorting functionality
+        let currentSort = {
+            column: 'id',
+            direction: 'asc'
+        };
+
+        function sortTable(column) {
+            const tbody = document.getElementById('usersTableBody');
+            const rows = Array.from(tbody.getElementsByTagName('tr'));
+            
+            // Update sort direction
+            if (currentSort.column === column) {
+                currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort.column = column;
+                currentSort.direction = 'asc';
+            }
+
+            // Update header arrows
+            document.querySelectorAll('th.sortable').forEach(th => {
+                th.classList.remove('asc', 'desc');
+                if (th.dataset.sort === column) {
+                    th.classList.add(currentSort.direction);
+                }
+            });
+
+            // Sort rows
+            rows.sort((a, b) => {
+                if (!a.cells || !b.cells) return 0;
+                
+                const aValue = a.cells[getColumnIndex(column)].dataset.value || a.cells[getColumnIndex(column)].textContent;
+                const bValue = b.cells[getColumnIndex(column)].dataset.value || b.cells[getColumnIndex(column)].textContent;
+                
+                // Determine if we should sort numerically or alphabetically
+                let comparison;
+                if (column === 'id') {
+                    comparison = parseInt(aValue) - parseInt(bValue);
+                } else {
+                    comparison = aValue.localeCompare(bValue, undefined, {numeric: true, sensitivity: 'base'});
+                }
+                
+                return currentSort.direction === 'asc' ? comparison : -comparison;
+            });
+
+            // Reorder the table
+            rows.forEach(row => tbody.appendChild(row));
+        }
+
+        function getColumnIndex(columnName) {
+            const headers = document.querySelectorAll('th.sortable');
+            for (let i = 0; i < headers.length; i++) {
+                if (headers[i].dataset.sort === columnName) {
+                    return i;
+                }
+            }
+            return 0;
+        }
+
+        // Add click handlers to sortable headers
+        document.querySelectorAll('th.sortable').forEach(header => {
+            header.addEventListener('click', () => {
+                sortTable(header.dataset.sort);
+            });
+        });
+
+        // Initial sort
+        sortTable('id');
+    });
+    </script>
 {% endblock %}

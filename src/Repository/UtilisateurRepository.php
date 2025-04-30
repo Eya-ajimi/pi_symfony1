@@ -119,4 +119,7 @@ class UtilisateurRepository extends ServiceEntityRepository
     return $qb->getQuery()->getResult();
 }
 
+
+//partie maria
+
 }

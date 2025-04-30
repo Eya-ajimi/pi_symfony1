@@ -22,7 +22,9 @@ security:
             pattern: ^/
             lazy: true
             provider: app_user_provider
-            custom_authenticator: App\Security\AppAuthenticator
+            custom_authenticator: 
+              - App\Security\AppAuthenticator
+              - App\Security\GoogleAuthenticator
             entry_point: App\Security\AppAuthenticator
             form_login:
                 enable_csrf: true
@@ -46,6 +48,10 @@ security:
 
     access_control:
          - { path: ^/landing, roles: PUBLIC_ACCESS }
+         - { path: ^/verify-code, roles: PUBLIC_ACCESS }
+         - { path: ^/reset-password, roles: PUBLIC_ACCESS }
+         - { path: ^/connect, roles: PUBLIC_ACCESS }    
+         - { path: ^/send-mail, roles: PUBLIC_ACCESS }
          - { path: ^/events, roles: PUBLIC_ACCESS }
          - { path: ^/choose-role, roles: PUBLIC_ACCESS }
          - { path: ^/shops, roles: PUBLIC_ACCESS }

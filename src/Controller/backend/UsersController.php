@@ -10,11 +10,14 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
+
 final class UsersController extends AbstractController{
     #[Route('/admin/usersgestion', name: 'admin_dashboard')]
     public function dashboard(UtilisateurRepository $utilisateurRepo): Response
@@ -177,6 +180,42 @@ final class UsersController extends AbstractController{
             'form' => $form->createView(),
             'utilisateur' => $utilisateur
         ]);
+    }
+
+    #[Route('/admin/usersgestion/search', name: 'admin_search_users', methods: ['GET'])]
+    public function searchUsers(Request $request, UtilisateurRepository $utilisateurRepo, CsrfTokenManagerInterface $csrfTokenManager): JsonResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        
+        $searchTerm = $request->query->get('q', '');
+        
+        $qb = $utilisateurRepo->createQueryBuilder('u');
+        
+        if (!empty($searchTerm)) {
+            $qb->where('u.email LIKE :searchTerm')
+               ->orWhere('CONCAT(u.prenom, \' \', u.nom) LIKE :searchTerm')
+               ->orWhere('CONCAT(u.nom, \' \', u.prenom) LIKE :searchTerm')
+               ->orWhere('u.nom LIKE :searchTerm')
+               ->orWhere('u.prenom LIKE :searchTerm')
+               ->setParameter('searchTerm', '%' . $searchTerm . '%');
+        }
+        
+        $users = $qb->getQuery()->getResult();
+        
+        $response = [];
+        foreach ($users as $user) {
+            $response[] = [
+                'id' => $user->getId(),
+                'email' => $user->getEmail(),
+                'nom' => $user->getNom(),
+                'prenom' => $user->getPrenom(),
+                'role' => $user->getRole()->value,
+                'isActive' => $user->isActive(),
+                'csrfToken' => $csrfTokenManager->getToken('delete' . $user->getId())->getValue()
+            ];
+        }
+        
+        return new JsonResponse($response);
     }
 }
 
