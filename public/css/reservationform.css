@@ -474,3 +474,16 @@
 .flatpickr-input.invalid {
     border-color: #dc3545;
 }
+/* Add this to your existing styles */
+#error-popup {
+  animation: slideIn 0.3s ease-out, fadeOut 0.5s ease-in 4.5s forwards;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes fadeOut {
+  to { opacity: 0; }
+}

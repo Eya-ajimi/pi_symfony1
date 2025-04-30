@@ -121,12 +121,18 @@ class ReservationType extends AbstractType
             ],
         ]);
     }
-
-    public function validateDates(Reservation $reservation, ExecutionContextInterface $context)
+    
+    public function validateDates($data, ExecutionContextInterface $context): void
     {
-        if ($reservation->getDateReservation() >= $reservation->getDateExpiration()) {
-            $context->buildViolation('End date must be after start date')
+        if ($data->getDateReservation() >= $data->getDateExpiration()) {
+            $context->buildViolation('End time must be after start time')
                 ->atPath('dateExpiration')
+                ->addViolation();
+        }
+        
+        if ($data->getDateReservation() < new \DateTime()) {
+            $context->buildViolation('Start time cannot be in the past')
+                ->atPath('dateReservation')
                 ->addViolation();
         }
     }
