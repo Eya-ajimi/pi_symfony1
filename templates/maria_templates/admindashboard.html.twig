@@ -58,6 +58,33 @@ context.raw.toFixed(1)
 }
 });
 }
+// Stock Tabs Functionality
+function initStockTabs() {
+const tabButtons = document.querySelectorAll('.stock-tabs .tab-button');
+
+tabButtons.forEach(button => {
+button.addEventListener('click', function () { // Remove active class from all buttons and tabs
+document.querySelectorAll('.stock-tabs .tab-button').forEach(btn => {
+btn.classList.remove('active');
+});
+document.querySelectorAll('.tab-content').forEach(tab => {
+tab.classList.remove('active');
+});
+
+// Add active class to clicked button
+this.classList.add('active');
+
+// Show corresponding tab
+const tabId = this.getAttribute('data-tab');
+document.getElementById (${tabId}-tab).classList.add('active');
+});
+});
+
+// Initialize first tab as active if none are active
+if (!document.querySelector('.stock-tabs .tab-button.active')) {
+document.querySelector('.stock-tabs .tab-button').click();
+}
+}
 
 // 2. Keep all your existing chart initialization code below
 const initCharts = {
@@ -78,6 +105,34 @@ initWeeklySalesChart();
 }
 };
 Object.values(initCharts).forEach(init => init());
+});
+
+// Add this to your existing JavaScript block
+document.addEventListener('DOMContentLoaded', function () {
+initStockTabs();
+// Tab switching functionality
+const tabButtons = document.querySelectorAll('.tab-button');
+
+tabButtons.forEach(button => {
+button.addEventListener('click', function () { // Remove active class from all buttons and content
+document.querySelectorAll('.tab-button').forEach(btn => {
+btn.classList.remove('active');
+});
+document.querySelectorAll('.tab-content').forEach(content => {
+content.classList.remove('active');
+});
+
+// Add active class to clicked button
+this.classList.add('active');
+
+// Show corresponding content
+const tabId = this.getAttribute('data-tab');
+document.getElementById (${tabId}-content).classList.add('active');
+});
+});
+
+// Initialize to show low stock by default
+document.querySelector('[data-tab="low-stock"]').click();
 });
 	</script>
 {% endblock %}
@@ -393,7 +448,8 @@ Object.values(initCharts).forEach(init => init());
 						</button>
 					</div>
 
-					<div class="tab-content active" id="low-stock">
+					<!-- Low Stock Tab -->
+					<div class="tab-content active" id="low-stock-tab">
 						<table class="stock-table">
 							<thead>
 								<tr>
@@ -431,7 +487,8 @@ Object.values(initCharts).forEach(init => init());
 						</table>
 					</div>
 
-					<div class="tab-content" id="out-of-stock">
+					<!-- Out of Stock Tab -->
+					<div class="tab-content" id="out-of-stock-tab">
 						<table class="stock-table">
 							<thead>
 								<tr>

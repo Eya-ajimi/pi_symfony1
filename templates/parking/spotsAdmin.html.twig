@@ -101,6 +101,7 @@
             // Initialize DataTable with empty data
             const table = $('#spotsTable').DataTable({
                 responsive: true,
+                searching: false, // Disable search functionality
                 columns: [
                     { title: "ID" },
                     { title: "Zone" },
@@ -109,7 +110,6 @@
                     { title: "Actions" }
                 ],
                 language: {
-                    search: "Search spots:",
                     lengthMenu: "Show _MENU_ spots per page",
                     info: "Showing _START_ to _END_ of _TOTAL_ spots",
                     paginate: {
@@ -122,14 +122,15 @@
             });
 
             // Load initial floor data
-            loadFloorSpots(1, table);
+            loadFloorSpots({{ current_floor }}, table);
 
             // Set up floor buttons - using event delegation
-            $(document).on('click', '.floor-btn', function() {
+            $(document).on('click', '.floor-btn', function(e) {
+                e.preventDefault();
                 $('.floor-btn').removeClass('active');
                 $(this).addClass('active');
-                const floor = $(this).data('floor');
-                console.log('Loading floor:', floor); // Debug log
+                const floor = $(this).text().trim().replace('Floor ', '');
+                console.log('Loading floor:', floor);
                 loadFloorSpots(floor, table);
             });
         });
@@ -145,11 +146,8 @@
                     return response.json();
                 })
                 .then(data => {
-                    console.log('Data received:', data); // Debug log
+                    console.log('Data received:', data);
                     
-                    // Update the current floor display
-                    $('#currentFloorDisplay').text(floor);
-
                     // Clear existing data
                     table.clear().draw();
                     
@@ -183,7 +181,9 @@
                         });
                     }
                     
-                    console.log('Table updated for floor:', floor); // Debug log
+                    // Update the current floor display
+                    $('.floor-selector small strong').text(`Floor ${floor}`);
+                    console.log('Table updated for floor:', floor);
                 })
                 .catch(error => {
                     console.error('Error loading floor spots:', error);

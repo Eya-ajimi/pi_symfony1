@@ -25,8 +25,7 @@ class ReservationsCheckExpiredCommand extends Command
 
     protected function configure(): void
     {
-        // Remove the arguments/options if you don't need them
-        // or keep them for debugging purposes
+       
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
