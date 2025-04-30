@@ -106,64 +106,16 @@ class EventRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
-       /**
-     * Find events that are currently happening (current date is between start and end date)
-     */
-    public function findCurrentEvents(int $shopId = null): array
+    public function searchByName(string $query): array
     {
-        $today = new \DateTime();
-        $todayStr = $today->format('Y-m-d');
-
-        $qb = $this->createQueryBuilder('e')
-            ->where(':today >= e.dateDebut')
-            ->andWhere(':today <= e.dateFin')
-            ->setParameter('today', $todayStr)
+        return $this->createQueryBuilder('e')
+            ->where('e.description LIKE :query OR e.emplacement LIKE :query')
+            ->setParameter('query', '%'.$query.'%')
             ->leftJoin('e.organisateur', 'o')
-            ->addSelect('o');
-
-        if ($shopId !== null) {
-            $qb->andWhere('e.organisateur = :shopId')
-               ->setParameter('shopId', $shopId);
-        }
-
-        return $qb->getQuery()->getResult();
-    }
-
-    /**
-     * Find events that will start within the next 7 days
-     */
-    public function findUpcomingEvents(int $shopId = null): array
-    {
-        $today = new \DateTime();
-        $todayStr = $today->format('Y-m-d');
-        $nextWeek = (clone $today)->modify('+7 days')->format('Y-m-d');
-
-        $qb = $this->createQueryBuilder('e')
-            ->where('e.dateDebut BETWEEN :today AND :nextWeek')
-            ->setParameter('today', $todayStr)
-            ->setParameter('nextWeek', $nextWeek)
-            ->leftJoin('e.organisateur', 'o')
-            ->addSelect('o');
-
-        if ($shopId !== null) {
-            $qb->andWhere('e.organisateur = :shopId')
-               ->setParameter('shopId', $shopId);
-        }
-
-        return $qb->getQuery()->getResult();
-    }
-
-    /**
-     * Find either current events or upcoming events (prioritizing current events)
-     */
-    public function findRelevantEvents(int $shopId = null): array
-    {
-        $currentEvents = $this->findCurrentEvents($shopId);
-        
-        if (!empty($currentEvents)) {
-            return $currentEvents;
-        }
-        
-        return $this->findUpcomingEvents($shopId);
+            ->addSelect('o')
+            ->leftJoin('e.likes', 'l')
+            ->addSelect('l')
+            ->getQuery()
+            ->getResult();
     }
 }

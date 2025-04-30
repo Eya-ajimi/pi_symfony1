@@ -470,6 +470,49 @@
             font-weight: 500;
         }
 
+        .voice-search-container {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        }
+        
+        .voice-search-button {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, #9f7aea, #6b46c1);
+            color: white;
+            font-weight: 600;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(159, 122, 234, 0.3);
+        }
+        
+        .voice-search-button:hover {
+            background: linear-gradient(135deg, #8b5cf6, #6b46c1);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(159, 122, 234, 0.4);
+        }
+        
+        .voice-search-button.listening {
+            animation: pulse 1.5s infinite;
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+        
+        .voice-search-status {
+            font-size: 0.9rem;
+            color: var(--gray-600);
+            font-weight: 500;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
         @media (max-width: 768px) {
             .events-container {
                 grid-template-columns: 1fr;
@@ -497,6 +540,15 @@
                 padding: 2rem 1rem;
             }
         }
+        .voice-search-button[disabled] {
+        opacity: 0.6;
+        cursor: not-allowed;
+        background: var(--gray-400) !important;
+        }
+        
+        .voice-search-button.error {
+            background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+        }
     </style>
 {% endblock %}
 
@@ -510,6 +562,14 @@
 
 <div class="container px-4 py-4">
     <div class="controls-container">
+
+       <div class="voice-search-container">
+            <button id="voiceSearchButton" class="voice-search-button" title="Click and speak to search">
+                <i class="fas fa-microphone"></i> Voice Search
+            </button>
+            <div id="voiceSearchStatus" class="voice-search-status"></div>
+        </div>
+
         <div class="event-search-form">
             <form method="get" action="{{ path('app_events') }}" novalidate>
                 <input 
@@ -660,4 +720,105 @@
         {% endfor %}
     </div>
 </div>
+<script >
+document.addEventListener('DOMContentLoaded', function() {
+    const voiceSearchButton = document.getElementById('voiceSearchButton');
+    const voiceSearchStatus = document.getElementById('voiceSearchStatus');
+    const dateInput = document.querySelector('.event-date-input');
+
+    // Enhanced date map with "two weeks" support
+    const dateMap = {
+        'today': new Date(),
+        'tomorrow': () => new Date(new Date().setDate(new Date().getDate() + 1)),
+        'next week': () => new Date(new Date().setDate(new Date().getDate() + (7 - new Date().getDay() + 1) % 7 || 7)),
+        'in two weeks': () => new Date(new Date().setDate(new Date().getDate() + 14)),
+        'two weeks': () => new Date(new Date().setDate(new Date().getDate() + 14)),
+        'this weekend': () => new Date(new Date().setDate(new Date().getDate() + (6 - new Date().getDay() + 7) % 7)),
+        'next month': () => new Date(new Date().setMonth(new Date().getMonth() + 1, 1))
+    };
+
+    // Try native API first
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        initNativeRecognition();
+    } else {
+        initTextFallback();
+    }
+
+    function initNativeRecognition() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'en-US';
+
+        voiceSearchButton.addEventListener('click', function() {
+            if (voiceSearchButton.classList.contains('listening')) {
+                recognition.stop();
+                resetButton();
+                return;
+            }
+
+            voiceSearchButton.classList.add('listening');
+            voiceSearchButton.innerHTML = '<i class="fas fa-circle"></i> Listening...';
+            voiceSearchStatus.textContent = 'Listening... Speak now';
+            
+            recognition.start();
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                processCommand(transcript);
+                resetButton();
+            };
+
+            recognition.onerror = function(event) {
+                voiceSearchStatus.textContent = 'Error: ' + event.error;
+                resetButton();
+            };
+        });
+    }
+
+    function initTextFallback() {
+        voiceSearchButton.addEventListener('click', function() {
+            const query = prompt("Voice search not supported. Please type your search (e.g. 'next week', 'two weeks'):");
+            if (query) {
+                processCommand(query);
+            }
+        });
+        voiceSearchButton.title = "Type your search instead";
+        voiceSearchStatus.textContent = "Click to type your search";
+    }
+
+    function processCommand(transcript) {
+        const lowerTranscript = transcript.toLowerCase();
+        
+        // Check date commands
+        for (const [command, dateFn] of Object.entries(dateMap)) {
+            if (lowerTranscript.includes(command)) {
+                const date = typeof dateFn === 'function' ? dateFn() : dateFn;
+                dateInput.value = date.toISOString().split('T')[0];
+                document.querySelector('.event-search-form form').submit();
+                return;
+            }
+        }
+        
+        // Other commands
+        if (lowerTranscript.includes('most liked') || lowerTranscript.includes('popular')) {
+            window.location.href = "{{ path('app_events_most_liked') }}";
+            return;
+        }
+        
+        // Default search
+        const formData = new FormData();
+        formData.append('query', transcript);
+        
+        fetch("{{ path('app_events_voice_search') }}", {
+            method: 'POST',
+            body: formData
+        }).then(/* ... */);
+    }
+
+    function resetButton() {
+        voiceSearchButton.classList.remove('listening');
+        voiceSearchButton.innerHTML = '<i class="fas fa-microphone"></i> Voice Search';
+    }
+});
+</script>
 {% endblock %}

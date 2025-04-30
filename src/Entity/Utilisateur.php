@@ -67,8 +67,9 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(name: "description", type: "text", nullable: true)]
     private ?string $description = null;
 
-    #[ORM\Column(name: "profilepicture", type: "blob", nullable: true)]
-    private $profilePicture = null;
+    
+    #[ORM\Column(name: "profilepicture", type: "string", length: 255, nullable: true)]
+    private ?string $profilePicture = null;
 
     #[ORM\Column(name: "balance", type: "float")]
     private float $balance = 0;
@@ -463,15 +464,12 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getProfilePicture()
+    public function getProfilePicture(): ?string
     {
-        if (is_resource($this->profilePicture)) {
-            return stream_get_contents($this->profilePicture);
-        }
         return $this->profilePicture;
     }
 
-    public function setProfilePicture($profilePicture): self
+    public function setProfilePicture(?string $profilePicture): self
     {
         $this->profilePicture = $profilePicture;
         return $this;
