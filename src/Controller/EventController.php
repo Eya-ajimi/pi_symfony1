@@ -27,7 +27,13 @@ use App\Entity\EventLike;
 
 class EventController extends AbstractController
 {
+    private EventClientRepository $eventClientRepository;
 
+    public function __construct(
+        EventClientRepository $eventClientRepository
+    ) {
+        $this->eventClientRepository = $eventClientRepository;
+    }
     #[Route('/client/events', name: 'app_events')]
     public function index(
         EventRepository $eventRepository,
@@ -350,6 +356,64 @@ public function decline(
         
         return $this->render('event/most_liked.html.twig', [
             'mostLikedEvents' => $mostLikedEvents
+        ]);
+    }
+    #[Route('/client/events/voice-search', name: 'app_events_voice_search', methods: ['POST'])]
+    public function voiceSearch(Request $request, EventRepository $eventRepository): Response
+    {
+        $user = $this->getUser();
+        $query = $request->request->get('query', '');
+        
+        // Process voice command
+        $date = null;
+        $events = [];
+        
+        // Check for date-related commands
+        if (preg_match('/(today|tomorrow|next week|next month|this weekend)/i', $query, $matches)) {
+            $dateCommand = strtolower($matches[1]);
+            
+            switch ($dateCommand) {
+                case 'today':
+                    $date = new \DateTime();
+                    break;
+                case 'tomorrow':
+                    $date = (new \DateTime())->modify('+1 day');
+                    break;
+                case 'next week':
+                    $date = (new \DateTime())->modify('next monday');
+                    break;
+                case 'next month':
+                    $date = (new \DateTime())->modify('first day of next month');
+                    break;
+                case 'this weekend':
+                    $date = new \DateTime('this saturday');
+                    break;
+            }
+            
+            $events = $date ? $eventRepository->findEventsByDate($date) : [];
+        } 
+        // Check for "most liked" command
+        elseif (preg_match('/(most liked|popular|top events)/i', $query)) {
+            return $this->redirectToRoute('app_events_most_liked');
+        }
+        // Check for event name search
+        else {
+            $events = $eventRepository->searchByName($query);
+        }
+        
+        // Precompute participation status for each event
+        $eventsWithParticipation = [];
+        foreach ($events as $event) {
+            $eventsWithParticipation[] = [
+                'event' => $event,
+                'isParticipating' => $this->eventClientRepository->isParticipating($user->getId(), $event->getId())
+            ];
+        }
+        
+        return $this->render('event/index.html.twig', [
+            'eventsWithParticipation' => $eventsWithParticipation,
+            'user' => $user,
+            'voiceQuery' => $query
         ]);
     }
 }
