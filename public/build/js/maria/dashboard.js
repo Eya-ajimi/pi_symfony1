@@ -1,98 +1,243 @@
-// Initialize Charts
+// Global object to store all chart instances
+const appCharts = {
+    instances: {},
+    destroyAll: function () {
+        Object.values(this.instances).forEach(chart => {
+            if (chart && typeof chart.destroy === 'function') {
+                chart.destroy();
+            }
+        });
+        this.instances = {};
+    }
+};
+
+// Initialize Ratings Chart with proper canvas management
 function initRatingsChart() {
     const canvas = document.getElementById('ratingsChart');
-    if (!canvas) {
-        console.error('Ratings chart canvas not found');
-        return;
+    if (!canvas) return;
+
+    // Clear any existing chart instance
+    if (appCharts.instances.ratingsChart) {
+        appCharts.instances.ratingsChart.destroy();
+        delete appCharts.instances.ratingsChart;
     }
-    
+
+    // Check if canvas is already in use
+    if (canvas.__chartjs__) {
+        const existingChart = Chart.getChart(canvas);
+        if (existingChart) {
+            existingChart.destroy();
+        }
+    }
+
     const ctx = canvas.getContext('2d');
-    
-    // Sample data for ratings distribution
-    const data = {
-        labels: ['5 Stars', '4 Stars', '3 Stars', '2 Stars', '1 Star'],
-        datasets: [{
-            data: [45, 30, 15, 7, 3], // Percentages of each rating
-            backgroundColor: [
-                '#4B49AC',
-                '#7978E9',
-                '#DBF0FE',
-                '#FFF07B',
-                '#FFC3A0'
-            ],
-            borderWidth: 0,
-            hoverOffset: 4
-        }]
-    };
-    
-    const config = {
+    const ratingData = window.ratingDistribution || { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+
+    appCharts.instances.ratingsChart = new Chart(ctx, {
         type: 'pie',
-        data: data,
+        data: {
+            labels: ['5 Stars', '4 Stars', '3 Stars', '2 Stars', '1 Star'],
+            datasets: [{
+                data: [
+                    ratingData[5] || 0,
+                    ratingData[4] || 0,
+                    ratingData[3] || 0,
+                    ratingData[2] || 0,
+                    ratingData[1] || 0
+                ],
+                backgroundColor: [
+                    '#4B49AC',
+                    '#FFF07B',
+                    '#DBF0FE',
+                    '#333333',
+                    '#a5a4e6'
+                ],
+                borderWidth: 0
+            }]
+        },
         options: {
             responsive: true,
-            maintainAspectRatio: false,
             plugins: {
                 legend: {
-                    position: 'right',
-                    labels: {
-                        boxWidth: 15,
-                        padding: 15
-                    }
+                    position: 'right'
                 },
                 tooltip: {
                     callbacks: {
-                        label: function(context) {
-                            return `${context.label}: ${context.raw}%`;
+                        label: function (context) {
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = total > 0 ? Math.round((context.raw / total) * 100) : 0;
+                            return `${context.label}: ${context.raw} (${percentage}%)`;
                         }
                     }
                 }
             }
         }
-    };
-    
-    new Chart(ctx, config);
+    });
 }
 
+// Initialize Sales Chart with canvas cleanup
 function initSalesChart() {
     const canvas = document.getElementById('salesChart');
-    if (!canvas) {
-        console.error('Sales chart canvas not found');
+    if (!canvas) return;
+
+    // Clear existing instance
+    if (appCharts.instances.salesChart) {
+        appCharts.instances.salesChart.destroy();
+        delete appCharts.instances.salesChart;
+    }
+
+    // Check for existing Chart.js instance
+    const existingChart = Chart.getChart(canvas);
+    if (existingChart) {
+        existingChart.destroy();
+    }
+
+    const ctx = canvas.getContext('2d');
+    const salesData = window.salesData || { labels: [], quantities: [] };
+
+    if (salesData.labels.length === 0) {
+        canvas.closest('.chart-container').innerHTML = `
+            <div class="empty-chart">
+                <i class="fas fa-chart-bar"></i>
+                <p>No sales data available</p>
+            </div>
+        `;
         return;
     }
-    
-    const ctx = canvas.getContext('2d');
-    
-    // Sample data for product sales
-    const data = {
-        labels: ['T-Shirt', 'Sunglasses', 'Watch', 'Earbuds', 'Jacket', 'Sneakers'],
-        datasets: [{
-            label: 'Units Sold',
-            data: [65, 42, 37, 25, 30, 52],
-            backgroundColor: '#DBF0FE',
-            borderColor: '#4B49AC',
-            borderWidth: 2,
-            borderRadius: 5,
-            maxBarThickness: 30
-        }]
-    };
-    
-    const config = {
+
+    appCharts.instances.salesChart = new Chart(ctx, {
         type: 'bar',
-        data: data,
+        data: {
+            labels: salesData.labels,
+            datasets: [{
+                label: 'Units Sold',
+                data: salesData.quantities,
+                backgroundColor: '#FFF07B',
+                borderColor: '#4B49AC',
+                borderWidth: 2,
+                borderRadius: 5
+            }]
+        },
         options: {
             responsive: true,
-            maintainAspectRatio: false,
             scales: {
                 y: {
                     beginAtZero: true,
                     grid: {
                         display: true,
                         drawBorder: false,
-                        color: 'rgba(200, 200, 200, 0.2)'
+                        color: '#DBF0FE'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+}
+
+// Global object to track chart instances
+const chartInstances = {};
+
+function initWeeklySalesChart() {
+    const canvas = document.getElementById('weeklySalesChart');
+    if (!canvas) {
+        console.error('Weekly sales chart canvas not found');
+        return;
+    }
+
+    // Destroy existing chart if it exists
+    if (chartInstances.weeklySalesChart) {
+        chartInstances.weeklySalesChart.destroy();
+    }
+
+    // Check for Chart.js internal instance
+    const existingChart = Chart.getChart(canvas);
+    if (existingChart) {
+        existingChart.destroy();
+    }
+
+    const ctx = canvas.getContext('2d');
+    const chartData = window.weeklySalesChartData || { labels: [], data: [] };
+    
+    // Filter out any zero values if needed (optional)
+    const filteredData = {
+        labels: chartData.labels,
+        data: chartData.data.map(value => value || 0) // Ensure zeros are numbers
+    };
+
+    // Check if we have data to display
+    if (chartData.labels.length === 0 || chartData.data.length === 0) {
+        console.warn('No weekly sales data available');
+        canvas.closest('.chart-container').innerHTML = `
+            <div class="no-data-message">
+                <i class="fas fa-chart-line"></i>
+                <p>No sales data available for this period</p>
+            </div>
+        `;
+        return;
+    }
+
+    // Create gradient
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, 'rgba(75, 73, 172, 0.6)');
+    gradient.addColorStop(1, 'rgba(75, 73, 172, 0.1)');
+
+    chartInstances.weeklySalesChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: chartData.labels,
+            datasets: [{
+                label: 'Daily Sales (DT)',
+                data: chartData.data,
+                backgroundColor: gradient,
+                borderColor: '#4B49AC',
+                borderWidth: 2,
+                pointBackgroundColor: '#4B49AC',
+                pointRadius: 4,
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: '#333333',
+                    padding: 10,
+                    cornerRadius: 6,
+                    displayColors: false,
+                    callbacks: {
+                        label: function (context) {
+                            return `Sales: ${context.raw.toFixed(2)} DT`;
+                        },
+                        title: function (context) {
+                            return context[0].label;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
                     },
                     ticks: {
-                        font: {
-                            size: 12
+                        callback: function (value) {
+                            return value + ' DT';
                         }
                     }
                 },
@@ -101,153 +246,30 @@ function initSalesChart() {
                         display: false
                     },
                     ticks: {
-                        font: {
-                            size: 12
-                        }
-                    }
-                }
-            },
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    backgroundColor: 'rgba(75, 73, 172, 0.8)',
-                    padding: 10,
-                    titleFont: {
-                        size: 14
-                    },
-                    bodyFont: {
-                        size: 13
-                    },
-                    callbacks: {
-                        label: function(context) {
-                            return `Sales: ${context.raw} units`;
-                        }
+                        maxRotation: 45,
+                        minRotation: 45
                     }
                 }
             }
         }
-    };
-    
-    new Chart(ctx, config);
-}
-
-// Helper function to animate number changes
-function animateValue(element, start, end, duration) {
-    if (!element) return;
-    
-    let startTimestamp = null;
-    const step = (timestamp) => {
-        if (!startTimestamp) startTimestamp = timestamp;
-        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-        const value = Math.floor(progress * (end - start) + start);
-        
-        if (element.classList.contains('rating-value')) {
-            // For decimal values like ratings
-            element.textContent = (progress * (end - start) + start).toFixed(1);
-        } else {
-            element.textContent = value;
-        }
-        
-        if (progress < 1) {
-            window.requestAnimationFrame(step);
-        }
-    };
-    window.requestAnimationFrame(step);
-}
-
-// A simple tooltip system
-function initTooltips() {
-    const elements = document.querySelectorAll('[data-tooltip]');
-    
-    elements.forEach(element => {
-        element.addEventListener('mouseenter', function() {
-            const tooltipText = this.getAttribute('data-tooltip');
-            
-            const tooltip = document.createElement('div');
-            tooltip.classList.add('custom-tooltip');
-            tooltip.textContent = tooltipText;
-            
-            document.body.appendChild(tooltip);
-            
-            const rect = this.getBoundingClientRect();
-            tooltip.style.top = rect.bottom + 10 + 'px';
-            tooltip.style.left = rect.left + (rect.width / 2) - (tooltip.offsetWidth / 2) + 'px';
-            
-            // Store the tooltip reference
-            this._tooltip = tooltip;
-        });
-        
-        element.addEventListener('mouseleave', function() {
-            if (this._tooltip) {
-                document.body.removeChild(this._tooltip);
-                this._tooltip = null;
-            }
-        });
     });
 }
 
-// Initialize dashboard with data
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize charts first
-    initRatingsChart();
-    initSalesChart();
-    
-    // Initial data load
-    updateDashboardData();
-    
-    // Set up periodic refresh (every 5 minutes)
-    setInterval(updateDashboardData, 5 * 60 * 1000);
-    
-    // Product card hover effects
-    const productCards = document.querySelectorAll('.product-card');
-    productCards.forEach(card => {
-        card.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-5px)';
-            this.style.boxShadow = '0 10px 20px rgba(0,0,0,0.1)';
-        });
-        
-        card.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(0)';
-            this.style.boxShadow = '0 2px 5px rgba(0,0,0,0.05)';
-        });
-    });
-    
-    // Restock button functionality
-    const restockButtons = document.querySelectorAll('.restock-btn');
-    restockButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            // Show a temporary success message
-            const originalText = this.textContent;
-            this.textContent = 'Order Placed';
-            this.style.backgroundColor = '#4CAF50';
-            this.style.color = 'white';
-            this.disabled = true;
-            
-            // Revert back after 2 seconds
-            setTimeout(() => {
-                this.textContent = originalText;
-                this.style.backgroundColor = '';
-                this.style.color = '';
-                this.disabled = false;
-            }, 2000);
-        });
-    });
-    
-    // Initialize tooltips
-    initTooltips();
-    
-   
+// Initialize all charts
+function initAllCharts() {
+    initWeeklySalesChart();
+    // Add other chart initializations here if needed
+}
+
+// Wait for DOM and data to be ready
+document.addEventListener('DOMContentLoaded', function () {
+    console.log('Weekly sales data:', window.weeklySalesChartData);
+    setTimeout(initAllCharts, 100); // Small delay to ensure everything is loaded
 });
 
-// Function to update dashboard data with fresh information
-// function updateDashboardData() {
-//     // Update product count with animation
-//     animateValue(document.querySelector('.product-count h2'));
-    
-//     // Update average rating with animation
-//     animateValue(document.querySelector('.rating-value'), 4.5, 4.7, 1000);
-// }
+// Handle window resize
+window.addEventListener('resize', function () {
+    if (chartInstances.weeklySalesChart) {
+        chartInstances.weeklySalesChart.resize();
+    }
+});

@@ -217,5 +217,6 @@ final class UsersController extends AbstractController{
         
         return new JsonResponse($response);
     }
+    
 }
 

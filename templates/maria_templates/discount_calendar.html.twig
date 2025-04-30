@@ -1,0 +1,16 @@
+<div id="calendar-holder"></div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const calendarEl = document.getElementById('calendar-holder');
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        events: {{ calendar_events()|json_encode|raw }},
+        eventClick: function(info) {
+            alert('Discount: ' + info.event.title + '\n' +
+                  'Products: ' + info.event.extendedProps.products.map(p => p.nom).join(', '));
+        }
+    });
+    calendar.render();
+});
+</script>

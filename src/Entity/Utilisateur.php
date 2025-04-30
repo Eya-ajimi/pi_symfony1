@@ -50,7 +50,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     private \DateTimeImmutable $dateInscription;
 
     #[ORM\Column(name: "statut", type: "string", length: 50)]
-    private string $statut='actif';
+    private string $statut = 'actif';
 
 
     #[ORM\Column(type: 'string', length: 20, enumType: Role::class, nullable: false)]
@@ -62,7 +62,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     private ?Categorie $categorie = null;
 
 
-   
+
 
     #[ORM\Column(name: "description", type: "text", nullable: true)]
     private ?string $description = null;
@@ -76,16 +76,16 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(name: "numeroTicket", type: "integer", nullable: true)]
     private ?int $numeroTicket = null;
 
-    
+
 
 
     #[ORM\OneToMany(mappedBy: 'utilisateur', targetEntity: LikedProduct::class, orphanRemoval: true)]
-private Collection $likes;
+    private Collection $likes;
 
-public function getLikes(): Collection
-{
-    return $this->likes;
-}
+    public function getLikes(): Collection
+    {
+        return $this->likes;
+    }
 
 
 
@@ -96,7 +96,7 @@ public function getLikes(): Collection
     private Collection $produits;
 
 
-  
+
     public function __construct()
     {
         $this->dateInscription = new \DateTimeImmutable();
@@ -111,41 +111,41 @@ public function getLikes(): Collection
 
 
     /**
- * @return Collection<int, Feedback>
- */
-public function getGivenFeedbacks(): Collection
-{
-    return $this->givenFeedbacks;
-}
-
-public function addGivenFeedback(Feedback $feedback): self
-{
-    if (!$this->givenFeedbacks->contains($feedback)) {
-        $this->givenFeedbacks->add($feedback);
-        $feedback->setUser($this);
+     * @return Collection<int, Feedback>
+     */
+    public function getGivenFeedbacks(): Collection
+    {
+        return $this->givenFeedbacks;
     }
-    return $this;
-}
 
-/**
- * @return Collection<int, Feedback>
- */
-public function getReceivedFeedbacks(): Collection
-{
-    return $this->receivedFeedbacks;
-}
-
-public function addReceivedFeedback(Feedback $feedback): self
-{
-    if (!$this->receivedFeedbacks->contains($feedback)) {
-        $this->receivedFeedbacks->add($feedback);
-        $feedback->setShop($this);
+    public function addGivenFeedback(Feedback $feedback): self
+    {
+        if (!$this->givenFeedbacks->contains($feedback)) {
+            $this->givenFeedbacks->add($feedback);
+            $feedback->setUser($this);
+        }
+        return $this;
     }
-    return $this;
-}
+
+    /**
+     * @return Collection<int, Feedback>
+     */
+    public function getReceivedFeedbacks(): Collection
+    {
+        return $this->receivedFeedbacks;
+    }
+
+    public function addReceivedFeedback(Feedback $feedback): self
+    {
+        if (!$this->receivedFeedbacks->contains($feedback)) {
+            $this->receivedFeedbacks->add($feedback);
+            $feedback->setShop($this);
+        }
+        return $this;
+    }
 
 
-/**
+    /**
      * @return Collection<int, Produit>
      */
     public function getProduits(): Collection
@@ -175,9 +175,9 @@ public function addReceivedFeedback(Feedback $feedback): self
         return $this;
     }
 
-//----------------------------------------------------------
+    //----------------------------------------------------------
 
-/**
+    /**
      * @var Collection<int, Discount>
      */
     #[ORM\OneToMany(targetEntity: Discount::class, mappedBy: 'shop_id')]
@@ -194,13 +194,13 @@ public function addReceivedFeedback(Feedback $feedback): self
     /**feedback */
 
     #[ORM\OneToMany(targetEntity: Feedback::class, mappedBy: 'user')]
-private Collection $givenFeedbacks;
+    private Collection $givenFeedbacks;
 
-#[ORM\OneToMany(targetEntity: Feedback::class, mappedBy: 'shop')]
-private Collection $receivedFeedbacks;
-		//---------------------------------
+    #[ORM\OneToMany(targetEntity: Feedback::class, mappedBy: 'shop')]
+    private Collection $receivedFeedbacks;
+    //---------------------------------
 
- /**
+    /**
      * @return Collection<int, Discount>
      */
     public function getDiscounts(): Collection
@@ -261,7 +261,7 @@ private Collection $receivedFeedbacks;
     }
 
     /*   les fonctions de aziz*/
-    
+
     public function setDefaultValues(): void
     {
         if (!isset($this->dateInscription)) {
@@ -281,7 +281,7 @@ private Collection $receivedFeedbacks;
         if (!isset($this->role)) {
             $this->role = Role::CLIENT;
         }
-        
+
         // Return the role in the format that Symfony expects
         return ['ROLE_' . $this->role->value];
     }
@@ -289,8 +289,8 @@ private Collection $receivedFeedbacks;
     public function __toString(): string
     {
         return sprintf(
-            '%s [%s]', 
-            $this->email, 
+            '%s [%s]',
+            $this->email,
             $this->role->value
         );
     }
@@ -311,42 +311,101 @@ private Collection $receivedFeedbacks;
     }
 
 
-   
+
 
     // Getters and Setters
-    public function getId(): ?int { return $this->id; }
-    public function setId(int $id): self { $this->id = $id; return $this; }
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+    public function setId(int $id): self
+    {
+        $this->id = $id;
+        return $this;
+    }
 
-    public function getNom(): string { return $this->nom; }
-    public function setNom(string $nom): self { $this->nom = $nom; return $this; }
+    public function getNom(): string
+    {
+        return $this->nom;
+    }
+    public function setNom(string $nom): self
+    {
+        $this->nom = $nom;
+        return $this;
+    }
 
-    public function getPrenom(): string { return $this->prenom; }
-    public function setPrenom(string $prenom): self { $this->prenom = $prenom; return $this; }
+    public function getPrenom(): string
+    {
+        return $this->prenom;
+    }
+    public function setPrenom(string $prenom): self
+    {
+        $this->prenom = $prenom;
+        return $this;
+    }
 
-    public function getEmail(): string { return $this->email; }
+    public function getEmail(): string
+    {
+        return $this->email;
+    }
     public function setEmail(string $email): self
     {
         $this->email = $email;
         return $this;
     }
 
-    
 
 
-    public function getMotDePasse(): string { return $this->motDePasse; }
-    public function setPassword(string $motDePasse): self { $this->motDePasse = $motDePasse; return $this; }
 
-    public function getPoints(): int { return $this->points; }
-    public function setPoints(int $points): self { $this->points = $points; return $this; }
+    public function getMotDePasse(): string
+    {
+        return $this->motDePasse;
+    }
+    public function setPassword(string $motDePasse): self
+    {
+        $this->motDePasse = $motDePasse;
+        return $this;
+    }
 
-    public function getNombreDeGain(): int { return $this->nombreDeGain; }
-    public function setNombreDeGain(int $nombreDeGain): self { $this->nombreDeGain = $nombreDeGain; return $this; }
+    public function getPoints(): int
+    {
+        return $this->points;
+    }
+    public function setPoints(int $points): self
+    {
+        $this->points = $points;
+        return $this;
+    }
 
-    public function getAdresse(): ?string { return $this->adresse; }
-    public function setAdresse(?string $adresse): self { $this->adresse = $adresse; return $this; }
+    public function getNombreDeGain(): int
+    {
+        return $this->nombreDeGain;
+    }
+    public function setNombreDeGain(int $nombreDeGain): self
+    {
+        $this->nombreDeGain = $nombreDeGain;
+        return $this;
+    }
 
-    public function getTelephone(): ?string { return $this->telephone; }
-    public function setTelephone(?string $telephone): self { $this->telephone = $telephone; return $this; }
+    public function getAdresse(): ?string
+    {
+        return $this->adresse;
+    }
+    public function setAdresse(?string $adresse): self
+    {
+        $this->adresse = $adresse;
+        return $this;
+    }
+
+    public function getTelephone(): ?string
+    {
+        return $this->telephone;
+    }
+    public function setTelephone(?string $telephone): self
+    {
+        $this->telephone = $telephone;
+        return $this;
+    }
 
     public function getDateInscription(): \DateTimeImmutable
     {
@@ -363,8 +422,15 @@ private Collection $receivedFeedbacks;
         return $this;
     }
 
-    public function getStatut(): string { return $this->statut; }
-    public function setStatut(string $statut): self { $this->statut = $statut; return $this; }
+    public function getStatut(): string
+    {
+        return $this->statut;
+    }
+    public function setStatut(string $statut): self
+    {
+        $this->statut = $statut;
+        return $this;
+    }
 
     public function getRole(): Role
     {
@@ -386,9 +452,16 @@ private Collection $receivedFeedbacks;
         return $this;
     }
 
-    
-    public function getDescription(): ?string { return $this->description; }
-    public function setDescription(?string $description): self { $this->description = $description; return $this; }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+    public function setDescription(?string $description): self
+    {
+        $this->description = $description;
+        return $this;
+    }
 
     public function getProfilePicture()
     {
@@ -398,18 +471,36 @@ private Collection $receivedFeedbacks;
         return $this->profilePicture;
     }
 
-    public function setProfilePicture($profilePicture): self { $this->profilePicture = $profilePicture; return $this; }
+    public function setProfilePicture($profilePicture): self
+    {
+        $this->profilePicture = $profilePicture;
+        return $this;
+    }
 
-    public function getBalance(): float { return $this->balance; }
-    public function setBalance(float $balance): self { $this->balance = $balance; return $this; }
+    public function getBalance(): float
+    {
+        return $this->balance;
+    }
+    public function setBalance(float $balance): self
+    {
+        $this->balance = $balance;
+        return $this;
+    }
 
-    public function getNumeroTicket(): ?int { return $this->numeroTicket; }
-    public function setNumeroTicket(?int $numeroTicket): self { $this->numeroTicket = $numeroTicket; return $this; }
+    public function getNumeroTicket(): ?int
+    {
+        return $this->numeroTicket;
+    }
+    public function setNumeroTicket(?int $numeroTicket): self
+    {
+        $this->numeroTicket = $numeroTicket;
+        return $this;
+    }
 
 
 
     // UserInterface methods
-    
+
     public function isActive(): bool
     {
         return $this->statut === 'actif';
@@ -417,12 +508,18 @@ private Collection $receivedFeedbacks;
 
 
     // Optional methods
-    public function getPassword(): string { return $this->motDePasse; }
-    public function getSalt(): ?string { return null; }
+    public function getPassword(): string
+    {
+        return $this->motDePasse;
+    }
+    public function getSalt(): ?string
+    {
+        return null;
+    }
 
     public function getFullName(): string
     {
-        return $this->prenom.' '.$this->nom;
+        return $this->prenom . ' ' . $this->nom;
     }
 
     /******** */
@@ -430,43 +527,104 @@ private Collection $receivedFeedbacks;
 
     //reset password//
 // src/Entity/Utilisateur.php
-#[ORM\Column(name: "reset_token", type: "string", length: 100, nullable: true)]
-private ?string $resetToken = null;
+    #[ORM\Column(name: "reset_token", type: "string", length: 100, nullable: true)]
+    private ?string $resetToken = null;
 
-#[ORM\Column(name: "reset_token_expires_at", type: "datetime_immutable", nullable: true)]
-private ?\DateTimeImmutable $resetTokenExpiresAt = null;
+    #[ORM\Column(name: "reset_token_expires_at", type: "datetime_immutable", nullable: true)]
+    private ?\DateTimeImmutable $resetTokenExpiresAt = null;
 
-// Ajoutez ces méthodes
-public function getResetToken(): ?string
-{
-    return $this->resetToken;
-}
-
-public function setResetToken(?string $resetToken): self
-{
-    $this->resetToken = $resetToken;
-    return $this;
-}
-
-public function getResetTokenExpiresAt(): ?\DateTimeImmutable
-{
-    return $this->resetTokenExpiresAt;
-}
-
-public function setResetTokenExpiresAt(?\DateTimeImmutable $resetTokenExpiresAt): self
-{
-    $this->resetTokenExpiresAt = $resetTokenExpiresAt;
-    return $this;
-}
-
-public function isResetTokenValid(): bool
-{
-    if (!$this->resetToken || !$this->resetTokenExpiresAt) {
-        return false;
+    // Ajoutez ces méthodes
+    public function getResetToken(): ?string
+    {
+        return $this->resetToken;
     }
-    return new \DateTimeImmutable() < $this->resetTokenExpiresAt;
-}
-//fin reset password//
-   
 
+    public function setResetToken(?string $resetToken): self
+    {
+        $this->resetToken = $resetToken;
+        return $this;
+    }
+
+    public function getResetTokenExpiresAt(): ?\DateTimeImmutable
+    {
+        return $this->resetTokenExpiresAt;
+    }
+
+    public function setResetTokenExpiresAt(?\DateTimeImmutable $resetTokenExpiresAt): self
+    {
+        $this->resetTokenExpiresAt = $resetTokenExpiresAt;
+        return $this;
+    }
+
+    public function isResetTokenValid(): bool
+    {
+        if (!$this->resetToken || !$this->resetTokenExpiresAt) {
+            return false;
+        }
+        return new \DateTimeImmutable() < $this->resetTokenExpiresAt;
+    }
+    //fin reset password//
+
+    // Maria Admin fazet 
+    // src/Entity/Utilisateur.php
+
+    #[ORM\Column(type: 'float', nullable: true)]
+    private ?float $rentingPrice = null;
+
+    // Add these methods:
+    public function getRentingPrice(): ?float
+    {
+        return $this->rentingPrice;
+    }
+
+    public function setRentingPrice(?float $rentingPrice): self
+    {
+        $this->rentingPrice = $rentingPrice;
+        return $this;
+    }
+    #[ORM\Column(name: "is_paid", type: "boolean", nullable: true)]
+    private ?bool $isPaid = null;
+    public function getIsPaid(): ?bool
+    {
+        return $this->isPaid;
+    }
+
+    /**
+     * Set the value of isPaid
+     *
+     * @return  self
+     */
+    public function setIsPaid(?bool $isPaid): self
+    {
+        $this->isPaid = $isPaid;
+
+        return $this;
+    }
+    // src/Entity/Utilisateur.php
+
+    #[ORM\Column(name: "last_payment_date", type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $lastPaymentDate = null;
+
+    // Add these methods to the entity
+    public function getLastPaymentDate(): ?\DateTimeInterface
+    {
+        return $this->lastPaymentDate;
+    }
+
+    public function setLastPaymentDate(?\DateTimeInterface $lastPaymentDate): self
+    {
+        $this->lastPaymentDate = $lastPaymentDate;
+        return $this;
+    }
+
+    public function isPaymentOverdue(): bool
+    {
+        if (!$this->lastPaymentDate) {
+            return true;
+        }
+
+        $now = new \DateTime();
+        $interval = $now->diff($this->lastPaymentDate);
+        return $interval->days > 30;
+    }
 }

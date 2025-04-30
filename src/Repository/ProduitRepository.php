@@ -10,7 +10,7 @@
 
 // src/Repository/ProduitRepository.php
 namespace App\Repository;
-
+use App\Entity\Utilisateur;    
 use App\Entity\Produit;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -262,7 +262,16 @@ class ProduitRepository extends ServiceEntityRepository
 
         return $qb->getQuery()->getResult();
     }
-
+     //pour admin 
+     public function countProductsForShop(Utilisateur $shop): int
+     {
+         return (int) $this->createQueryBuilder('p')
+             ->select('COUNT(p.id)')
+             ->where('p.shopId = :shop')
+             ->setParameter('shop', $shop)
+             ->getQuery()
+             ->getSingleScalarResult();
+     }
 }
 
 

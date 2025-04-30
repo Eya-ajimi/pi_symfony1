@@ -1,40 +1,46 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 	<head>
 		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta http-equiv="expires" content="0">
+		<meta http-equiv="pragma" content="no-cache">
 		<title>
-			{% block title %}fadit!
+			{% block title %}Innomall
 			{% endblock %}
 		</title>
-		<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
+
 		{% block stylesheets %}
-			<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-			<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+			<!-- FontAwesome -->
+			<link
+			rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+			<!-- Bootstrap 4 (because your HTML is Bootstrap 4-style) -->
+			<link
+			href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+			<!-- Google Fonts -->
+			<link
+			href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+
+			<!-- Local CSS -->
 			<link href="{{ asset('vendors/nprogress/nprogress.css') }}" rel="stylesheet">
-			<link href="{{ asset('build/css/custom.min.css') }}" rel="stylesheet">
-			<link href="{{ asset('build/css/custom.css') }}" rel="stylesheet">
-			<link href="{{ asset('build/css/maria/side_bar.css') }}" rel="stylesheet">
 			<link href="{{ asset('build/css/maria/base_style.css') }}" rel="stylesheet">
-			<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 			<link href="{{ asset('build/css/oussema/events.css') }}" rel="stylesheet">
 			<link href="{{ asset('build/css/maria/product/product.css') }}" rel="stylesheet">
 			<link href="{{ asset('build/css/maria/product/add_product.css') }}" rel="stylesheet">
 			<link href="{{ asset('build/css/maria/product/edit_product.css') }}" rel="stylesheet">
 			<link href="{{ asset('build/css/maria/discount.css') }}" rel="stylesheet">
 			<link href="{{ asset('build/css/maria/schedule.css') }}" rel="stylesheet">
-			<link
-			href="{{ asset('build/css/maria/maindashboard.css.css') }}" rel="stylesheet">
-
-			<!--***********-->
 			<link href="{{ asset('build/css/maria/dashboard_style.css') }}" rel="stylesheet">
-
-			<style></style>
-
+			<link href="{{ asset('build/css/maria/profile.css') }}" rel="stylesheet">
+			<link href="{{ asset('build/css/maria/contact_admin.css') }}" rel="stylesheet">
 		{% endblock %}
 	</head>
 	<body class="nav-md">
 		<div class="container body">
 			<div class="main_container">
+
 				{% include 'maria_templates/bars.html.twig' %}
 
 				<div class="right_col" role="main">
@@ -47,18 +53,27 @@
 		</div>
 
 		{% block javascripts %}
-			<!-- Load jQuery first -->
+			<!-- jQuery (only once) -->
 			<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-			<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
+			<!-- Bootstrap 4 Bundle (with Popper.js included) -->
+			<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 
-			<!-- Then Bootstrap -->
-			<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-			<!-- Then your custom scripts -->
-			<script src="{{ asset('vendors/jquery/dist/jquery.min.js') }}"></script>
-
+			<!-- FontAwesome JS -->
 			<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
-			<script src="{{ asset('build/js/maria/test.js') }}"></script>
+
+			<!-- Chart.js (only once) -->
+			<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+
+			<!-- Local JS -->
+			<script src="{{ asset('build/js/maria/base.js') }}"></script>
 			<script src="{{ asset('build/js/maria/dashboard.js') }}"></script>
+			<script src="https://cdn.jsdelivr.net/npm/@hotwired/stimulus@3.2.1/dist/stimulus.umd.js"></script>
+			<script src="https://cdn.jsdelivr.net/npm/@symfony/ux-chartjs@2.x/dist/ux-chartjs.umd.min.js"></script>
+
+			<script>
+				const app = Stimulus.Application.start();
+app.register('symfony--ux-chartjs--chart', SymfonyUxChartjs.Chart);
+			</script>
 
 		{% endblock %}
 	</body>

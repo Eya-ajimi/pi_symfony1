@@ -6,13 +6,14 @@
 {% block stylesheets %}
 	{{ parent() }}
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
 {% endblock %}
 
 {% block body %}
-	<div
-		class="dashboard-container">
+
+	<div class="product-container">
 		<!--HEADER-->
-		<div class="dashboard-header">
+		<div class="product-header">
 			<div class="search-container">
 				<input type="text" id="productSearch" placeholder="Search products by name or description...">
 				<i class="fas fa-search"></i>
@@ -76,13 +77,13 @@
 								Edit
 							</button>
 
-							<form method="POST" action="{{ path('product_delete', {'id': p.id}) }}" class="delete-form" style="padding:0px;margin:0px">
+							<form method="POST" action="{{ path('product_delete', {'id': p.id}) }}" class="delete-form" style="padding:0;margin:0">
+								<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ p.id) }}">
 								<button type="submit" class="btn btn-remove" onclick="return confirm('Are you sure you want to delete this product? All related data will be removed.');">
 									<i class="fas fa-trash"></i>
 									Remove
 								</button>
 							</form>
-
 						</div>
 					</div>
 				</div>
@@ -91,7 +92,8 @@
 					<i class="fas fa-box-open"></i>
 					<p>No products found for your shop.</p>
 					<button class="btn btn-primary mt-3" onclick="openAddModal()">
-						<i class="fas fa-plus"></i>Add Your First Product
+						<i class="fas fa-plus"></i>
+						Add Your First Product
 					</button>
 				</div>
 			{% endfor %}
@@ -132,13 +134,13 @@
 			<div class="modal-body">
 				{% if editForm is defined %}
 					{{ form_start(editForm, {
-                    'attr': {
-                        'id': 'editProductForm',
-                        'action': '',  
-                        'method': 'POST',
-                        'enctype': 'multipart/form-data'
-                    }
-                }) }}
+                        'attr': {
+                            'id': 'editProductForm',
+                            'action': '',
+                            'method': 'POST',
+                            'enctype': 'multipart/form-data'
+                        }
+                    }) }}
 					{{ form_widget(editForm) }}
 					<div class="form-actions">
 						<button type="submit" class="btn btn-primary">Save Changes</button>
@@ -156,8 +158,7 @@
 {% block javascripts %}
 	{{ parent() }}
 	<script>
-		// Search functionality
-document.addEventListener('DOMContentLoaded', function () {
+		document.addEventListener('DOMContentLoaded', function () {
 const searchInput = document.querySelector('.search-container input');
 
 searchInput.addEventListener('input', function () {
@@ -165,8 +166,8 @@ const searchTerm = this.value.toLowerCase();
 const products = document.querySelectorAll('.product-card');
 
 products.forEach(product => {
-const productName = product.dataset.productName;
-const productDescription = product.dataset.productDescription;
+const productName = product.dataset.productName.toLowerCase();
+const productDescription = product.dataset.productDescription.toLowerCase();
 
 if (productName.includes(searchTerm) || productDescription.includes(searchTerm)) {
 product.style.display = '';
@@ -187,29 +188,22 @@ document.getElementById('addModal').classList.remove('active');
 document.getElementById('addProductForm').reset();
 }
 
-// Global variable to store current product being edited
-let currentEditProductId = 0;
-
-function openEditModal(productId) { // Update the form action URL
+function openEditModal(productId) {
 const form = document.getElementById('editProductForm');
 if (form) {
 form.action = `/shopOwner/product/edit/${productId}`;
 
-// Find the product card
-const productCard = document.querySelector (`.product-card [onclick*="${productId}"]`) ?. closest('.product-card');
-if (productCard) { // Populate form fields from data attributes
+const productCard = document.querySelector (`.product-card[data-product-id="${productId}"]`);
+if (productCard) {
 form.querySelector('[name$="[nom]"]').value = productCard.dataset.productName;
 form.querySelector('[name$="[description]"]').value = productCard.dataset.productDescription;
 
-// Get price
 const priceElement = productCard.querySelector('.product-price, .discounted-price');
 form.querySelector('[name$="[prix]"]').value = parseFloat(priceElement.textContent);
 
-// Get stock
 const stockText = productCard.querySelector('.product-stock').textContent;
 form.querySelector('[name$="[stock]"]').value = parseInt(stockText.replace('Stock:', '').trim());
 
-// Set current image preview
 const imgSrc = productCard.querySelector('.product-image img').src;
 const previewContainer = form.querySelector('.current-image');
 if (previewContainer) {
@@ -219,39 +213,14 @@ previewContainer.style.display = imgSrc ? 'block' : 'none';
 }
 }
 }
-
 document.getElementById('editModal').classList.add('active');
-initFileUploadPreview();
 }
 
 function closeEditModal() {
 document.getElementById('editModal').classList.remove('active');
 }
 
-function confirmRemove(productId, button) {
-if (confirm('Are you sure you want to delete this product?')) { // Create a hidden form
-const form = document.createElement('form');
-form.method = 'POST';
-form.action = `/shopOwner/product/delete/${productId}`;
-
-// Add CSRF token if you had one (you mentioned not using it currently)
-// const csrfInput = document.createElement('input');
-// csrfInput.type = 'hidden';
-// csrfInput.name = '_token';
-// csrfInput.value = 'YOUR_CSRF_TOKEN';
-// form.appendChild(csrfInput);
-
-// Add to body and submit
-document.body.appendChild(form);
-form.submit();
-
-// Optional: Disable button during submission
-button.disabled = true;
-button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
-}
-}
-
-// File upload preview functionality
+function initFileUploadPreview() {
 const fileInputs = document.querySelectorAll('input[type="file"]');
 fileInputs.forEach(input => {
 input.addEventListener('change', function () {
@@ -266,5 +235,6 @@ preview.classList.remove('has-file');
 }
 });
 });
+}
 	</script>
 {% endblock %}

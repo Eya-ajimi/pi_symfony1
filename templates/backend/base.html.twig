@@ -1,258 +1,259 @@
 <!doctype html>
 <html lang="en">
 
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <title>Innomall</title>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<title>Innomall</title>
 
-  <!-- Core CSS -->
-  {{ encore_entry_link_tags('backend') }}
-  <link rel="shortcut icon" href="{{ asset('assets/images/logos/favicon.png') }}" />
-  <link rel="stylesheet" href="{{ asset('assets/css/atms.css') }}">
-  <link rel="stylesheet" href="{{ asset('assets/css/styles.min.css') }}" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+		<!-- Core CSS -->
+		{{ encore_entry_link_tags('backend') }}
+		<link rel="shortcut icon" href="{{ asset('assets/images/logos/favicon.png') }}"/>
+		<link rel="stylesheet" href="{{ asset('assets/css/atms.css') }}">
+		<link rel="stylesheet" href="{{ asset('assets/css/styles.min.css') }}"/>
+		<link
+		rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
-  <!-- Chart.js and DataTables CSS -->
-  <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/css/bootstrap.min.css">
+		<!-- Chart.js and DataTables CSS -->
+		<link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/css/bootstrap.min.css">
 
+		{% block stylesheets %}
+			<style>
+				.chart-bar {
+					height: 400px;
+				}
+				.progress {
+					height: 20px;
+				}
+				.dropdown-menu {
+					max-height: 200px;
+					overflow-y: auto;
+				}
+				.card {
+					border-radius: 15px;
+					box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+				}
+				.bg-gradient-primary {
+					background: linear-gradient(87deg, #5e72e4 0, #825ee4 100%) !important;
+				}
+				.btn-circle {
+					width: 30px;
+					height: 30px;
+					padding: 6px 0;
+					border-radius: 15px;
+					text-align: center;
+				}
+				.table th {
+					border-top: none;
+				}
+			</style>
+		{% endblock %}
+	</head>
 
-  {% block stylesheets %}
-    <style>
-      .chart-bar {
-        height: 400px;
-      }
-      .progress {
-        height: 20px;
-      }
-      .dropdown-menu {
-        max-height: 200px;
-        overflow-y: auto;
-      }
-      .card {
-        border-radius: 15px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-      }
-      .bg-gradient-primary {
-        background: linear-gradient(87deg, #5e72e4 0, #825ee4 100%) !important;
-      }
-      .btn-circle {
-        width: 30px;
-        height: 30px;
-        padding: 6px 0;
-        border-radius: 15px;
-        text-align: center;
-      }
-      .table th {
-        border-top: none;
-      }
-    </style>
-  {% endblock %}
-</head>
+	<body
+		style="padding: 0px">
+		<!--  Body Wrapper -->
+		<div
+			class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6" data-sidebartype="full" data-sidebar-position="fixed" data-header-position="fixed">
+			<!-- Sidebar Start -->
+			<aside
+				class="left-sidebar">
+				<!-- Sidebar scroll-->
+				<div>
+					<div class="brand-logo d-flex align-items-center justify-content-between">
+						<a href="./index.html" class="text-nowrap logo-img">
+							<img src="{{ asset('assets/css2/images/logos/innoMall_logo_pi.png') }}" width="120" alt=""/>
+						</a>
+						<div class="close-btn d-xl-none d-block sidebartoggler cursor-pointer" id="sidebarCollapse">
+							<i class="ti ti-x fs-8"></i>
+						</div>
+					</div>
+					<!-- Sidebar navigation-->
+					<nav class="sidebar-nav scroll-sidebar" data-simplebar="">
+						<ul id="sidebarnav">
+							<li class="nav-small-cap">
+								<i class="ti ti-dots nav-small-cap-icon fs-4"></i>
+								<span class="hide-menu">Home</span>
+							</li>
+							<li class="sidebar-item">
+								<a class="sidebar-link" href="{{ path('app_admin_dashboard1') }}" aria-expanded="false">
+									<span>
+										<i class="ti ti-layout-dashboard"></i>
+									</span>
+									<span class="hide-menu">Dashboard</span>
+								</a>
+							</li>
 
-<body style="padding: 0px">
-<!--  Body Wrapper -->
-<div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6" data-sidebartype="full"
-     data-sidebar-position="fixed" data-header-position="fixed">
-  <!-- Sidebar Start -->
-  <aside class="left-sidebar">
-    <!-- Sidebar scroll-->
-    <div>
-      <div class="brand-logo d-flex align-items-center justify-content-between">
-        <a href="./index.html" class="text-nowrap logo-img">
-          <img src="{{ asset('assets/css2/images/logos/innoMall_logo_pi.png') }}" width="120" alt="" />
-        </a>
-        <div class="close-btn d-xl-none d-block sidebartoggler cursor-pointer" id="sidebarCollapse">
-          <i class="ti ti-x fs-8"></i>
-        </div>
-      </div>
-      <!-- Sidebar navigation-->
-      <nav class="sidebar-nav scroll-sidebar" data-simplebar="">
-        <ul id="sidebarnav">
-          <li class="nav-small-cap">
-            <i class="ti ti-dots nav-small-cap-icon fs-4"></i>
-            <span class="hide-menu">Home</span>
-          </li>
-          <li class="sidebar-item">
-            <a class="sidebar-link" href="{{ path('app_admin_dashboard1') }}" aria-expanded="false">
-                <span>
-                  <i class="ti ti-layout-dashboard"></i>
-                </span>
-              <span class="hide-menu">Dashboard</span>
-            </a>
-          </li>
+							<li class="sidebar-item">
+								<a class="sidebar-link" href="{{ path('admin_dashboard')}}" aria-expanded="false">
+									<span>
+										<i class="ti ti-mood-happy"></i>
+									</span>
+									<span class="hide-menu">Users</span>
+								</a>
+							</li>
+							<li class="nav-small-cap">
+								<i class="ti ti-dots nav-small-cap-icon fs-4"></i>
+								<span class="hide-menu">Managment</span>
+							</li>
+							<li class="sidebar-item">
+								<a class="sidebar-link" href="{{ path('app_shopsadmin')}}" aria-expanded="false">
+									<span>
+										<i class="ti ti-article"></i>
+									</span>
+									<span class="hide-menu">Shops</span>
+								</a>
+							</li>
+							<li class="sidebar-item">
+								<a class="sidebar-link" href="{{ path('app_eventsadmin')}}" aria-expanded="false">
+									<span>
+										<i class="ti ti-clock"></i>
+									</span>
+									<span class="hide-menu">Events</span>
+								</a>
+							</li>
+							<li class="sidebar-item">
+								<a class="sidebar-link" href="{{ path('admin_shop_stats')}}" aria-expanded="false">
+									<span>
+										<i class="ti ti-cards"></i>
+									</span>
+									<span class="hide-menu">Sales</span>
+								</a>
+							</li>
+							<li class="sidebar-item">
+								<a class="sidebar-link" href="{{ path('app_atms')}}" aria-expanded="false">
+									<span>
+										<i class="ti ti-file-description"></i>
+									</span>
+									<span class="hide-menu">Atms</span>
+								</a>
+							</li>
 
-          <li class="sidebar-item">
-            <a class="sidebar-link" href="{{ path('admin_dashboard')}}" aria-expanded="false">
-                <span>
-                  <i class="ti ti-mood-happy"></i>
-                </span>
-              <span class="hide-menu">Users</span>
-            </a>
-          </li>
-          <li class="nav-small-cap">
-            <i class="ti ti-dots nav-small-cap-icon fs-4"></i>
-            <span class="hide-menu">Managment</span>
-          </li>
-          <li class="sidebar-item">
-            <a class="sidebar-link" href="{{ path('app_shopsadmin')}}" aria-expanded="false">
-                <span>
-                  <i class="ti ti-article"></i>
-                </span>
-              <span class="hide-menu">Shops</span>
-            </a>
-          </li>
-          <li class="sidebar-item">
-            <a class="sidebar-link" href="{{ path('app_eventsadmin')}}" aria-expanded="false">
-                <span>
-                  <i class="ti ti-clock"></i>
-                </span>
-              <span class="hide-menu">Events</span>
-            </a>
-          </li>
-          <li class="sidebar-item">
-            <a class="sidebar-link" href="{{ path('admin_shop_stats')}}" aria-expanded="false">
-                <span>
-                  <i class="ti ti-cards"></i>
-                </span>
-              <span class="hide-menu">Sales</span>
-            </a>
-          </li>
-          <li class="sidebar-item">
-            <a class="sidebar-link" href="{{ path('app_atms')}}" aria-expanded="false">
-                <span>
-                  <i class="ti ti-file-description"></i>
-                </span>
-              <span class="hide-menu">Atms</span>
-            </a>
-          </li>
+							<!-- Parking Dropdown Menu -->
+							<li class="sidebar-item {% if app.request.pathinfo starts with '/admin/parking' or app.request.get('_route') starts with 'app_parking_' %}active{% endif %}">
+								<a class="sidebar-link {% if app.request.pathinfo starts with '/admin/parking' or app.request.get('_route') starts with 'app_parking_' %}active{% endif %}" href="#collapseParking" data-bs-toggle="collapse" aria-expanded="{% if app.request.pathinfo starts with '/admin/parking' or app.request.get('_route') starts with 'app_parking_' %}true{% else %}false{% endif %}" aria-controls="collapseParking">
+									<span>
+										<i class="ti ti-car"></i>
+									</span>
+									<span class="hide-menu">Parking</span>
+									<span class="menu-arrow">
+										<i class="ti ti-chevron-down"></i>
+									</span>
+								</a>
+								<ul class="collapse sidebar-collapse {% if app.request.pathinfo starts with '/admin/parking' or app.request.get('_route') starts with 'app_parking_' %}show{% endif %}" id="collapseParking">
+									<li class="sidebar-item {% if app.request.get('_route') == 'app_parking_spots' %}active{% endif %}">
+										<a href="{{ path('app_parking_spots') }}" class="sidebar-link {% if app.request.get('_route') == 'app_parking_spots' %}active{% endif %}">
+											<i class="ti ti-circle-dot fs-6 me-2"></i>
+											<span class="hide-menu">Parking Spots</span>
+										</a>
+									</li>
+									<li class="sidebar-item {% if app.request.get('_route') == 'app_parking_reservations' %}active{% endif %}">
+										<a href="{{ path('app_parking_reservations') }}" class="sidebar-link {% if app.request.get('_route') == 'app_parking_reservations' %}active{% endif %}">
+											<i class="ti ti-circle-dot fs-6 me-2"></i>
+											<span class="hide-menu">Reservations</span>
+										</a>
+									</li>
+									<li class="sidebar-item {% if app.request.get('_route') == 'app_parking_statistics' %}active{% endif %}">
+										<a href="{{ path('app_parking_statistics') }}" class="sidebar-link {% if app.request.get('_route') == 'app_parking_statistics' %}active{% endif %}">
+											<i class="ti ti-circle-dot fs-6 me-2"></i>
+											<span class="hide-menu">Statistics</span>
+										</a>
+									</li>
+								</ul>
+							</li>
 
-          <!-- Parking Dropdown Menu -->
-          <li class="sidebar-item {% if app.request.pathinfo starts with '/admin/parking' or app.request.get('_route') starts with 'app_parking_' %}active{% endif %}">
-            <a class="sidebar-link {% if app.request.pathinfo starts with '/admin/parking' or app.request.get('_route') starts with 'app_parking_' %}active{% endif %}"
-               href="#collapseParking"
-               data-bs-toggle="collapse"
-               aria-expanded="{% if app.request.pathinfo starts with '/admin/parking' or app.request.get('_route') starts with 'app_parking_' %}true{% else %}false{% endif %}"
-               aria-controls="collapseParking">
-    <span>
-      <i class="ti ti-car"></i>
-    </span>
-              <span class="hide-menu">Parking</span>
-              <span class="menu-arrow"><i class="ti ti-chevron-down"></i></span>
-            </a>
-            <ul class="collapse sidebar-collapse {% if app.request.pathinfo starts with '/admin/parking' or app.request.get('_route') starts with 'app_parking_' %}show{% endif %}" id="collapseParking">
-              <li class="sidebar-item {% if app.request.get('_route') == 'app_parking_spots' %}active{% endif %}">
-                <a href="{{ path('app_parking_spots') }}" class="sidebar-link {% if app.request.get('_route') == 'app_parking_spots' %}active{% endif %}">
-                  <i class="ti ti-circle-dot fs-6 me-2"></i>
-                  <span class="hide-menu">Parking Spots</span>
-                </a>
-              </li>
-              <li class="sidebar-item {% if app.request.get('_route') == 'app_parking_reservations' %}active{% endif %}">
-                <a href="{{ path('app_parking_reservations') }}" class="sidebar-link {% if app.request.get('_route') == 'app_parking_reservations' %}active{% endif %}">
-                  <i class="ti ti-circle-dot fs-6 me-2"></i>
-                  <span class="hide-menu">Reservations</span>
-                </a>
-              </li>
-              <li class="sidebar-item {% if app.request.get('_route') == 'app_parking_statistics' %}active{% endif %}">
-                <a href="{{ path('app_parking_statistics') }}" class="sidebar-link {% if app.request.get('_route') == 'app_parking_statistics' %}active{% endif %}">
-                  <i class="ti ti-circle-dot fs-6 me-2"></i>
-                  <span class="hide-menu">Statistics</span>
-                </a>
-              </li>
-            </ul>
-          </li>
-
-          <li class="sidebar-item">
-            <a class="sidebar-link" href="{{path('app_reclamation_admin')}}" aria-expanded="false">
-                <span>
-                  <i class="ti ti-alert-circle"></i>
-                </span>
-              <span class="hide-menu">Reclamation</span>
-            </a>
-          </li>
-
-
-          <li class="sidebar-item">
-            <a class="sidebar-link" href="./authentication-login.html" aria-expanded="false">
-                <span>
-                  <i class="ti ti-login"></i>
-                </span>
-              <span class="hide-menu">Logout</span>
-            </a>
-          </li>
-        </ul>
-
-      </nav>
-      <!-- End Sidebar navigation -->
-    </div>
-    <!-- End Sidebar scroll-->
-  </aside>
-  <!--  Sidebar End -->
-  <!--  Main wrapper -->
-  <div class="body-wrapper">
-    <!--  Header Start -->
-    <header class="app-header">
-      <nav class="navbar navbar-expand-lg navbar-light">
-        <ul class="navbar-nav">
-          <li class="nav-item d-block d-xl-none">
-            <a class="nav-link sidebartoggler nav-icon-hover" id="headerCollapse" href="javascript:void(0)">
-              <i class="ti ti-menu-2"></i>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link nav-icon-hover" href="javascript:void(0)">
-              <i class="ti ti-bell-ringing"></i>
-              <div class="notification bg-primary rounded-circle"></div>
-            </a>
-          </li>
-        </ul>
-        <div class="navbar-collapse justify-content-end px-0" id="navbarNav">
-          <ul class="navbar-nav flex-row ms-auto align-items-center justify-content-end">
-            <a href="https://adminmart.com/product/modernize-free-bootstrap-admin-dashboard/" target="_blank" class="btn btn-primary">Hello Admin 👋 </a>
-            <li class="nav-item dropdown">
-              <a class="nav-link nav-icon-hover" href="javascript:void(0)" id="drop2" data-bs-toggle="dropdown"
-                 aria-expanded="false">
-                <img src="../assets/images/profile/user-1.jpg" alt="" width="35" height="35" class="rounded-circle">
-              </a>
-              <div class="dropdown-menu dropdown-menu-end dropdown-menu-animate-up" aria-labelledby="drop2">
-                <div class="message-body">
-                  <a href="javascript:void(0)" class="d-flex align-items-center gap-2 dropdown-item">
-                    <i class="ti ti-user fs-6"></i>
-                    <p class="mb-0 fs-3">My Profile</p>
-                  </a>
-                  <a href="javascript:void(0)" class="d-flex align-items-center gap-2 dropdown-item">
-                    <i class="ti ti-mail fs-6"></i>
-                    <p class="mb-0 fs-3">My Account</p>
-                  </a>
-                  <a href="javascript:void(0)" class="d-flex align-items-center gap-2 dropdown-item">
-                    <i class="ti ti-list-check fs-6"></i>
-                    <p class="mb-0 fs-3">My Task</p>
-                  </a>
-                  <a href="./authentication-login.html" class="btn btn-outline-primary mx-3 mt-2 d-block">Logout</a>
-                </div>
-              </div>
-            </li>
-          </ul>
-        </div>
-      </nav>
-    </header>
-    <!--  Header End -->
-
-    <main class="container-fluid py-4">
-      {% block content %}
-      {% endblock %}
-    </main>
-
-  </div>
-</div>
-
-<!-- Core JS -->
+							<li class="sidebar-item">
+								<a class="sidebar-link" href="{{path('app_reclamation_admin')}}" aria-expanded="false">
+									<span>
+										<i class="ti ti-alert-circle"></i>
+									</span>
+									<span class="hide-menu">Reclamation</span>
+								</a>
+							</li>
 
 
-{% block javascripts %}<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>{% endblock %}
-</body>
-</html>
+							<li class="sidebar-item">
+								<a class="sidebar-link" href="./authentication-login.html" aria-expanded="false">
+									<span>
+										<i class="ti ti-login"></i>
+									</span>
+									<span class="hide-menu">Logout</span>
+								</a>
+							</li>
+						</ul>
+
+					</nav>
+					<!-- End Sidebar navigation -->
+				</div>
+				<!-- End Sidebar scroll-->
+			</aside>
+			<!--  Sidebar End -->
+			<!--  Main wrapper -->
+			<div
+				class="body-wrapper">
+				<!--  Header Start -->
+				<header class="app-header">
+					<nav class="navbar navbar-expand-lg navbar-light">
+						<ul class="navbar-nav">
+							<li class="nav-item d-block d-xl-none">
+								<a class="nav-link sidebartoggler nav-icon-hover" id="headerCollapse" href="javascript:void(0)">
+									<i class="ti ti-menu-2"></i>
+								</a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link nav-icon-hover" href="javascript:void(0)">
+									<i class="ti ti-bell-ringing"></i>
+									<div class="notification bg-primary rounded-circle"></div>
+								</a>
+							</li>
+						</ul>
+						<div class="navbar-collapse justify-content-end px-0" id="navbarNav">
+							<ul class="navbar-nav flex-row ms-auto align-items-center justify-content-end">
+								<a href="https://adminmart.com/product/modernize-free-bootstrap-admin-dashboard/" target="_blank" class="btn btn-primary">Hello Admin 👋
+								</a>
+								<li class="nav-item dropdown">
+									<a class="nav-link nav-icon-hover" href="javascript:void(0)" id="drop2" data-bs-toggle="dropdown" aria-expanded="false">
+										<img src="../assets/images/profile/user-1.jpg" alt="" width="35" height="35" class="rounded-circle">
+									</a>
+									<div class="dropdown-menu dropdown-menu-end dropdown-menu-animate-up" aria-labelledby="drop2">
+										<div class="message-body">
+											<a href="javascript:void(0)" class="d-flex align-items-center gap-2 dropdown-item">
+												<i class="ti ti-user fs-6"></i>
+												<p class="mb-0 fs-3">My Profile</p>
+											</a>
+											<a href="javascript:void(0)" class="d-flex align-items-center gap-2 dropdown-item">
+												<i class="ti ti-mail fs-6"></i>
+												<p class="mb-0 fs-3">My Account</p>
+											</a>
+											<a href="javascript:void(0)" class="d-flex align-items-center gap-2 dropdown-item">
+												<i class="ti ti-list-check fs-6"></i>
+												<p class="mb-0 fs-3">My Task</p>
+											</a>
+											<a href="./authentication-login.html" class="btn btn-outline-primary mx-3 mt-2 d-block">Logout</a>
+										</div>
+									</div>
+								</li>
+							</ul>
+						</div>
+					</nav>
+				</header>
+				<!--  Header End -->
+
+				<main class="container-fluid py-4"> {% block content %}{% endblock %}
+					</main>
+
+				</div>
+			</div>
+
+			<!-- Core JS -->
+
+
+			{% block javascripts %}
+				<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+				<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+				<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+				<script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
+			{% endblock %}
+		</body>
+	</html>

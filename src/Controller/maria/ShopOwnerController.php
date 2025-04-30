@@ -18,6 +18,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Entity\Produit;
+use App\Entity\Notification;
 use App\Entity\Discount;
 use App\Entity\Event;
 use App\Entity\Schedule;
@@ -33,19 +34,35 @@ use App\Form\maria\DiscountType;
 use App\Form\maria\ScheduleType;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use App\Event\LowStockEvent;
+use App\Controller\maria\NotificationController;
+use App\Service\DiscountCalendarSubscriber;
+use Spatie\CalendarLinks\Link;  // ← This is the critical line
+use Spatie\IcalendarGenerator\Components\Calendar;
+use Spatie\IcalendarGenerator\Components\Event as IcalendarEvent;  // ← Alias to avoid conflict
+use Symfony\UX\Chartjs\Builder\ChartBuilderInterface;
+use Symfony\UX\Chartjs\Model\Chart;
+use App\Entity\Message;
+use App\Repository\MessageRepository;
+use App\Form\MessageType;
+use App\Service\DiscountNotificationService;
+
+
 
 #[Route('/shopOwner')]
 class ShopOwnerController extends AbstractController
 {
-
-    // This will be replaced with session ID later
 
     #[Route('/admindashboard', name: 'dashboard')]
     public function dashboard(
         EntityManagerInterface $entityManager,
         FeedbackRepository $feedbackRepository,
         ProduitRepository $produitRepository,
-        CommandeRepository $commandeRepository
+        CommandeRepository $commandeRepository,
+        DiscountRepository $discountRepository,
+        EventRepository $eventRepository,
+        ChartBuilderInterface $chartBuilder
     ): Response {
         $currentId = $this->getUser()->getId();
         $shop = $entityManager->getRepository(Utilisateur::class)->find($currentId);
@@ -54,7 +71,10 @@ class ShopOwnerController extends AbstractController
             throw $this->createNotFoundException('Shop not found');
         }
 
-        // Get dashboard statistics
+        // Get active discount
+        $activeDiscount = $discountRepository->findActiveDiscountForShop($shop->getId());
+
+        // Get feedback statistics
         $averageRating = $feedbackRepository->getAverageRatingValue($shop);
         $ratingCount = $feedbackRepository->countByShop($shop);
         $ratingDistribution = $feedbackRepository->getRatingDistribution($shop);
@@ -75,9 +95,72 @@ class ShopOwnerController extends AbstractController
             $salesData['quantities'][] = $item['totalQuantity'];
         }
 
-        // Get stock status data (using properly named repository methods)
+        // Get stock status
         $lowStockProducts = $produitRepository->findByLowStockAndShop($shop->getId());
         $outOfStockProducts = $produitRepository->findByOutOfStockAndShop($shop->getId());
+
+        // Get events
+        $relevantEvent = $eventRepository->findRelevantEvents($shop->getId());
+        $eventData = null;
+
+        if (!empty($relevantEvent)) {
+            $firstEvent = $relevantEvent[0];
+            $today = new \DateTime();
+            $startDate = $firstEvent->getDateDebut();
+            $endDate = $firstEvent->getDateFin();
+
+            $eventData = [
+                'name' => $firstEvent->getNomOrganisateur(),
+                'desc' => $firstEvent->getDescription(),
+                'startDate' => $startDate,
+                'endDate' => $endDate,
+                'location' => $firstEvent->getEmplacement(),
+                'daysUntil' => $today->diff($startDate)->days,
+                'isCurrent' => ($today >= $startDate && $today <= $endDate)
+            ];
+        }
+
+        // Get sales statistics - UPDATED SECTION
+        $totalSalesLast7Days = $commandeRepository->findTotalSalesLast7Days($shop->getId());
+        $dailySalesLast8Days = $commandeRepository->findDailyTotalSalesLast8Days($shop->getId());
+
+        // Prepare chart data
+        $weeklySalesChartData = [
+            'labels' => array_keys($dailySalesLast8Days),
+            'data' => array_values($dailySalesLast8Days)
+        ];
+        $discounts = $discountRepository->findBy(['shop' => $shop->getId()]);
+
+        $seasonalAverages = [
+            'Winter' => 0,
+            'Spring' => 0,
+            'Summer' => 0,
+            'Fall' => 0
+        ];
+        $seasonCounts = array_fill_keys(array_keys($seasonalAverages), 0);
+
+        foreach ($discounts as $discount) {
+            $startDate = $discount->getStartDate();
+            $month = (int) $startDate->format('n');
+            $day = (int) $startDate->format('j');
+
+            $season = match (true) {
+                ($month == 12 && $day >= 21) || ($month <= 3 && $day <= 20) => 'Winter',
+                ($month == 3 && $day >= 21) || ($month <= 6 && $day <= 20) => 'Spring',
+                ($month == 6 && $day >= 21) || ($month <= 9 && $day <= 22) => 'Summer',
+                default => 'Fall'
+            };
+
+            $seasonalAverages[$season] += $discount->getDiscountPercentage();
+            $seasonCounts[$season]++;
+        }
+
+        // Calculate final averages
+        foreach ($seasonalAverages as $season => $total) {
+            $seasonalAverages[$season] = $seasonCounts[$season] > 0
+                ? round($total / $seasonCounts[$season], 2)
+                : 0;
+        }
 
         return $this->render('maria_templates/admindashboard.html.twig', [
             'averageRating' => $averageRating,
@@ -88,8 +171,137 @@ class ShopOwnerController extends AbstractController
             'salesData' => $salesData,
             'lowStockProducts' => $lowStockProducts,
             'outOfStockProducts' => $outOfStockProducts,
-            'shop' => $shop
+            'shop' => $shop,
+            'activeDiscount' => $activeDiscount,
+            'eventData' => $eventData,
+            'totalSalesLast7Days' => $totalSalesLast7Days,
+            'weeklySalesChartData' => $weeklySalesChartData,
+            'seasonalAverages' => $seasonalAverages, // Pass the raw data separately
+
         ]);
+    }
+    // // ===== Helper Methods =====
+    // private function prepareSeasonalDiscountData(array $discounts): array
+    // {
+    //     $seasons = [
+    //         'Winter' => ['total' => 0, 'count' => 0],
+    //         'Spring' => ['total' => 0, 'count' => 0],
+    //         'Summer' => ['total' => 0, 'count' => 0],
+    //         'Fall' => ['total' => 0, 'count' => 0]
+    //     ];
+
+    //     foreach ($discounts as $discount) {
+    //         $startDate = $discount->getStartDate();
+    //         $month = (int) $startDate->format('n');
+    //         $day = (int) $startDate->format('j');
+
+    //         $season = match (true) {
+    //             ($month == 12 && $day >= 21) || ($month <= 3 && $day <= 20) => 'Winter',
+    //             ($month == 3 && $day >= 21) || ($month <= 6 && $day <= 20) => 'Spring',
+    //             ($month == 6 && $day >= 21) || ($month <= 9 && $day <= 22) => 'Summer',
+    //             default => 'Fall'
+    //         };
+
+    //         $seasons[$season]['total'] += $discount->getDiscountPercentage();
+    //         $seasons[$season]['count']++;
+    //     }
+
+    //     return array_map(
+    //         fn($season) => $season['count'] > 0 ? $season['total'] / $season['count'] : 0,
+    //         $seasons
+    //     );
+    // }
+
+    private function getSeasonalChartData(array $discounts): array
+    {
+        $seasons = [
+            'Winter' => ['total' => 0, 'count' => 0],
+            'Spring' => ['total' => 0, 'count' => 0],
+            'Summer' => ['total' => 0, 'count' => 0],
+            'Fall' => ['total' => 0, 'count' => 0]
+        ];
+
+        foreach ($discounts as $discount) {
+            $startDate = $discount->getStartDate();
+            $month = (int) $startDate->format('n');
+            $day = (int) $startDate->format('j');
+
+            $season = match (true) {
+                ($month == 12 && $day >= 21) || ($month <= 3 && $day <= 20) => 'Winter',
+                ($month == 3 && $day >= 21) || ($month <= 6 && $day <= 20) => 'Spring',
+                ($month == 6 && $day >= 21) || ($month <= 9 && $day <= 22) => 'Summer',
+                default => 'Fall'
+            };
+
+            $seasons[$season]['total'] += $discount->getDiscountPercentage();
+            $seasons[$season]['count']++;
+        }
+        $averages = array_map(
+            fn($season) => $season['count'] > 0 ? $season['total'] / $season['count'] : 0,
+            $seasons
+        );
+
+        return [
+            'labels' => array_keys($seasons),
+            'datasets' => [
+                [
+                    'label' => 'Average Seasonal Discount (%)',
+                    'data' => array_values($averages),
+                    'backgroundColor' => [
+                        '#36A2EB',
+                        '#4BC0C0',
+                        '#FFCE56',
+                        '#FF6384'
+                    ]
+                ]
+            ]
+        ];
+    }
+    private function createSeasonalChart(ChartBuilderInterface $chartBuilder, array $data): Chart
+    {
+        $chart = $chartBuilder->createChart(Chart::TYPE_BAR);
+        $chart->setData([
+            'labels' => array_keys($data),
+            'datasets' => [
+                [
+                    'label' => 'Average Seasonal Discount (%)',
+                    'data' => array_values($data),
+                    'backgroundColor' => [
+                        '#36A2EB', // Winter
+                        '#4BC0C0', // Spring
+                        '#FFCE56', // Summer
+                        '#FF6384'  // Fall
+                    ],
+                ]
+            ]
+        ]);
+        $chart->setOptions([
+            'plugins' => [
+                'legend' => ['display' => false],
+                'tooltip' => [
+                    'callbacks' => [
+                        'label' => 'function(context) { return context.raw + "%"; }'
+                    ]
+                ]
+            ],
+            'scales' => [
+                'y' => [
+                    'beginAtZero' => true,
+                    'ticks' => ['callback' => 'function(value) { return value + "%"; }']
+                ]
+            ]
+        ]);
+
+        return $chart;
+    }
+
+    //todaysummary
+    #[Route('/todaysummary', name: 'todaysummary')]
+    public function todaysummary(): Response
+    {
+        $currentId = $this->getUser()->getId();
+
+        return $this->render('maria_templates/todaysummary.html.twig');
     }
     //**************************************************************************************************************************** */
 
@@ -130,20 +342,24 @@ class ShopOwnerController extends AbstractController
     }
 
     #[Route('/product/new', name: 'product_new')]
-    public function new(Request $request, EntityManagerInterface $em, UtilisateurRepository $utilisateurRepo): Response
-    {
+    public function new(
+        Request $request,
+        EntityManagerInterface $em,
+        UtilisateurRepository $utilisateurRepo,
+        EventDispatcherInterface $dispatcher
+    ): Response {
         $currentId = $this->getUser()->getId();
         $product = new Produit();
         $form = $this->createForm(ProductType::class, $product);
 
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
-            // Get the current shop owner
             $shop = $utilisateurRepo->find($currentId);
             if (!$shop) {
                 throw $this->createNotFoundException('Shop owner not found');
             }
-            $product->setShopId($shop);  // This will now work correctly
+            $product->setShopId($shop);
+
             // Handle file upload
             $imageFile = $form->get('image_url')->getData();
             if ($imageFile) {
@@ -154,20 +370,14 @@ class ShopOwnerController extends AbstractController
                 );
                 $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
 
-                //default saving path
                 $targetDirectory = $this->getParameter('kernel.project_dir') . '/public/resources/assets/product_images/';
 
-                // Create directory if it doesn't exist
                 if (!file_exists($targetDirectory)) {
                     mkdir($targetDirectory, 0777, true);
                 }
 
                 try {
-                    $imageFile->move(
-                        $targetDirectory,
-                        $newFilename
-                    );
-                    // Store relative path in database
+                    $imageFile->move($targetDirectory, $newFilename);
                     $product->setImage_url('resources\assets\product_images\ ' . $newFilename);
                 } catch (FileException $e) {
                     $this->addFlash('error', 'File upload failed: ' . $e->getMessage());
@@ -177,6 +387,21 @@ class ShopOwnerController extends AbstractController
 
             $em->persist($product);
             $em->flush();
+
+            // Check for low stock
+            if ($product->getStock() <= 10) {
+                $notification = new Notification();
+                $notification->setMessage(sprintf(
+                    'Low stock: %s (%d left)',
+                    $product->getNom(),
+                    $product->getStock()
+                ));
+                $notification = new Notification();
+                $notification->setUser($this->getUser());
+
+                $em->persist($notification);
+                $em->flush();
+            }
 
             $this->addFlash('success', 'Product created successfully!');
             return $this->redirectToRoute('products');
@@ -194,7 +419,8 @@ class ShopOwnerController extends AbstractController
         EntityManagerInterface $em,
         ProduitRepository $produitRepo,
         DiscountRepository $discountRepo,
-        UtilisateurRepository $utilisateurRepo
+        UtilisateurRepository $utilisateurRepo,
+        EventDispatcherInterface $dispatcher
     ): Response {
         $currentId = $this->getUser()->getId();
         $product = $produitRepo->find($id);
@@ -204,8 +430,6 @@ class ShopOwnerController extends AbstractController
 
         $shop = $utilisateurRepo->find($currentId);
         $discounts = $discountRepo->findBy(['shop' => $shop]);
-        $count = $discountRepo->count(['shop' => $shop]);
-        dump($count);
 
         $form = $this->createForm(EditProductType::class, $product, [
             'shopId' => $shop,
@@ -224,10 +448,25 @@ class ShopOwnerController extends AbstractController
             }
 
             $em->flush();
+
+            // Check for low stock
+            if ($product->getStock() <= 10) {
+                $notification = new Notification();
+                $notification->setMessage(sprintf(
+                    'Low stock: %s (%d left)',
+                    $product->getNom(),
+                    $product->getStock()
+                ));
+                $notification->setCreatedAt(new \DateTime());
+                $notification->setUser($this->getUser());
+
+                $em->persist($notification);
+                $em->flush();
+            }
+
             return $this->redirectToRoute('products');
         }
 
-        // For AJAX requests to get the form
         if ($request->isXmlHttpRequest()) {
             return $this->render('maria_templates/forms/edit_product_form.html.twig', [
                 'form' => $form->createView()
@@ -282,10 +521,11 @@ class ShopOwnerController extends AbstractController
         ]);
     }
 
-    #[Route('/discount/new', name: 'discount_new', methods: ['POST'])]
-    public function newDiscount(Request $request, EntityManagerInterface $em): Response
-    {
-
+    #[Route('/discount/new', name: 'discount_new', methods: ['POST'])] public function newDiscount(
+        Request $request,
+        EntityManagerInterface $em,
+        DiscountNotificationService $discountNotificationService
+    ): Response {
         $shop = $this->getUser();
         $discount = new Discount();
         $discount->setShop($shop);
@@ -296,9 +536,26 @@ class ShopOwnerController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $em->persist($discount);
             $em->flush();
+
+            // Send email notification after successful discount creation
+            try {
+                $discountNotificationService->sendDiscountNotification(
+                    $discount->getDiscountPercentage(), // Assuming your Discount entity has getProduct()
+                    $discount->getDiscountPercentage(),  // Assuming your Discount entity has getDiscountPercentage()
+                    'ammarim073@gmail.com'               // Test email - replace with actual client emails in production
+                );
+
+                $this->addFlash('success', 'Discount added and notification sent!');
+            } catch (\Exception $e) {
+                $this->addFlash('warning', 'Discount was added but email notification failed: ' . $e->getMessage());
+            }
+
             return $this->redirectToRoute('discounts');
         }
 
+        // If form is not valid, you might want to render the form again with errors
+        // Currently your original code redirects even on invalid form submission
+        // Consider changing to render the form template if invalid
         return $this->redirectToRoute('discounts');
     }
 
@@ -687,6 +944,49 @@ class ShopOwnerController extends AbstractController
         return $this->render('maria_templates/profile.html.twig', [
             'user' => $user,
             'categories' => $categories,
+        ]);
+    }
+    //ContactAdmin
+    // src/Controller/maria/ShopownerController.php
+
+    // src/Controller/maria/ShopownerController.php
+
+    #[Route('/contact-admin', name: 'contact_admin')]
+    #[IsGranted('ROLE_SHOP_OWNER')]
+    public function contactAdmin(
+        Request $request,
+        MessageRepository $messageRepository,
+        EntityManagerInterface $entityManager
+    ): Response {
+        /** @var Utilisateur $shopOwner */
+        $shopOwner = $this->getUser();
+
+        // Verify we have a valid user
+        if (!$shopOwner instanceof Utilisateur) {
+            throw $this->createAccessDeniedException('Invalid user type');
+        }
+
+        // Get messages - now handles both object and ID
+        $messages = $messageRepository->findShopOwnerConversations($shopOwner);
+        // Create new message
+        $message = new Message();
+        $message->setSender($shopOwner);
+        $message->setIsToAllAdmins(true);
+
+        $form = $this->createForm(MessageType::class, $message);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->persist($message);
+            $entityManager->flush();
+
+            return $this->redirectToRoute('contact_admin');
+        }
+
+        return $this->render('maria_templates/ContactAdmin.html.twig', [
+            'messages' => $messages,
+            'form' => $form->createView(),
+            'shopOwner' => $shopOwner
         ]);
     }
 }

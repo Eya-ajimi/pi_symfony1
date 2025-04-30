@@ -60,7 +60,16 @@
         "twilio/sdk": "^8.5",
         "vich/uploader-bundle": "^2.6",
         "voku/anti-xss": "^4.1",
-        "zenstruck/schedule-bundle": "^1.8"
+        "zenstruck/schedule-bundle": "^1.8",
+        "knplabs/knp-components": "^5.2",
+        "knplabs/knp-time-bundle": "^2.4",
+        "spatie/calendar-links": "^1.11",
+        "spatie/icalendar-generator": "^3.0",
+        "symfony/lock": "6.4.*",
+        "symfony/mercure": "^0.6.5",
+        "symfony/ux-notify": "^2.24",
+        "tattali/calendar-bundle": "*",
+        "twig/string-extra": "^3.20"
     },
     "config": {
         "allow-plugins": {

@@ -1,4 +1,217 @@
-<div class=" left_col menu_fixed">
+{% block javascripts %}
+
+
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+const notificationBell = document.querySelector('.dropdown-toggle.info-number');
+const notificationBadge = notificationBell.querySelector('.badge');
+const notificationList = document.querySelector('.msg_list');
+
+// Initialize with loading state
+notificationList.innerHTML = `
+				<li class="nav-item">
+					<div class="text-center py-3">
+						<div class="spinner-border text-primary spinner-border-sm" role="status">
+							<span class="sr-only">Loading notifications...</span>
+						</div>
+						<p class="text-muted small mt-2 mb-0">Loading notifications...</p>
+					</div>
+				</li>
+			`;
+
+// Function to mark notification as read
+async function markNotificationAsRead(notificationId) {
+try {
+const response = await fetch('/api/notifications/mark-read', {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json'
+},
+body: JSON.stringify(
+{id: notificationId}
+)
+});
+
+if (! response.ok) {
+throw new Error('Failed to mark as read');
+}
+
+return await response.json();
+} catch (error) {
+console.error('Error marking as read:', error);
+throw error;
+}
+}
+
+// Function to update notifications
+async function updateNotifications() {
+try {
+const response = await fetch('/api/notifications');
+
+if (! response.ok) {
+throw new Error('Network error');
+}
+
+const notifications = await response.json();
+const badge = document.querySelector('.info-number .badge');
+const list = document.querySelector('.msg_list');
+
+// Update badge
+badge.textContent = notifications.length;
+badge.classList.toggle('bg-green', notifications.length === 0);
+badge.classList.toggle('bg-red', notifications.length > 0);
+
+// Clear existing notifications
+list.innerHTML = '';
+
+if (notifications.length === 0) {
+list.innerHTML = `
+							<li class="nav-item">
+								<div class="dropdown-item text-center py-4">
+									<i class="far fa-bell-slash text-muted fa-2x mb-3"></i>
+									<p class="text-muted mb-0">No new notifications</p>
+								</div>
+							</li>
+						`;
+} else { // Only show first 10 notifications
+notifications.slice(0, 10).forEach(notif => {
+const item = document.createElement('li');
+item.className = `nav-item notification-item ${
+notif.isRead ? 'read' : 'unread'
+}`;
+item.innerHTML = `
+								<a class="dropdown-item d-flex align-items-start p-3 notification-link" data-id="${
+notif.id
+}">
+									<div class="notification-icon me-3">
+										<i class="fas ${
+notif.isRead ? 'fa-envelope-open text-muted' : 'fa-exclamation-circle text-warning'
+}"></i>
+									</div>
+									<div class="notification-content">
+										<div class="small text-muted mb-1">${
+notif.time
+}</div>
+										<div class="notification-text ${
+notif.isRead ? 'text-muted' : 'fw-500'
+}">${
+notif.message
+}</div>
+									</div>
+								</a>
+							`;
+list.appendChild(item);
+});
+
+// Add click handler for each notification
+document.querySelectorAll('.notification-link').forEach(link => {
+link.addEventListener('click', async function (e) {
+e.preventDefault();
+const notificationId = this.getAttribute('data-id');
+const notificationItem = this.closest('.notification-item');
+
+try {
+await markNotificationAsRead(notificationId);
+
+// Update UI immediately
+notificationItem.classList.add('read');
+notificationItem.classList.remove('unread');
+const icon = this.querySelector('.notification-icon i');
+icon.classList.replace('fa-exclamation-circle', 'fa-envelope-open');
+icon.classList.replace('text-warning', 'text-muted');
+this.querySelector('.notification-text').classList.add('text-muted');
+this.querySelector('.notification-text').classList.remove('fw-500');
+} catch (error) {
+console.error('Error:', error);
+}
+});
+});
+}
+
+// Add "See All" link if more than 10
+if (notifications.length > 10) {
+const seeAll = document.createElement('li');
+seeAll.className = 'nav-item border-top';
+seeAll.innerHTML = `
+							<a class="dropdown-item text-center py-2" href="#">
+								<strong class="see-all-link">+${
+notifications.length - 10
+} more notifications</strong>
+							</a>
+						`;
+list.appendChild(seeAll);
+}
+} catch (error) {
+console.error('Error:', error);
+const list = document.querySelector('.msg_list');
+list.innerHTML = `
+						<li class="nav-item">
+							<div class="dropdown-item text-center py-3">
+								<i class="fas fa-exclamation-triangle text-danger fa-2x mb-3"></i>
+								<p class="text-danger mb-0">Failed to load notifications</p>
+								<button class="btn btn-sm btn-outline-secondary mt-3 retry-button">
+									<i class="fas fa-sync-alt me-1"></i> Retry
+								</button>
+							</div>
+						</li>
+					`;
+
+// Add retry functionality
+const retryButton = list.querySelector('.retry-button');
+if (retryButton) {
+retryButton.addEventListener('click', function (e) {
+e.preventDefault();
+updateNotifications();
+});
+}
+}
+}
+
+// Initial load
+updateNotifications();
+
+// Refresh every 30 seconds
+setInterval(updateNotifications, 30000);
+
+// Manual refresh when clicking the bell
+notificationBell.addEventListener('click', updateNotifications);
+});
+	</script>
+
+	<style>
+		/* Notification specific styles */
+		.notification-item.unread {
+			background-color: rgba(0, 123, 255, 0.05);
+		}
+
+		.notification-item.unread .notification-text {
+			font-weight: 500;
+		}
+
+		.notification-item.read {
+			opacity: 0.8;
+		}
+
+		.notification-item.read .notification-text {
+			font-weight: normal;
+		}
+
+		.notification-link {
+			cursor: pointer;
+			transition: all 0.2s ease;
+		}
+
+		.notification-link:hover {
+			background-color: rgba(0, 0, 0, 0.03);
+		}
+
+		.msg_list {
+			max-height: 60vh;
+			overflow-y: auto;
+		}
+	</style>
+{% endblock %}
+<div class="left_col ">
 	<div class="left_col scroll-view">
 		<div class="navbar nav_title" style="border: 0; background-color: transparent; padding: 0.5rem 1rem 1rem 1rem;">
 			<a href="{{ path('dashboard') }}" class="site_title" style="display: flex; align-items: center; text-decoration: none; gap: 0.5rem;">
@@ -7,10 +220,13 @@
 			</a>
 		</div>
 		<div class="clearfix"></div>
+
 		<!-- Sidebar Menu -->
-		<div id="sidebar-menu" class="main_menu_side hidden-print main_menu mt-4">
+		<div id="sidebar-menu" class="main_menu_side hidden-print main_menu mt-4 protected-icons">
 			<div class="menu_section">
+
 				<ul class="nav side-menu">
+
 					<li class="{{ app.request.get('_route') == 'dashboard' ? 'active' : '' }}">
 						<a href="{{ path('dashboard') }}">
 							<i class="fas fa-tachometer-alt"></i>
@@ -24,30 +240,33 @@
 						</a>
 					</li>
 					<li class="{{ app.request.get('_route') == 'discounts' ? 'active' : '' }}">
-						<a
-							href="{{ path('discounts') }}">
-							<!-- Fixed the path here -->
+						<a href="{{ path('discounts') }}">
 							<i class="fas fa-percent"></i>
 							<span>Discounts</span>
 						</a>
 					</li>
-					<li
-						class="{{ app.request.get('_route') == 'schedule' ? 'active' : '' }}">
-						<!-- Added appropriate route -->
-						<a
-							href="{{ path('schedule') }}">
-							<!-- Fixed the path -->
+					<li class="{{ app.request.get('_route') == 'schedule' ? 'active' : '' }}">
+						<a href="{{ path('schedule') }}">
 							<i class="fas fa-clock"></i>
-							<!-- Changed to more appropriate icon -->
-							<span>schedule</span>
+							<span>Schedule</span>
 						</a>
 					</li>
 					<li class="{{ app.request.get('_route') == 'events' ? 'active' : '' }}">
-						<a
-							href="{{ path('events') }}">
-							<!-- Fixed the path -->
+						<a href="{{ path('events') }}">
 							<i class="fas fa-calendar-alt"></i>
 							<span>Events</span>
+						</a>
+					</li>
+					<li class="{{ app.request.get('_route') == 'orders' ? 'active' : '' }}">
+						<a href="{{ path('commands') }}">
+							<i class="fas fa-shopping-cart"></i>
+							<span>Orders</span>
+						</a>
+					</li>
+					<li class="{{ app.request.get('_route') == 'profile' ? 'active' : '' }}">
+						<a href="{{ path('profile') }}">
+							<i class="fas fa-user"></i>
+							<span>Profile</span>
 						</a>
 					</li>
 					<li
@@ -61,39 +280,13 @@
 							<span>Commandes</span>
 						</a>
 					</li>
-					<li
-						class="{{ app.request.get('_route') == 'profile' ? 'active' : '' }}">
-						<!-- Added appropriate route -->
-						<a
-							href="{{ path('profile') }}">
-							<!-- Fixed the path -->
-							<i class="fas fa-user"></i>
-							<!-- Changed to more appropriate icon -->
-							<span>Profile</span>
-						</a>
-					</li>
-
-				</ul>
-			</div>
-			<div class="sidebar-footer-update">
-				<ul>
-					<!-- Added proper list container -->
-					<li>
-						<a
-							href="{{ path('products') }}">
-							<!-- Fixed path to logout -->
-							<i class="fas fa-sign-out-alt"></i>
-							<span>Logout</span>
-						</a>
-					</li>
 				</ul>
 			</div>
 		</div>
 
-		<!-- Updated Footer with Logout Only -->
-
 	</div>
 </div>
+
 
 <!-- Top Navigation -->
 <div class="top_nav">
@@ -105,63 +298,42 @@
 		</div>
 		<nav class="nav navbar-nav">
 
-			<ul class="navbar-right">
+
+			<ul
+				class="navbar-right">
+				<!-- User Profile Dropdown -->
 				<li class="nav-item dropdown">
 					<a href="javascript:;" class="user-profile dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-						<img src="{{ asset('images/user.jpg') }}" alt="">Admin User
-						<span class=" fa fa-angle-down"></span>
+						<img src="{{ asset('images/60111.jpg') }}" alt="">
+						<span>Shop Owner</span>
+
 					</a>
-					<div class="dropdown-menu dropdown-usermenu pull-right">
-						<a class="dropdown-item" href="{{ path('products') }}">
-							<i class="fa fa-user pull-right"></i>
+					<div class="dropdown-menu dropdown-usermenu pull-right" style="position:fixed">
+						<a class="dropdown-item" href="{{ path('profile') }}">
+							<i class="fa fa-user mr-2"></i>
 							Profile
 						</a>
-						<a class="dropdown-item" href="{{ path('products') }}">
-							<i class="fa fa-cog pull-right"></i>
-							Settings
-						</a>
-						<a class="dropdown-item" href="{{ path('products') }}">
-							<i class="fa fa-key pull-right"></i>
-							Change Password
-						</a>
 						<div class="dropdown-divider"></div>
-						<a class="dropdown-item" href="{{ path('products') }}">
-							<i class="fa fa-sign-out-alt pull-right"></i>
-							{{ "backend.global.logout"|trans }}
+						<a class="dropdown-item" href="{{ path('app_logout') }}">
+							<i class="fa fa-sign-out-alt mr-2"></i>
+							Logout
 						</a>
 					</div>
 				</li>
 
-				<!-- Notifications -->
-				<li role="presentation" class="nav-item dropdown">
-					<a href="javascript:;" class="dropdown-toggle info-number" data-toggle="dropdown" aria-expanded="false">
-						<i class="fa fa-bell"></i>
-						<span class="badge bg-green">6</span>
+				<li class="nav-item dropdown">
+					<a href="#" class="nav-link dropdown-toggle info-number" id="notificationDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+						<i class="fas fa-bell"></i>
+						<span class="badge bg-red">0</span>
 					</a>
-					<ul class="dropdown-menu list-unstyled msg_list" role="menu">
-						<li class="nav-item">
-							<a class="dropdown-item">
-								<span class="image"><img src="{{ asset('images/user.png') }}" alt="Profile Image"/></span>
-								<span>
-									<span>John Smith</span>
-									<span class="time">3 mins ago</span>
-								</span>
-								<span class="message">
-									New order placed #12345
-								</span>
-							</a>
-						</li>
-						<li class="nav-item">
-							<div class="text-center">
-								<a class="dropdown-item">
-									<strong>See All Alerts</strong>
-									<i class="fa fa-angle-right"></i>
-								</a>
-							</div>
-						</li>
-					</ul>
+					<div class="dropdown-menu dropdown-menu-right" aria-labelledby="notificationDropdown">
+						<ul
+							class="list-unstyled msg_list" style="min-width: 300px;"><!-- Notifications will be inserted here -->
+						</ul>
+					</div>
 				</li>
 			</ul>
+
 		</nav>
 	</div>
 </div>

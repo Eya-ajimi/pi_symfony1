@@ -3,3 +3,7 @@ controllers:
         path: ../src/Controller/
         namespace: App\Controller
     type: attribute
+api_notifications:
+    path: /api/notifications
+    controller: App\Controller\maria\NotificationController::getNotifications
+    methods: GET

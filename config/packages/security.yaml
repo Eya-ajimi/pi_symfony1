@@ -63,6 +63,7 @@ security:
          - { path: ^/shopOwner, roles: ROLE_SHOPOWNER }
          - { path: ^/client, roles: ROLE_CLIENT }
          - { path: ^/, roles: IS_AUTHENTICATED_FULLY }
+         - { path: ^/admin/contact-shop-owner, roles: ROLE_ADMIN }
 
 when@test:
     security:

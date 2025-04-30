@@ -1,4 +1,5 @@
 import './bootstrap.js';
+import '@symfony/ux-chartjs';
 /*
  * Welcome to your app's main JavaScript file!
  *
