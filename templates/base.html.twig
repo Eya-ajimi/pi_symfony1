@@ -296,7 +296,13 @@
              <a href="{{ path('app_show_panier') }}"><span><i class="fas fa-shopping-cart"></i></span></a>
      <div class="user-dropdown-wrapper">
     <span class="user-icon">
-       <img src="../assets/css2/images/profile/user-1.jpg" alt="" width="35" height="35" class="rounded-circle">
+    {% if app.user and app.user.profilePicture %}
+        <img src="{{ asset('uploads/profile_pictures/' ~ app.user.profilePicture) }}" alt="" width="35" height="35" class="rounded-circle">
+    {% else %}
+        <img src="../assets/css2/images/profile/user-1.jpg" alt="" width="35" height="35" class="rounded-circle">
+    {% endif %}
+</span>
+       
     </span>
     <div class="user-dropdown">
         <a href="{{ path('client_dashboard') }}"><img src="../assets/css2/images/profile/user-1.jpg" alt="" width="25" height="25" class="rounded-circle"></i> Profil</a>

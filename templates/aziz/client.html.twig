@@ -2,67 +2,124 @@
 
 {% block title %}Client Dashboard{% endblock %}
 
-
 {% block stylesheets %}
- <link rel="stylesheet" href="{{ asset('css/client.css') }}">
-
-
+    <link rel="stylesheet" href="{{ asset('css/client.css') }}">
 {% endblock %}
 
-
 {% block content %}
-
-
 <div class="container">
     <div class="welcome-banner">
         Bienvenue dans l'espace CLIENT
     </div>
 
     <div class="card">
-        <div class="card-header">
-            <h4>Profil du client</h4>
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">Profil du client</h4>
             <button type="button" id="toggleEdit" class="btn btn-outline-primary">Modifier</button>
         </div>
-        <div class="card-body">
-            <img src="/images/60111.jpg" alt="Photo de profil" class="profile-image">
 
-            <form method="post" action="{{ path('client_dashboard') }}">
+        <div class="card-body">
+            <div class="profile-image-container mb-4 text-center">
+                {% if user.profilePicture %}
+                    <img src="{{ asset('uploads/profile_pictures/' ~ user.profilePicture) }}"
+                         alt="Photo de profil"
+                         class="profile-image">
+                {% else %}
+                    <img src="{{ asset('images/default-profile.jpg') }}"
+                         alt="Photo de profil par défaut"
+                         class="profile-image">
+                {% endif %}
+            </div>
+
+            {# enctype obligatoire pour l’upload d’image #}
+            <form method="post"
+                  action="{{ path('client_dashboard') }}"
+                  enctype="multipart/form-data">
                 <div class="form-grid">
                     <div class="form-group">
-                        <label>Nom</label>
-                        <input type="text" name="nom" class="form-control" value="{{ user.nom }}" disabled>
+                        <label>Photo de profil</label>
+                        <input type="file"
+                               name="profilePicture"
+                               class="form-control"
+                               accept="image/*"
+                               disabled>
                     </div>
+
+                    <div class="form-group">
+                        <label>Nom</label>
+                        <input type="text"
+                               name="nom"
+                               class="form-control"
+                               value="{{ user.nom }}"
+                               disabled>
+                    </div>
+
                     <div class="form-group">
                         <label>Prénom</label>
-                        <input type="text" name="prenom" class="form-control" value="{{ user.prenom }}" disabled>
+                        <input type="text"
+                               name="prenom"
+                               class="form-control"
+                               value="{{ user.prenom }}"
+                               disabled>
                     </div>
+
                     <div class="form-group">
                         <label>Email</label>
-                        <input type="email" name="email" class="form-control" value="{{ user.email }}" disabled>
+                        <input type="email"
+                               name="email"
+                               class="form-control"
+                               value="{{ user.email }}"
+                               disabled>
                     </div>
+
                     <div class="form-group">
                         <label>Adresse</label>
-                        <input type="text" name="adresse" class="form-control" value="{{ user.adresse }}" disabled>
+                        <input type="text"
+                               name="adresse"
+                               class="form-control"
+                               value="{{ user.adresse }}"
+                               disabled>
                     </div>
+
                     <div class="form-group">
                         <label>Téléphone</label>
-                        <input type="text" name="telephone" class="form-control" value="{{ user.telephone }}" disabled>
+                        <input type="text"
+                               name="telephone"
+                               class="form-control"
+                               value="{{ user.telephone }}"
+                               disabled>
                     </div>
+
                     <div class="form-group">
-                        <label>Mot de passe</label>
-                        <input type="password" name="password" class="form-control" value="****" disabled>
+                        <label>Nouveau mot de passe</label>
+                        {# pas de value => vide par défaut #}
+                        <input type="password"
+                               name="password"
+                               class="form-control"
+                               placeholder="Laisser vide si inchangé"
+                               disabled>
                     </div>
                 </div>
-                <div class="action-buttons">
-                    <button type="submit" id="saveBtn" class="btn btn-success" style="display: none;">Enregistrer</button>
-                    <button type="button" id="cancelBtn" class="btn btn-cancel" style="display: none;">Annuler</button>
+
+                <div class="action-buttons mt-4">
+                    <button type="submit"
+                            id="saveBtn"
+                            class="btn btn-success"
+                            style="display:none">
+                        Enregistrer
+                    </button>
+                    <button type="button"
+                            id="cancelBtn"
+                            class="btn btn-cancel"
+                            style="display:none">
+                        Annuler
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Logout Button -->
-    <div class="logout-container">
+    <div class="logout-container text-center mt-4">
         <a href="{{ path('app_logout') }}" class="btn btn-danger">
             <i class="fas fa-sign-out-alt"></i> Déconnexion
         </a>
@@ -70,30 +127,28 @@
 </div>
 
 <script>
-document.getElementById('toggleEdit').addEventListener('click', function () {
-    const formControls = document.querySelectorAll('.form-control');
-    const saveBtn = document.getElementById('saveBtn');
-    const cancelBtn = document.getElementById('cancelBtn');
-    const isDisabled = formControls[0].disabled;
+const toggleBtn  = document.getElementById('toggleEdit');
+const saveBtn    = document.getElementById('saveBtn');
+const cancelBtn  = document.getElementById('cancelBtn');
+const inputs     = document.querySelectorAll('.form-control');
 
-    formControls.forEach(function (input) {
-        input.disabled = !isDisabled;
-        if (!isDisabled) {
-            input.classList.remove('editing');
-        } else {
-            input.classList.add('editing');
+toggleBtn.addEventListener('click', () => {
+    const currentlyDisabled = inputs[0].disabled;
+
+    inputs.forEach(input => {
+        input.disabled = !currentlyDisabled;
+
+        // Si on passe en mode édition, on vide volontairement le champ mot de passe.
+        if (currentlyDisabled && input.name === 'password') {
+            input.value = '';
         }
     });
 
-    if (isDisabled) {
-        this.style.display = 'none';
-        saveBtn.style.display = 'inline-block';
-        cancelBtn.style.display = 'inline-block';
-    }
+    toggleBtn.style.display = currentlyDisabled ? 'none' : 'inline-block';
+    saveBtn.style.display   = currentlyDisabled ? 'inline-block' : 'none';
+    cancelBtn.style.display = currentlyDisabled ? 'inline-block' : 'none';
 });
 
-document.getElementById('cancelBtn').addEventListener('click', function () {
-    window.location.reload();
-});
+cancelBtn.addEventListener('click', () => window.location.reload());
 </script>
 {% endblock %}
