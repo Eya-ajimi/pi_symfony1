@@ -1,0 +1,102 @@
+{# templates/parking/scan_form.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Save Parking Spot {{ spot.zone }}{{ spot.id }}{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('css/scan-form.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="parking-header">
+        <div class="icon-badge">
+            <i class="fas fa-car"></i>
+        </div>
+        <h1>Save Your Parking Spot</h1>
+    </div>
+
+    <div class="spot-info">
+        <div class="spot-card">
+            <div class="spot-icon">
+                <i class="fas fa-map-marker-alt"></i>
+            </div>
+            <div class="spot-details">
+                <h2>Spot <span class="spot-number">{{ spot.zone }}{{ spot.id }}</span></h2>
+                <p>Floor: <span class="floor-number">{{ spot.floor }}</span></p>
+                <p class="spot-timestamp"><i class="far fa-clock"></i> Scanned at {{ "now"|date("h:i A") }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="instruction-panel">
+        <i class="fas fa-info-circle instruction-icon"></i>
+        <p>Enter your phone number below to save this location. You'll receive a text confirmation that you can use later to find your car.</p>
+    </div>
+
+    <div class="card form-card">
+        <div class="card-body">
+            <div class="form-header">
+                <i class="fas fa-mobile-alt"></i>
+                <h3>Contact Information</h3>
+            </div>
+            
+            {{ form_start(form) }}
+            <div class="form-group phone-input">
+                {{ form_label(form.phoneNumber, 'Your Phone Number') }}
+                {{ form_widget(form.phoneNumber, {'attr': {'placeholder': '55321315', 'class': 'form-control'}}) }}
+                <small class="form-text">We'll send a confirmation text with your spot details</small>
+            </div>
+            
+            <div class="form-actions">
+                {{ form_widget(form.save, { 'attr': {'class': 'btn btn-primary save-btn'}, 'label': 'Save My Spot' }) }}
+            </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+
+    <div class="navigation-footer">
+        <a href="{{ path('app_parking') }}" class="btn btn-outline-secondary back-btn">
+            <i class="fas fa-arrow-left"></i> Back to Parking Map
+        </a>
+        
+        <div class="help-tip">
+            <i class="fas fa-question-circle"></i>
+            <span>Need help? Call parking assistance: 555-PARK</span>
+        </div>
+    </div>
+
+    <div class="decoration-circle circle-1"></div>
+    <div class="decoration-circle circle-2"></div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Apply focus to phone input
+        document.querySelector('#form_phoneNumber').focus();
+        
+        // Only allow numbers in the phone input (without formatting)
+        const phoneInput = document.querySelector('#form_phoneNumber');
+        
+        phoneInput.addEventListener('input', function(e) {
+            // Only keep digits, remove any non-numeric characters
+            let input = e.target.value.replace(/\D/g, '');
+            
+            // Set the value directly without formatting
+            e.target.value = input;
+        });
+        
+        // Button feedback effect with improved timing
+        const saveBtn = document.querySelector('.save-btn');
+        saveBtn.addEventListener('click', function() {
+            this.classList.add('btn-clicked');
+            setTimeout(() => {
+                this.classList.remove('btn-clicked');
+            }, 200);
+        });
+    });
+</script>
+{% endblock %}

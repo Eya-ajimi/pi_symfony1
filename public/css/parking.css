@@ -1,5 +1,6 @@
 /* Base Styles */
 :root {
+    --reserved-color: #3b82f6;
     --primary-color: #3a7bd5;
     --primary-dark: #2a3f54;
     --primary-light: #6ea7ff;
@@ -9,7 +10,7 @@
     --warning-color: #f59e0b;
     --available-color: #10b981;
     --occupied-color: #ef4444;
-    --reserved-color: #f59e0b;
+
     --disabled-color: #6b7280;
     --text-dark: #1f2937;
     --text-light: #f9fafb;
@@ -901,7 +902,15 @@
         outline: 2px solid var(--primary-color);
         outline-offset: 2px;
     }
+    .parking-spot.blue {
+        background-color: var(--reserved-color); /* This will now use the blue color */
+        box-shadow: 0 4px 6px rgba(59, 130, 246, 0.2);
+        cursor: not-allowed;
+    }
     
+    .legend-color.blue {
+        background-color: var(--reserved-color);
+    }
     /* Print styles for reservation receipts */
     @media print {
         body * {
@@ -1042,4 +1051,22 @@
 .status-badge.other {
     background-color: rgba(255, 193, 7, 0.2);
     color: #ffc107;
+}
+
+
+
+.parking-spot.blue:hover {
+    transform: none; /* Disable hover effect for reserved spots */
+}
+
+.legend-color.blue {
+    background-color: var(--reserved-color);
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    margin-right: 8px;
+}
+
+.parking-spot.blue .vehicle-icon {
+    color: rgba(255, 255, 255, 0.9);
 }

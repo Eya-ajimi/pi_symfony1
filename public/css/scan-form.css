@@ -1,0 +1,596 @@
+/* Save Parking Spot Form Styling - Enhanced Version with Fixed Spacing and Alignment */
+:root {
+    --primary-color: #3498db;
+    --primary-dark: #2980b9;
+    --secondary-color: #2ecc71;
+    --secondary-dark: #27ae60;
+    --accent-color: #f39c12;
+    --accent-dark: #e67e22;
+    --danger-color: #e74c3c;
+    --light-gray: #f8f9fa;
+    --dark-gray: #343a40;
+    --text-color: #2c3e50;
+    --card-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    --hover-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+    --soft-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  }
+  
+  /* Base styling */
+  body {
+    background-color: #f9f9f9;
+    font-family: 'Roboto', 'Segoe UI', sans-serif;
+    color: var(--text-color);
+    line-height: 1.6;
+  }
+  
+  /* Container enhancements */
+  .container.mt-5 {
+    max-width: 700px;
+    margin: 3rem auto 4rem; /* Increased top margin for better spacing */
+    padding: 0 1.5rem 3rem;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  /* Decorative elements */
+  .decoration-circle {
+    position: absolute;
+    border-radius: 50%;
+    z-index: -1;
+  }
+  
+  .circle-1 {
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(52, 152, 219, 0.08) 0%, rgba(52, 152, 219, 0) 70%);
+    top: -150px;
+    right: -100px;
+  }
+  
+  .circle-2 {
+    width: 250px;
+    height: 250px;
+    background: radial-gradient(circle, rgba(46, 204, 113, 0.08) 0%, rgba(46, 204, 113, 0) 70%);
+    bottom: -100px;
+    left: -100px;
+  }
+  
+  /* Parking Header with icon badge */
+  .parking-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 2.5rem; /* Increased for better separation */
+    position: relative;
+  }
+  
+  .icon-badge {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1.5rem;
+    box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+    flex-shrink: 0;
+  }
+  
+  .icon-badge i {
+    color: white;
+    font-size: 1.8rem;
+  }
+  
+  h1 {
+    color: var(--dark-gray);
+    font-weight: 700;
+    margin: 0;
+    font-size: 2.2rem;
+    line-height: 1.2;
+    position: relative;
+    flex-grow: 1;
+  }
+  
+  h1::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -10px;
+    width: 50px; /* Slightly wider for better balance */
+    height: 4px;
+    background: var(--primary-color);
+    border-radius: 2px;
+  }
+  
+  /* Spot information card */
+  .spot-info {
+    margin-bottom: 2.5rem; /* Increased spacing */
+  }
+  
+  .spot-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: var(--soft-shadow);
+    padding: 1.75rem; /* Increased padding for better content spacing */
+    display: flex;
+    align-items: center;
+    transition: all 0.3s ease;
+    border-left: 5px solid var(--secondary-color);
+  }
+  
+  .spot-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--card-shadow);
+  }
+  
+  .spot-icon {
+    background: linear-gradient(135deg, var(--secondary-color), var(--secondary-dark));
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1.5rem;
+    flex-shrink: 0;
+  }
+  
+  .spot-icon i {
+    color: white;
+    font-size: 1.4rem;
+  }
+  
+  .spot-details {
+    flex-grow: 1;
+  }
+  
+  .spot-details h2 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin: 0 0 0.75rem; /* Slightly increased spacing */
+    color: var(--dark-gray);
+  }
+  
+  .spot-number {
+    background: linear-gradient(120deg, var(--secondary-color), var(--primary-color));
+    color: white;
+    padding: 0.3rem 0.85rem; /* Better padding for the badge */
+    border-radius: 20px;
+    font-size: 1.2rem;
+    margin-left: 0.5rem;
+    display: inline-block; /* Ensures proper alignment with text */
+    vertical-align: middle;
+  }
+  
+  .floor-number {
+    font-weight: 600;
+    color: var(--primary-color);
+  }
+  
+  .spot-timestamp {
+    margin-top: 0.85rem; /* Increased spacing from content above */
+    font-size: 0.9rem;
+    color: #6c757d;
+  }
+  
+  .spot-timestamp i {
+    margin-right: 0.5rem;
+  }
+  
+  /* Instruction panel */
+  .instruction-panel {
+    background-color: rgba(243, 156, 18, 0.1);
+    border-radius: 10px;
+    padding: 1.4rem 1.75rem; /* Increased padding for better content spacing */
+    margin-bottom: 2.5rem; /* Increased bottom margin */
+    display: flex;
+    align-items: center;
+    border-left: 3px solid var(--accent-color);
+  }
+  
+  .instruction-icon {
+    color: var(--accent-color);
+    font-size: 1.5rem;
+    margin-right: 1.25rem; /* Increased spacing between icon and text */
+    flex-shrink: 0;
+  }
+  
+  .instruction-panel p {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--dark-gray);
+    line-height: 1.5; /* Better line height for readability */
+  }
+  
+  /* Alert Messages */
+  .alert {
+    border-radius: 10px;
+    padding: 1.25rem 1.25rem 1.25rem 3.5rem;
+    margin-bottom: 1.75rem; /* Increased spacing */
+    font-weight: 500;
+    position: relative;
+    box-shadow: var(--soft-shadow);
+    border: none;
+  }
+  
+  .alert:before {
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    position: absolute;
+    left: 1.25rem;
+    top: 1.25rem;
+    font-size: 1.25rem;
+  }
+  
+  .alert-success {
+    background-color: rgba(46, 204, 113, 0.1);
+    color: var(--secondary-dark);
+    border-left: 4px solid var(--secondary-color);
+  }
+  
+  .alert-success:before {
+    content: "\f058"; /* Font Awesome check-circle icon */
+    color: var(--secondary-color);
+  }
+  
+  .alert-danger {
+    background-color: rgba(231, 76, 60, 0.1);
+    color: var(--danger-color);
+    border-left: 4px solid var(--danger-color);
+  }
+  
+  .alert-danger:before {
+    content: "\f057"; /* Font Awesome times-circle icon */
+    color: var(--danger-color);
+  }
+  
+  .alert-warning {
+    background-color: rgba(243, 156, 18, 0.1);
+    color: var(--accent-dark);
+    border-left: 4px solid var(--accent-color);
+  }
+  
+  .alert-warning:before {
+    content: "\f071"; /* Font Awesome exclamation-triangle icon */
+    color: var(--accent-color);
+  }
+  
+  .animate-alert {
+    animation: slideInLeft 0.5s ease-out;
+  }
+  
+  @keyframes slideInLeft {
+    from {
+      transform: translateX(-30px);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  
+  /* Main Form Card */
+  .form-card {
+    border-radius: 16px;
+    box-shadow: var(--card-shadow);
+    margin-bottom: 2.5rem; /* Increased spacing */
+    border: none;
+    transition: all 0.3s ease;
+    overflow: hidden;
+    background: white;
+  }
+  
+  .form-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--hover-shadow);
+  }
+  
+  .card-body {
+    padding: 2.25rem; /* Increased padding for better content spacing */
+  }
+  
+  /* Form header */
+  .form-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.75rem; /* Increased spacing */
+    padding-bottom: 1.25rem; /* Increased padding */
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
+  
+  .form-header i {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    margin-right: 1.25rem; /* Increased spacing */
+  }
+  
+  .form-header h3 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--dark-gray);
+  }
+  
+  /* Form Elements */
+  .form-group {
+    margin-bottom: 1.75rem; /* Increased spacing between form elements */
+  }
+  
+  .form-label {
+    font-weight: 600;
+    color: var(--dark-gray);
+    margin-bottom: 0.9rem; /* Increased spacing */
+    font-size: 1rem;
+    display: block;
+  }
+  
+  .form-control {
+    border-radius: 10px;
+    border: 2px solid #e0e0e0;
+    padding: 0.9rem 1rem 0.9rem 3rem; /* Better vertical padding */
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    width: 100%;
+    color: var(--dark-gray);
+    background-color: var(--light-gray);
+  }
+  
+  .form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
+    outline: none;
+    background-color: white;
+  }
+  
+  /* Phone input with icon */
+  .phone-input {
+    position: relative;
+  }
+  
+  .phone-input::before {
+    content: "\f3cd"; /* Font Awesome mobile-alt icon */
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    position: absolute;
+    left: 1.1rem; /* Adjusted for better alignment */
+    top: 2.8rem; /* Adjusted for better vertical alignment with input field */
+    color: #95a5a6;
+    font-size: 1.2rem;
+  }
+  
+  .form-text {
+    color: #6c757d;
+    font-size: 0.85rem;
+    margin-top: 0.6rem; /* Slightly increased spacing */
+    padding-left: 0.5rem;
+    font-style: italic;
+  }
+  
+  /* Form Actions */
+  .form-actions {
+    margin-top: 2.25rem; /* Increased spacing */
+  }
+  
+  /* Buttons */
+  .btn {
+    border-radius: 10px;
+    padding: 0.9rem 1.75rem; /* Increased padding for better button sizing */
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    border: none;
+    color: white;
+    box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+  }
+  
+  .btn-primary:hover {
+    background: linear-gradient(135deg, #2b87c4, #246a99);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4);
+  }
+  
+  .btn-primary:active, .btn-clicked {
+    transform: translateY(1px) scale(0.98);
+    box-shadow: 0 2px 10px rgba(52, 152, 219, 0.3);
+  }
+  
+  .save-btn {
+    min-width: 180px;
+    position: relative;
+    padding-left: 2.75rem; /* Increased left padding for better icon placement */
+  }
+  
+  .save-btn::before {
+    content: "\f0c7"; /* Font Awesome save icon */
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    position: absolute;
+    left: 1.5rem;
+    font-size: 1rem;
+  }
+  
+  .btn-outline-secondary {
+    color: var(--dark-gray);
+    border: 2px solid #cbd0d5;
+    background: transparent;
+    transition: all 0.3s;
+  }
+  
+  .btn-outline-secondary:hover {
+    background-color: #f8f9fa;
+    border-color: #95a5a6;
+    color: var(--dark-gray);
+  }
+  
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+  }
+  
+  .back-btn i {
+    margin-right: 0.6rem; /* Slightly increased spacing */
+  }
+  
+  /* Navigation Footer */
+  .navigation-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 2.5rem; /* Increased top margin */
+    flex-wrap: wrap;
+  }
+  
+  .help-tip {
+    display: flex;
+    align-items: center;
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin-top: 0; /* Reset margin top for better alignment */
+  }
+  
+  .help-tip i {
+    color: var(--accent-color);
+    margin-right: 0.6rem; /* Slightly increased spacing */
+    font-size: 1.1rem;
+  }
+  
+  /* Animations */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  .form-card, .spot-card {
+    animation: fadeIn 0.6s ease-out;
+  }
+  
+  /* Pulsing effect for the save button */
+  @keyframes subtle-pulse {
+    0% {
+      box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+    }
+    50% {
+      box-shadow: 0 5px 20px rgba(52, 152, 219, 0.5);
+    }
+    100% {
+      box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+    }
+  }
+  
+  .save-btn {
+    animation: subtle-pulse 2s infinite;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .container.mt-5 {
+      padding: 0 1.25rem 2.5rem; /* Increased padding */
+      margin-top: 1.5rem; /* Increased top margin */
+    }
+    
+    .parking-header {
+      flex-direction: column;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    
+    .icon-badge {
+      margin-right: 0;
+      margin-bottom: 1.25rem; /* Increased spacing */
+    }
+    
+    h1 {
+      font-size: 1.8rem;
+    }
+    
+    h1::after {
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: -12px; /* Adjusted position */
+    }
+    
+    .spot-card {
+      flex-direction: column;
+      text-align: center;
+      padding: 1.5rem;
+    }
+    
+    .spot-icon {
+      margin-right: 0;
+      margin-bottom: 1.25rem; /* Increased spacing */
+    }
+    
+    .spot-details h2 {
+      margin-bottom: 1rem; /* Increased spacing */
+    }
+    
+    .instruction-panel {
+      flex-direction: column;
+      text-align: center;
+      padding: 1.5rem;
+    }
+    
+    .instruction-icon {
+      margin-right: 0;
+      margin-bottom: 1rem; /* Increased spacing */
+    }
+    
+    .card-body {
+      padding: 1.5rem;
+    }
+    
+    .form-header {
+      flex-direction: column;
+      text-align: center;
+    }
+    
+    .form-header i {
+      margin-right: 0;
+      margin-bottom: 0.75rem;
+    }
+    
+    .btn {
+      width: 100%;
+    }
+    
+    .navigation-footer {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 1.25rem; /* Added gap between elements */
+    }
+    
+    .help-tip {
+      margin-top: 0.5rem;
+      justify-content: center;
+    }
+  }
+  
+  /* Fix for very small screens */
+  @media (max-width: 480px) {
+    .spot-number {
+      display: inline-block;
+      margin-top: 0.5rem;
+      margin-left: 0;
+    }
+    
+    .form-control {
+      font-size: 1rem;
+      padding: 0.8rem 1rem 0.8rem 2.75rem;
+    }
+    
+    .phone-input::before {
+      top: 2.65rem;
+      left: 1rem;
+    }
+  }
