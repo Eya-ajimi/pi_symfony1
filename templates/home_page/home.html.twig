@@ -73,6 +73,14 @@
         transform: translateY(-5px);
     }
 }
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 10px;
+}
+
 
     </style>
 {% endblock %}
@@ -225,7 +233,12 @@
             <div class="post-card {% if post.utilisateur == app.user %}user-owned{% endif %}">
                 <div class="post-header">
                     <div class="user-info">
-                        <span><i class="fas fa-user"></i></span>
+                        {% if post.utilisateur.profilePicture %}
+    <img src="{{ asset('uploads/profile_pictures/' ~ post.utilisateur.profilePicture) }}" alt="User Image" class="user-avatar">
+{% else %}
+    <span><i class="fas fa-user"></i></span>
+{% endif %}
+
                         <div class="user-details">
                             <span class="user-name">{{ post.utilisateur.nom }}</span>
                             <span class="post-time">{{ post.dateCreation|date('H:i') }}</span>
@@ -272,7 +285,12 @@
                 <div class="comment-section">
                     {% for comment in post.commentaires %}
                     <div class="comment {% if comment.utilisateur == app.user %}user-owned{% endif %}">
-                        <span><i class="fas fa-user"></i></span>
+                        {% if comment.utilisateur.profilePicture %}
+    <img src="{{ asset('uploads/profile_pictures/' ~ comment.utilisateur.profilePicture) }}" alt="User Image" class="user-avatar">
+{% else %}
+    <span><i class="fas fa-user"></i></span>
+{% endif %}
+
                         <div class="comment-body">
                             <div class="comment-header">
                                 <span class="comment-user">{{ comment.utilisateur.nom }}</span>
@@ -334,7 +352,12 @@
                             <!-- Reply Section -->
                             {% for reply in comment.sousCommentaires %}
                             <div class="reply {% if reply.utilisateur == app.user %}user-owned{% endif %}">
-                                <span><i class="fas fa-user"></i></span>
+                                {% if reply.utilisateur.profilePicture %}
+    <img src="{{ asset('uploads/profile_pictures/' ~ reply.utilisateur.profilePicture) }}" alt="User Image" class="user-avatar">
+{% else %}
+    <span><i class="fas fa-user"></i></span>
+{% endif %}
+
                                 <div class="comment-body">
                                     <div class="comment-header">
                                         <span class="comment-user">{{ reply.utilisateur.nom }}</span>

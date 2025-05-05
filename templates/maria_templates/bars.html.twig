@@ -1,23 +1,27 @@
 {% block javascripts %}
 
 
-	<script>
-		document.addEventListener('DOMContentLoaded', function () {
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
 const notificationBell = document.querySelector('.dropdown-toggle.info-number');
 const notificationBadge = notificationBell.querySelector('.badge');
 const notificationList = document.querySelector('.msg_list');
 
+
 // Initialize with loading state
 notificationList.innerHTML = `
-				<li class="nav-item">
-					<div class="text-center py-3">
-						<div class="spinner-border text-primary spinner-border-sm" role="status">
-							<span class="sr-only">Loading notifications...</span>
-						</div>
-						<p class="text-muted small mt-2 mb-0">Loading notifications...</p>
-					</div>
-				</li>
-			`;
+                <li class="nav-item">
+                    <div class="text-center py-3">
+                        <div class="spinner-border text-primary spinner-border-sm" role="status">
+                            <span class="sr-only">Loading notifications...</span>
+                        </div>
+                        <p class="text-muted small mt-2 mb-0">Loading notifications...</p>
+                    </div>
+                </li>
+            `;
+
 
 // Function to mark notification as read
 async function markNotificationAsRead(notificationId) {
@@ -32,9 +36,11 @@ body: JSON.stringify(
 )
 });
 
+
 if (! response.ok) {
 throw new Error('Failed to mark as read');
 }
+
 
 return await response.json();
 } catch (error) {
@@ -43,36 +49,42 @@ throw error;
 }
 }
 
+
 // Function to update notifications
 async function updateNotifications() {
 try {
 const response = await fetch('/api/notifications');
 
+
 if (! response.ok) {
 throw new Error('Network error');
 }
 
+
 const notifications = await response.json();
 const badge = document.querySelector('.info-number .badge');
 const list = document.querySelector('.msg_list');
+
 
 // Update badge
 badge.textContent = notifications.length;
 badge.classList.toggle('bg-green', notifications.length === 0);
 badge.classList.toggle('bg-red', notifications.length > 0);
 
+
 // Clear existing notifications
 list.innerHTML = '';
 
+
 if (notifications.length === 0) {
 list.innerHTML = `
-							<li class="nav-item">
-								<div class="dropdown-item text-center py-4">
-									<i class="far fa-bell-slash text-muted fa-2x mb-3"></i>
-									<p class="text-muted mb-0">No new notifications</p>
-								</div>
-							</li>
-						`;
+                            <li class="nav-item">
+                                <div class="dropdown-item text-center py-4">
+                                    <i class="far fa-bell-slash text-muted fa-2x mb-3"></i>
+                                    <p class="text-muted mb-0">No new notifications</p>
+                                </div>
+                            </li>
+                        `;
 } else { // Only show first 10 notifications
 notifications.slice(0, 10).forEach(notif => {
 const item = document.createElement('li');
@@ -80,28 +92,29 @@ item.className = `nav-item notification-item ${
 notif.isRead ? 'read' : 'unread'
 }`;
 item.innerHTML = `
-								<a class="dropdown-item d-flex align-items-start p-3 notification-link" data-id="${
+                                <a class="dropdown-item d-flex align-items-start p-3 notification-link" data-id="${
 notif.id
 }">
-									<div class="notification-icon me-3">
-										<i class="fas ${
+                                    <div class="notification-icon me-3">
+                                        <i class="fas ${
 notif.isRead ? 'fa-envelope-open text-muted' : 'fa-exclamation-circle text-warning'
 }"></i>
-									</div>
-									<div class="notification-content">
-										<div class="small text-muted mb-1">${
+                                    </div>
+                                    <div class="notification-content">
+                                        <div class="small text-muted mb-1">${
 notif.time
 }</div>
-										<div class="notification-text ${
+                                        <div class="notification-text ${
 notif.isRead ? 'text-muted' : 'fw-500'
 }">${
 notif.message
 }</div>
-									</div>
-								</a>
-							`;
+                                    </div>
+                                </a>
+                            `;
 list.appendChild(item);
 });
+
 
 // Add click handler for each notification
 document.querySelectorAll('.notification-link').forEach(link => {
@@ -110,8 +123,10 @@ e.preventDefault();
 const notificationId = this.getAttribute('data-id');
 const notificationItem = this.closest('.notification-item');
 
+
 try {
 await markNotificationAsRead(notificationId);
+
 
 // Update UI immediately
 notificationItem.classList.add('read');
@@ -128,33 +143,35 @@ console.error('Error:', error);
 });
 }
 
+
 // Add "See All" link if more than 10
 if (notifications.length > 10) {
 const seeAll = document.createElement('li');
 seeAll.className = 'nav-item border-top';
 seeAll.innerHTML = `
-							<a class="dropdown-item text-center py-2" href="#">
-								<strong class="see-all-link">+${
+                            <a class="dropdown-item text-center py-2" href="#">
+                                <strong class="see-all-link">+${
 notifications.length - 10
 } more notifications</strong>
-							</a>
-						`;
+                            </a>
+                        `;
 list.appendChild(seeAll);
 }
 } catch (error) {
 console.error('Error:', error);
 const list = document.querySelector('.msg_list');
 list.innerHTML = `
-						<li class="nav-item">
-							<div class="dropdown-item text-center py-3">
-								<i class="fas fa-exclamation-triangle text-danger fa-2x mb-3"></i>
-								<p class="text-danger mb-0">Failed to load notifications</p>
-								<button class="btn btn-sm btn-outline-secondary mt-3 retry-button">
-									<i class="fas fa-sync-alt me-1"></i> Retry
-								</button>
-							</div>
-						</li>
-					`;
+                        <li class="nav-item">
+                            <div class="dropdown-item text-center py-3">
+                                <i class="fas fa-exclamation-triangle text-danger fa-2x mb-3"></i>
+                                <p class="text-danger mb-0">Failed to load notifications</p>
+                                <button class="btn btn-sm btn-outline-secondary mt-3 retry-button">
+                                    <i class="fas fa-sync-alt me-1"></i> Retry
+                                </button>
+                            </div>
+                        </li>
+                    `;
+
 
 // Add retry functionality
 const retryButton = list.querySelector('.retry-button');
@@ -167,203 +184,222 @@ updateNotifications();
 }
 }
 
+
 // Initial load
 updateNotifications();
+
 
 // Refresh every 30 seconds
 setInterval(updateNotifications, 30000);
 
+
 // Manual refresh when clicking the bell
 notificationBell.addEventListener('click', updateNotifications);
 });
-	</script>
+    </script>
 
-	<style>
-		/* Notification specific styles */
-		.notification-item.unread {
-			background-color: rgba(0, 123, 255, 0.05);
-		}
 
-		.notification-item.unread .notification-text {
-			font-weight: 500;
-		}
+    <style>
+        /* Notification specific styles */
+        .notification-item.unread {
+            background-color: rgba(0, 123, 255, 0.05);
+        }
 
-		.notification-item.read {
-			opacity: 0.8;
-		}
 
-		.notification-item.read .notification-text {
-			font-weight: normal;
-		}
+        .notification-item.unread .notification-text {
+            font-weight: 500;
+        }
 
-		.notification-link {
-			cursor: pointer;
-			transition: all 0.2s ease;
-		}
 
-		.notification-link:hover {
-			background-color: rgba(0, 0, 0, 0.03);
-		}
+        .notification-item.read {
+            opacity: 0.8;
+        }
 
-		.msg_list {
-			max-height: 60vh;
-			overflow-y: auto;
-		}
-	</style>
+
+        .notification-item.read .notification-text {
+            font-weight: normal;
+        }
+
+
+        .notification-link {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+
+        .notification-link:hover {
+            background-color: rgba(0, 0, 0, 0.03);
+        }
+
+
+        .msg_list {
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+    </style>
 {% endblock %}
 <div class="left_col ">
-	<div class="left_col scroll-view">
-		<div class="navbar nav_title" style="border: 0; background-color: transparent; padding: 0.5rem 1rem 1rem 1rem;">
-			<a href="{{ path('dashboard') }}" class="site_title" style="display: flex; align-items: center; text-decoration: none; gap: 0.5rem;">
-				<img src="{{ asset('images/logo_test.png') }}" alt="Logo" style="width: 40px; height: auto;">
-				<span style="color: #000; font-family: 'Segoe UI', sans-serif; font-size: 1.5rem; font-weight: 300; letter-spacing: 0.5px;">Innomall</span>
-			</a>
-		</div>
-		<div class="clearfix"></div>
+    <div class="left_col scroll-view">
+        <div class="navbar nav_title" style="border: 0; background-color: transparent; padding: 0.5rem 1rem 1rem 1rem;">
+            <a href="{{ path('dashboard') }}" class="site_title" style="display: flex; align-items: center; text-decoration: none; gap: 0.5rem;">
+                <img src="{{ asset('images/logo_test.png') }}" alt="Logo" style="width: 40px; height: auto;">
+                <span style="color: #000; font-family: 'Segoe UI', sans-serif; font-size: 1.5rem; font-weight: 300; letter-spacing: 0.5px;">Innomall</span>
+            </a>
+        </div>
+        <div class="clearfix"></div>
 
-		<!-- Sidebar Menu -->
-		<div id="sidebar-menu" class="main_menu_side hidden-print main_menu mt-4 protected-icons">
-			<div class="menu_section">
 
-				<ul class="nav side-menu">
+        <!-- Sidebar Menu -->
+        <div id="sidebar-menu" class="main_menu_side hidden-print main_menu mt-4 protected-icons">
+            <div class="menu_section">
 
-					<li class="{{ app.request.get('_route') == 'dashboard' ? 'active' : '' }}">
-						<a href="{{ path('dashboard') }}">
-							<i class="fas fa-tachometer-alt"></i>
-							<span>Dashboard</span>
-						</a>
-					</li>
-					<li class="{{ app.request.get('_route') == 'products' ? 'active' : '' }}">
-						<a href="{{ path('products') }}">
-							<i class="fas fa-box"></i>
-							<span>Products</span>
-						</a>
-					</li>
-					<li class="{{ app.request.get('_route') == 'discounts' ? 'active' : '' }}">
-						<a href="{{ path('discounts') }}">
-							<i class="fas fa-percent"></i>
-							<span>Discounts</span>
-						</a>
-					</li>
-					<li class="{{ app.request.get('_route') == 'schedule' ? 'active' : '' }}">
-						<a href="{{ path('schedule') }}">
-							<i class="fas fa-clock"></i>
-							<span>Schedule</span>
-						</a>
-					</li>
-					<li class="{{ app.request.get('_route') == 'events' ? 'active' : '' }}">
-						<a href="{{ path('events') }}">
-							<i class="fas fa-calendar-alt"></i>
-							<span>Events</span>
-						</a>
-					</li>
-					<li class="{{ app.request.get('_route') == 'orders' ? 'active' : '' }}">
-						<a href="{{ path('commands') }}">
-							<i class="fas fa-shopping-cart"></i>
-							<span>Orders</span>
-						</a>
-					</li>
-					<li class="{{ app.request.get('_route') == 'profile' ? 'active' : '' }}">
-						<a href="{{ path('profile') }}">
-							<i class="fas fa-user"></i>
-							<span>Profile</span>
-						</a>
-					</li>
-					<li
-						class="{{ app.request.get('_route') == 'orders' ? 'active' : '' }}">
-						<!-- Added appropriate route -->
-						<a
-							href="{{ path('commands') }}">
-							<!-- Fixed the path -->
-							<i class="fas fa-shopping-cart"></i>
-							<!-- Changed to more appropriate icon -->
-							<span>Commandes</span>
-						</a>
-					</li>
-				</ul>
-			</div>
-		</div>
 
-	</div>
+                <ul class="nav side-menu">
+
+
+                    <li class="{{ app.request.get('_route') == 'dashboard' ? 'active' : '' }}">
+                        <a href="{{ path('dashboard') }}">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="{{ app.request.get('_route') == 'products' ? 'active' : '' }}">
+                        <a href="{{ path('products') }}">
+                            <i class="fas fa-box"></i>
+                            <span>Products</span>
+                        </a>
+                    </li>
+                    <li class="{{ app.request.get('_route') == 'discounts' ? 'active' : '' }}">
+                        <a href="{{ path('discounts') }}">
+                            <i class="fas fa-percent"></i>
+                            <span>Discounts</span>
+                        </a>
+                    </li>
+                    <li class="{{ app.request.get('_route') == 'schedule' ? 'active' : '' }}">
+                        <a href="{{ path('schedule') }}">
+                            <i class="fas fa-clock"></i>
+                            <span>Schedule</span>
+                        </a>
+                    </li>
+                    <li class="{{ app.request.get('_route') == 'events' ? 'active' : '' }}">
+                        <a href="{{ path('events') }}">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>Events</span>
+                        </a>
+                    </li>
+                    <li class="{{ app.request.get('_route') == 'orders' ? 'active' : '' }}">
+                        <a href="{{ path('commands') }}">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span>Orders</span>
+                        </a>
+                    </li>
+                    <li class="{{ app.request.get('_route') == 'profile' ? 'active' : '' }}">
+                        <a href="{{ path('profile') }}">
+                            <i class="fas fa-user"></i>
+                            <span>Profile</span>
+                        </a>
+                    </li>
+
+
+                </ul>
+            </div>
+        </div>
+
+
+    </div>
 </div>
+
+
 
 
 <!-- Top Navigation -->
 <div class="top_nav">
-	<div class="nav_menu">
-		<div class="nav toggle">
-			<a id="menu_toggle" class="menu_toggle">
-				<i class="fa fa-bars"></i>
-			</a>
-		</div>
-		<nav class="nav navbar-nav">
+    <div class="nav_menu">
+        <div class="nav toggle">
+            <a id="menu_toggle" class="menu_toggle">
+                <i class="fa fa-bars"></i>
+            </a>
+        </div>
+        <nav class="nav navbar-nav">
 
 
-			<ul
-				class="navbar-right">
-				<!-- User Profile Dropdown -->
-				<li class="nav-item dropdown">
-					<a href="javascript:;" class="user-profile dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-						<img src="{{ asset('images/60111.jpg') }}" alt="">
-						<span>Shop Owner</span>
 
-					</a>
-					<div class="dropdown-menu dropdown-usermenu pull-right" style="position:fixed">
-						<a class="dropdown-item" href="{{ path('profile') }}">
-							<i class="fa fa-user mr-2"></i>
-							Profile
-						</a>
-						<div class="dropdown-divider"></div>
-						<a class="dropdown-item" href="{{ path('app_logout') }}">
-							<i class="fa fa-sign-out-alt mr-2"></i>
-							Logout
-						</a>
-					</div>
-				</li>
 
-				<li class="nav-item dropdown">
-					<a href="#" class="nav-link dropdown-toggle info-number" id="notificationDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-						<i class="fas fa-bell"></i>
-						<span class="badge bg-red">0</span>
-					</a>
-					<div class="dropdown-menu dropdown-menu-right" aria-labelledby="notificationDropdown">
-						<ul
-							class="list-unstyled msg_list" style="min-width: 300px;"><!-- Notifications will be inserted here -->
-						</ul>
-					</div>
-				</li>
-			</ul>
+            <ul
+                class="navbar-right">
+                <!-- User Profile Dropdown -->
+                <li class="nav-item dropdown">
+                    <a href="javascript:;" class="user-profile dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                        <img src="{{ asset('images/60111.jpg') }}" alt="">
+                        <span>Shop Owner</span>
 
-		</nav>
-	</div>
+
+                    </a>
+                    <div class="dropdown-menu dropdown-usermenu pull-right" style="position:fixed">
+                        <a class="dropdown-item" href="{{ path('profile') }}">
+                            <i class="fa fa-user mr-2"></i>
+                            Profile
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="{{ path('app_logout') }}">
+                            <i class="fa fa-sign-out-alt mr-2"></i>
+                            Logout
+                        </a>
+                    </div>
+                </li>
+
+
+                <li class="nav-item dropdown">
+                    <a href="#" class="nav-link dropdown-toggle info-number" id="notificationDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge bg-red">0</span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="notificationDropdown">
+                        <ul
+                            class="list-unstyled msg_list" style="min-width: 300px;"><!-- Notifications will be inserted here -->
+                        </ul>
+                    </div>
+                </li>
+            </ul>
+
+
+        </nav>
+    </div>
 </div>
+
+
 
 
 <!-- Main Content -->
 {# <div
-	class="right_col" role="main">
-	<!-- Flash Messages -->
-	{% for message in app.flashes("error") %}
-		<div class="alert alert-danger alert-dismissible fade show" role="alert">
-			<i class="fa fa-exclamation-triangle mr-2"></i>
-			<strong>{{ "backend.global.error"|trans }}</strong>
-			{{ message|trans }}
-			<button type="button" class="close" data-dismiss="alert" aria-label="Close">
-				<span aria-hidden="true">×</span>
-			</button>
-		</div>
-	{% endfor %}
+    class="right_col" role="main">
+    <!-- Flash Messages -->
+    {% for message in app.flashes("error") %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fa fa-exclamation-triangle mr-2"></i>
+            <strong>{{ "backend.global.error"|trans }}</strong>
+            {{ message|trans }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">×</span>
+            </button>
+        </div>
+    {% endfor %}
 
-	{% for message in app.flashes("success") %}
-		<div class="alert alert-success alert-dismissible fade show" role="alert">
-			<i class="fa fa-check-circle mr-2"></i>
-			<strong>{{ "backend.global.success"|trans }}</strong>
-			{{ message|trans }}
-			<button type="button" class="close" data-dismiss="alert" aria-label="Close">
-				<span aria-hidden="true">×</span>
-			</button>
-		</div>
-	{% endfor %}
 
-	{% block contenpage %}{% endblock %}
+    {% for message in app.flashes("success") %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fa fa-check-circle mr-2"></i>
+            <strong>{{ "backend.global.success"|trans }}</strong>
+            {{ message|trans }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">×</span>
+            </button>
+        </div>
+    {% endfor %}
+
+
+    {% block contenpage %}{% endblock %}
 </div> #}
+
+
+

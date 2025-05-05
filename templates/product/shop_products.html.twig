@@ -52,7 +52,7 @@
                     <div class="product-card">
                         <div class="image-container">
                             {% if product.image_Url %}
-                                <img src="{{ asset('logo/hoodie.jpg') }}" alt="{{ product.nom }}" loading="lazy">
+                                <img src="{{ asset(product.image_url) }}" alt="{{ product.nom }}" loading="lazy">
                             {% else %}
                                 <div class="no-image-icon">
                                     <i class="fas fa-box-open"></i>

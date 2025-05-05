@@ -1,13 +1,15 @@
 {% extends "maria_templates/base.html.twig" %}
 
+
 {% block title %}Shop Dashboard
 {% endblock %}
 {% block javascripts %}
-	{{ parent() }}
+    {{ parent() }}
 
-	{# Pass seasonal chart data safely #}
-	<script>
-		const seasonalPieData = {
+
+    {# Pass seasonal chart data safely #}
+    <script>
+        const seasonalPieData = {
 labels: [
 'Winter', 'Spring', 'Summer', 'Fall'
 ],
@@ -24,10 +26,12 @@ borderWidth: 1
 ]
 };
 
+
 // Keep existing data for other charts
 window.ratingDistribution = {{ ratingDistribution|default([])|json_encode|raw }};
 window.salesData = {{ salesData|default({'labels': [], 'quantities': []})|json_encode|raw }};
 window.weeklySalesChartData = {{ weeklySalesChartData|default({'labels': [], 'data': []})|json_encode|raw }};
+
 
 document.addEventListener('DOMContentLoaded', function () { // 1. Initialize Seasonal PIE Chart
 const seasonalCtx = document.getElementById('seasonalDiscountChart');
@@ -58,33 +62,7 @@ context.raw.toFixed(1)
 }
 });
 }
-// Stock Tabs Functionality
-function initStockTabs() {
-const tabButtons = document.querySelectorAll('.stock-tabs .tab-button');
 
-tabButtons.forEach(button => {
-button.addEventListener('click', function () { // Remove active class from all buttons and tabs
-document.querySelectorAll('.stock-tabs .tab-button').forEach(btn => {
-btn.classList.remove('active');
-});
-document.querySelectorAll('.tab-content').forEach(tab => {
-tab.classList.remove('active');
-});
-
-// Add active class to clicked button
-this.classList.add('active');
-
-// Show corresponding tab
-const tabId = this.getAttribute('data-tab');
-document.getElementById (${tabId}-tab).classList.add('active');
-});
-});
-
-// Initialize first tab as active if none are active
-if (!document.querySelector('.stock-tabs .tab-button.active')) {
-document.querySelector('.stock-tabs .tab-button').click();
-}
-}
 
 // 2. Keep all your existing chart initialization code below
 const initCharts = {
@@ -106,423 +84,412 @@ initWeeklySalesChart();
 };
 Object.values(initCharts).forEach(init => init());
 });
-
-// Add this to your existing JavaScript block
-document.addEventListener('DOMContentLoaded', function () {
-initStockTabs();
-// Tab switching functionality
-const tabButtons = document.querySelectorAll('.tab-button');
-
-tabButtons.forEach(button => {
-button.addEventListener('click', function () { // Remove active class from all buttons and content
-document.querySelectorAll('.tab-button').forEach(btn => {
-btn.classList.remove('active');
-});
-document.querySelectorAll('.tab-content').forEach(content => {
-content.classList.remove('active');
-});
-
-// Add active class to clicked button
-this.classList.add('active');
-
-// Show corresponding content
-const tabId = this.getAttribute('data-tab');
-document.getElementById (${tabId}-content).classList.add('active');
-});
-});
-
-// Initialize to show low stock by default
-document.querySelector('[data-tab="low-stock"]').click();
-});
-	</script>
+    </script>
 {% endblock %}
+
 
 {% block body %}
-	<div class="dashboard-container">
-		<div
-			class="main-content">
-			{# Seasonal Discount Chart - Fixed #}
+    <div class="dashboard-container">
+        <div
+            class="main-content">
+            {# Seasonal Discount Chart - Fixed #}
 
 
-			<header class="dashboard-header">
-				<div class="header-left">
-					<h1>Shop Dashboard</h1>
-					<p class="date-display">{{ "now"|date("l, F j, Y") }}</p>
-				</div>
-				<div class="quick-actions">
-					<a href="{{ path('todaysummary') }}" class="action-button">
-						<i class="fas fa-chart-pie"></i>
-						<span>Today's Summary</span>
-					</a>
-					<a href="{{ path('contact_admin', {'shopOwnerId': app.user.id}) }}" class="action-button">
-						<i class="fas fa-comment-dots"></i>
-						<span>Chat with admin</span>
-					</a>
-				</div>
-			</header>
 
-			<!-- Summary Cards Row -->
-			<div
-				class="summary-row">
-				<!-- Discount Card -->
-				<div class="summary-card discount-card">
-					<div class="card-header">
-						<div class="card-icon">
-							<i class="fas fa-tag"></i>
-						</div>
-						<h3 style="text-align:start">Active Promotion</h3>
-					</div>
-					<div class="card-content">
-						{% if activeDiscount %}
-							<div class="promo-details">
-								<div class="promo-name">Summer Sale</div>
-								<div class="promo-value">{{ activeDiscount.discountPercentage }}% OFF</div>
-							</div>
-							<div class="promo-time">
-								<i class="fas fa-clock"></i>
-								<span>Ends in
-									{{ activeDiscount.endDate.diff(date('now')).days }}
-									days</span>
-							</div>
-						{% else %}
-							<div class="promo-details">
-								<div class="promo-name">No active promotion</div>
-							</div>
-						{% endif %}
-					</div>
-				</div>
 
-				<!-- Event Card -->
-				<div class="summary-card event-card">
-					<div class="card-header">
-						<div class="card-icon">
-							<i class="fas fa-calendar-alt"></i>
-						</div>
-						<h3 style="color:white">
-							{% if eventData and eventData.isCurrent %}Current Event{% else %}Upcoming Event
-							{% endif %}
-						</h3>
-					</div>
-					<div class="card-content">
-						{% if eventData %}
-							<div class="event-details">
-								<div class="event-name">{{ eventData.name }}</div>
-								<div class="event-desc">{{ eventData.desc }}</div>
-								<div class="event-date">
-									{{ eventData.startDate|date('M j') }}
-									-
-									{{ eventData.endDate|date('M j, Y') }}
-								</div>
-							</div>
-							<div class="event-time">
-								<i class="fas fa-hourglass-half"></i>
-								<span>
-									{% if eventData.isCurrent %}
-										Ongoing (ends in
-										{{ eventData.endDate.diff(date('now')).days }}
-										days)
-									{% else %}
-										Starting in
-										{{ eventData.daysUntil }}
-										days
-									{% endif %}
-								</span>
-							</div>
-							<div class="event-badge">
-								{% if eventData.isCurrent %}Now{% else %}Soon
-								{% endif %}
-							</div>
-						{% else %}
-							<div class="event-details">
-								<div class="event-name">No upcoming events</div>
-							</div>
-						{% endif %}
-					</div>
-				</div>
+            <header class="dashboard-header">
+                <div class="header-left">
+                    <h1>Shop Dashboard</h1>
+                    <p class="date-display">{{ "now"|date("l, F j, Y") }}</p>
+                </div>
+                <div class="quick-actions">
+                    <a href="{{ path('todaysummary') }}" class="action-button">
+                        <i class="fas fa-chart-pie"></i>
+                        <span>Today's Summary</span>
+                    </a>
+                    <a href="{{ path('contact_admin', {'shopOwnerId': app.user.id}) }}" class="action-button">
+                        <i class="fas fa-comment-dots"></i>
+                        <span>Chat with admin</span>
+                    </a>
+                </div>
+            </header>
 
-				<!-- Inventory Status Card -->
-				<div class="summary-card inventory-card">
-					<div class="card-header" style="background-color:var(--primary-yellow)">
-						<div class="card-icon">
-							<i class="fas fa-boxes"></i>
-						</div>
-						<h3 style="text-align: center;">General Overview</h3>
-					</div>
-					<div class="card-content">
-						<div class="status-grid">
-							<div class="status-item">
-								<span class="status-value">{{ productCount }}</span>
-								<span class="status-label">Total Products</span>
-							</div>
-							<div class="status-item warning">
-								<span class="status-value">5</span>
-								<span class="status-label">Total Discount</span>
-							</div>
-							<div class="status-item danger">
-								<span class="status-value">{{ totalSalesLast7Days }}</span>
-								<span class="status-label">Total week sellings</span>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
 
-			<div class="dashboard-stats">
-				<div class="stat-card client-of-month" style="justify-content:center">
-					<div class="stat-icon">
-						<i class="fas fa-trophy"></i>
-					</div>
-					<div class="stat-info">
-						<h3>Client of the Month</h3>
-						<div class="client-info">
-							<img src="{{ asset('images/user.JPG') }}" alt="Client" class="client-avatar">
-							<div class="client-details">
-								<h4>Mariem Ammari</h4>
-							</div>
-						</div>
-					</div>
-				</div>
+            <!-- Summary Cards Row -->
+            <div
+                class="summary-row">
+                <!-- Discount Card -->
+                <div class="summary-card discount-card">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <i class="fas fa-tag"></i>
+                        </div>
+                        <h3 style="text-align:start">Active Promotion</h3>
+                    </div>
+                    <div class="card-content">
+                        {% if activeDiscount %}
+                            <div class="promo-details">
+                                <div class="promo-name">Summer Sale</div>
+                                <div class="promo-value">{{ activeDiscount.discountPercentage }}% OFF</div>
+                            </div>
+                            <div class="promo-time">
+                                <i class="fas fa-clock"></i>
+                                <span>Ends in
+                                    {{ activeDiscount.endDate.diff(date('now')).days }}
+                                    days</span>
+                            </div>
+                        {% else %}
+                            <div class="promo-details">
+                                <div class="promo-name">No active promotion</div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
 
-				<div class="stat-card average-rating">
-					<div class="stat-icon">
-						<i class="fas fa-star"></i>
-					</div>
-					<div class="stat-info">
-						<h3>Average Rating</h3>
-						<div class="rating-display">
-							<span class="rating-value">{{ averageRating|number_format(1) }}</span>
-							<div class="star-rating">
-								{% for i in 1..5 %}
-									{% if averageRating >= i %}
-										<i class="fas fa-star"></i>
-									{% elseif averageRating > (i - 0.8) %}
-										<i class="fas fa-star-half-alt"></i>
-									{% else %}
-										<i class="far fa-star"></i>
-									{% endif %}
-								{% endfor %}
-							</div>
-							<span class="rating-count">({{ ratingCount }}
-								reviews)</span>
-						</div>
-					</div>
-				</div>
 
-				<div class="stat-card product-count">
-					<div class="stat-icon">
-						<i class="fas fa-box"></i>
-					</div>
-					<div class="stat-info">
-						<h3>Total Products</h3>
-						<div class="product-stats">
-							<h2>{{ productCount }}</h2>
-						</div>
-					</div>
-				</div>
-			</div>
+                <!-- Event Card -->
+                <div class="summary-card event-card">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <h3 style="color:white">
+                            {% if eventData and eventData.isCurrent %}Current Event{% else %}Upcoming Event
+                            {% endif %}
+                        </h3>
+                    </div>
+                    <div class="card-content">
+                        {% if eventData %}
+                            <div class="event-details">
+                                <div class="event-name">{{ eventData.name }}</div>
+                                <div class="event-desc">{{ eventData.desc }}</div>
+                                <div class="event-date">
+                                    {{ eventData.startDate|date('M j') }}
+                                    -
+                                    {{ eventData.endDate|date('M j, Y') }}
+                                </div>
+                            </div>
+                            <div class="event-time">
+                                <i class="fas fa-hourglass-half"></i>
+                                <span>
+                                    {% if eventData.isCurrent %}
+                                        Ongoing (ends in
+                                        {{ eventData.endDate.diff(date('now')).days }}
+                                        days)
+                                    {% else %}
+                                        Starting in
+                                        {{ eventData.daysUntil }}
+                                        days
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div class="event-badge">
+                                {% if eventData.isCurrent %}Now{% else %}Soon
+                                {% endif %}
+                            </div>
+                        {% else %}
+                            <div class="event-details">
+                                <div class="event-name">No upcoming events</div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
 
-			<div
-				class="dashboard-main-content">
-				<!-- Weekly Sales Chart Section -->
-				<div class="content-section weekly-sales">
-					<div class="section-header">
-						<h2>Weekly Sales Trend</h2>
-						<div class="trend-indicator upward">
-							<i class="fas fa-arrow-up"></i>
-							<span>23.5% increase</span>
-						</div>
-					</div>
-					<div class="chart-container weekly-chart" style="width:100%">
-						<canvas id="weeklySalesChart"></canvas>
-					</div>
-					<div class="sales-insights">
-						<div class="insight-item positive">
-							<i class="fas fa-check-circle"></i>
-							<span>Sales have been steadily increasing for the past 4 weeks</span>
-						</div>
-						<div class="insight-item">
-							<i class="fas fa-info-circle"></i>
-							<span>Current week sales are 58% higher than this time last month</span>
-						</div>
-					</div>
-				</div>
 
-				<div class="content-section top-products">
-					<div class="section-header">
-						<h2>Top Liked Products</h2>
-						<a href="{{ path('products') }}" class="view-all">View All</a>
-					</div>
-					<div class="products-grid">
-						{% for product in topLikedProducts %}
-							<div class="product-card">
-								<div class="product-image">
-									{% if product.image_url %}
-										<img src="{{ asset(product.image_url) }}" alt="{{ product.nom }}">
-									{% else %}
-										<img src="{{ asset('images/default-product.jpg') }}" alt="Default product image">
-									{% endif %}
-								</div>
-								<div class="product-info">
-									<h4>{{ product.nom }}</h4>
-									<div class="product-meta">
-										<span class="product-price">
-											{% if product.promotionId %}
-												<span class="original-price">{{ product.prix }}
-													DT</span>
-												<span class="discounted-price">{{ product.getDiscountedPrice() }}
-													DT</span>
-											{% else %}
-												{{ product.prix }}
-												DT
-											{% endif %}
-										</span>
-										<span class="product-likes">
-											<i class="fas fa-heart"></i>
-											{{ product.likeCount ?? 0 }}
-										</span>
-									</div>
-									<div class="product-stock {% if product.stock == 0 %}out-of-stock{% elseif product.stock < 10 %}low-stock{% else %}in-stock{% endif %}">
-										{% if product.stock > 0 %}
-											{% if product.stock < 10 %}
-												Low Stock ({{ product.stock }})
-											{% else %}
-												In Stock ({{ product.stock }})
-											{% endif %}
-										{% else %}
-											Out of Stock
-										{% endif %}
-									</div>
-								</div>
-							</div>
-						{% else %}
-							<div class="no-products">
-								<p>No products found</p>
-							</div>
-						{% endfor %}
-					</div>
-				</div>
+                <!-- Inventory Status Card -->
+                <div class="summary-card inventory-card">
+                    <div class="card-header" style="background-color:var(--primary-yellow)">
+                        <div class="card-icon">
+                            <i class="fas fa-boxes"></i>
+                        </div>
+                        <h3 style="text-align: center;">General Overview</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="status-grid">
+                            <div class="status-item">
+                                <span class="status-value">{{ productCount }}</span>
+                                <span class="status-label">Total Products</span>
+                            </div>
+                            <div class="status-item warning">
+                                <span class="status-value">5</span>
+                                <span class="status-label">Total Discount</span>
+                            </div>
+                            <div class="status-item danger">
+                                <span class="status-value">{{ totalSalesLast7Days }}</span>
+                                <span class="status-label">Total week sellings</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-				<div
-					class="charts-container">
-					<!-- Ratings Chart -->
-					<div class="chart-section">
-						<div class="section-header">
-							<h2>Ratings Distribution</h2>
-						</div>
-						<div style="width:62%">
-							<canvas id="ratingsChart"></canvas>
-						</div>
-					</div>
 
-					<!-- Seasonal Discounts Chart -->
-					<div class="chart-section">
-						<div class="section-header">
-							<h2>Seasonal Discounts</h2>
-						</div>
-						<div style="width:100%">
-							<canvas id="seasonalDiscountChart"></canvas>
-						</div>
-					</div>
-				</div>
-				<div class="charts-container" style="width:100%">
-					<div class="chart-section sales-chart" style="width:100%">
-						<div class="section-header">
-							<h2>Product Sales</h2>
-						</div>
-						<div style="width:100%">
-							<canvas id="salesChart"></canvas>
-						</div>
-					</div>
+            <div class="dashboard-stats">
+                <div class="stat-card client-of-month" style="justify-content:center">
+                    <div class="stat-icon">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Client of the Month</h3>
+                        <div class="client-info">
+                            <img src="{{ asset('images/user.JPG') }}" alt="Client" class="client-avatar">
+                            <div class="client-details">
+                                <h4>Mariem Ammari</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-				</div>
-				<div class="content-section stock-status">
-					<div class="section-header">
-						<h2>Stock Status</h2>
-					</div>
-					<div class="stock-tabs">
-						<button class="tab-button active" data-tab="low-stock">
-							Low Stock ({{ lowStockProducts|length }})
-						</button>
-						<button class="tab-button" data-tab="out-of-stock">
-							Out of Stock ({{ outOfStockProducts|length }})
-						</button>
-					</div>
 
-					<!-- Low Stock Tab -->
-					<div class="tab-content active" id="low-stock-tab">
-						<table class="stock-table">
-							<thead>
-								<tr>
-									<th>Product</th>
-									<th>Current Stock</th>
-									<th>Action</th>
-								</tr>
-							</thead>
-							<tbody>
-								{% for product in lowStockProducts %}
-									<tr>
-										<td>
-											<div class="product-cell">
-												{% if product.image_url %}
-													<img src="{{ asset(product.image_url) }}" alt="{{ product.nom }}">
-												{% else %}
-													<img src="{{ asset('images/default-product.jpg') }}" alt="Default product image">
-												{% endif %}
-												<span>{{ product.nom }}</span>
-											</div>
-										</td>
-										<td>
-											<span class="stock-count low">{{ product.stock }}</span>
-										</td>
-										<td>
-											<button class="restock-btn">Restock</button>
-										</td>
-									</tr>
-								{% else %}
-									<tr>
-										<td colspan="3" class="text-center">No products with low stock</td>
-									</tr>
-								{% endfor %}
-							</tbody>
-						</table>
-					</div>
+                <div class="stat-card average-rating">
+                    <div class="stat-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Average Rating</h3>
+                        <div class="rating-display">
+                            <span class="rating-value">{{ averageRating|number_format(1) }}</span>
+                            <div class="star-rating">
+                                {% for i in 1..5 %}
+                                    {% if averageRating >= i %}
+                                        <i class="fas fa-star"></i>
+                                    {% elseif averageRating > (i - 0.8) %}
+                                        <i class="fas fa-star-half-alt"></i>
+                                    {% else %}
+                                        <i class="far fa-star"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <span class="rating-count">({{ ratingCount }}
+                                reviews)</span>
+                        </div>
+                    </div>
+                </div>
 
-					<!-- Out of Stock Tab -->
-					<div class="tab-content" id="out-of-stock-tab">
-						<table class="stock-table">
-							<thead>
-								<tr>
-									<th>Product</th>
-									<th>Action</th>
-								</tr>
-							</thead>
-							<tbody>
-								{% for product in outOfStockProducts %}
-									<tr>
-										<td>
-											<div class="product-cell">
-												{% if product.image_url %}
-													<img src="{{ asset(product.image_url) }}" alt="{{ product.nom }}">
-												{% else %}
-													<img src="{{ asset('images/default-product.jpg') }}" alt="Default product image">
-												{% endif %}
-												<span>{{ product.nom }}</span>
-											</div>
-										</td>
-										<td>
-											<button class="restock-btn urgent">Restock</button>
-										</td>
-									</tr>
-								{% else %}
-									<tr>
-										<td colspan="2" class="text-center">No out-of-stock products</td>
-									</tr>
-								{% endfor %}
-							</tbody>
-						</table>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+
+                <div class="stat-card product-count">
+                    <div class="stat-icon">
+                        <i class="fas fa-box"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Total Products</h3>
+                        <div class="product-stats">
+                            <h2>{{ productCount }}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div
+                class="dashboard-main-content">
+                <!-- Weekly Sales Chart Section -->
+                <div class="content-section weekly-sales">
+                    <div class="section-header">
+                        <h2>Weekly Sales Trend</h2>
+                        <div class="trend-indicator upward">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>23.5% increase</span>
+                        </div>
+                    </div>
+                    <div class="chart-container weekly-chart" style="width:100%">
+                        <canvas id="weeklySalesChart"></canvas>
+                    </div>
+                    <div class="sales-insights">
+                        <div class="insight-item positive">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Sales have been steadily increasing for the past 4 weeks</span>
+                        </div>
+                        <div class="insight-item">
+                            <i class="fas fa-info-circle"></i>
+                            <span>Current week sales are 58% higher than this time last month</span>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="content-section top-products">
+                    <div class="section-header">
+                        <h2>Top Liked Products</h2>
+                        <a href="{{ path('products') }}" class="view-all">View All</a>
+                    </div>
+                    <div class="products-grid">
+                        {% for product in topLikedProducts %}
+                            <div class="product-card">
+                                <div class="product-image">
+                                    {% if product.image_url %}
+                                        <img src="{{ asset(product.image_url) }}" alt="{{ product.nom }}">
+                                    {% else %}
+                                        <img src="{{ asset('images/default-product.jpg') }}" alt="Default product image">
+                                    {% endif %}
+                                </div>
+                                <div class="product-info">
+                                    <h4>{{ product.nom }}</h4>
+                                    <div class="product-meta">
+                                        <span class="product-price">
+                                            {% if product.promotionId %}
+                                                <span class="original-price">{{ product.prix }}
+                                                    DT</span>
+                                                <span class="discounted-price">{{ product.getDiscountedPrice() }}
+                                                    DT</span>
+                                            {% else %}
+                                                {{ product.prix }}
+                                                DT
+                                            {% endif %}
+                                        </span>
+                                        <span class="product-likes">
+                                            <i class="fas fa-heart"></i>
+                                            {{ product.likeCount ?? 0 }}
+                                        </span>
+                                    </div>
+                                    <div class="product-stock {% if product.stock == 0 %}out-of-stock{% elseif product.stock < 10 %}low-stock{% else %}in-stock{% endif %}">
+                                        {% if product.stock > 0 %}
+                                            {% if product.stock < 10 %}
+                                                Low Stock ({{ product.stock }})
+                                            {% else %}
+                                                In Stock ({{ product.stock }})
+                                            {% endif %}
+                                        {% else %}
+                                            Out of Stock
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="no-products">
+                                <p>No products found</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+
+                <div
+                    class="charts-container">
+                    <!-- Ratings Chart -->
+                    <div class="chart-section">
+                        <div class="section-header">
+                            <h2>Ratings Distribution</h2>
+                        </div>
+                        <div style="width:62%">
+                            <canvas id="ratingsChart"></canvas>
+                        </div>
+                    </div>
+
+
+                    <!-- Seasonal Discounts Chart -->
+                    <div class="chart-section">
+                        <div class="section-header">
+                            <h2>Seasonal Discounts</h2>
+                        </div>
+                        <div style="width:100%">
+                            <canvas id="seasonalDiscountChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="charts-container" style="width:100%">
+                    <div class="chart-section sales-chart" style="width:100%">
+                        <div class="section-header">
+                            <h2>Product Sales</h2>
+                        </div>
+                        <div style="width:100%">
+                            <canvas id="salesChart"></canvas>
+                        </div>
+                    </div>
+
+
+                </div>
+                <div class="content-section stock-status">
+                    <div class="section-header">
+                        <h2>Stock Status</h2>
+                    </div>
+                    <div class="stock-tabs">
+                        <button class="tab-button active" data-tab="low-stock">
+                            Low Stock ({{ lowStockProducts|length }})
+                        </button>
+                        <button class="tab-button" data-tab="out-of-stock">
+                            Out of Stock ({{ outOfStockProducts|length }})
+                        </button>
+                    </div>
+
+
+                    <div class="tab-content active" id="low-stock">
+                        <table class="stock-table">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Current Stock</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for product in lowStockProducts %}
+                                    <tr>
+                                        <td>
+                                            <div class="product-cell">
+                                                {% if product.image_url %}
+                                                    <img src="{{ asset(product.image_url) }}" alt="{{ product.nom }}">
+                                                {% else %}
+                                                    <img src="{{ asset('images/default-product.jpg') }}" alt="Default product image">
+                                                {% endif %}
+                                                <span>{{ product.nom }}</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="stock-count low">{{ product.stock }}</span>
+                                        </td>
+                                        <td>
+                                            <button class="restock-btn">Restock</button>
+                                        </td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="3" class="text-center">No products with low stock</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+
+                    <div class="tab-content" id="out-of-stock">
+                        <table class="stock-table">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for product in outOfStockProducts %}
+                                    <tr>
+                                        <td>
+                                            <div class="product-cell">
+                                                {% if product.image_url %}
+                                                    <img src="{{ asset(product.image_url) }}" alt="{{ product.nom }}">
+                                                {% else %}
+                                                    <img src="{{ asset('images/default-product.jpg') }}" alt="Default product image">
+                                                {% endif %}
+                                                <span>{{ product.nom }}</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <button class="restock-btn urgent">Restock</button>
+                                        </td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="2" class="text-center">No out-of-stock products</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
+
+
+
