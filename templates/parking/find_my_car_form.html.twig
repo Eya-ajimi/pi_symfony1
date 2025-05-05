@@ -1,0 +1,47 @@
+{# templates/parking/find_my_car_form.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Find My Car{% endblock %}
+{% block stylesheets %}
+
+    <link rel="stylesheet" href="{{ asset('css/find-my-car.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <h1>Find My Car</h1>
+    <p>Enter the phone number you used when you scanned the QR code at your parking spot.</p>
+
+    
+
+    <div class="card mb-4">
+         <div class="card-body">
+            {{ form_start(form) }}
+            {{ form_row(form.phoneNumber) }}
+            {{ form_row(form.find, { 'attr': {'class': 'btn btn-success mt-3'} }) }}
+            {{ form_end(form) }}
+        </div>
+    </div>
+
+    {# Display result ONLY if foundSpot is not null #}
+    {# REMOVED the elseif check for errorMessage here #}
+    {% if foundSpot %}
+    <div class="card border-success">
+        <div class="card-header bg-success text-white">
+            <i class="fas fa-map-marker-alt"></i> Your Car Location
+        </div>
+        <div class="card-body">
+            <h5 class="card-title">Spot: {{ foundSpot.zone }}{{ foundSpot.id }}</h5>
+            <p class="card-text">Floor: {{ foundSpot.floor }}</p>
+            {# Optionally add a link back to the map focused on that floor #}
+            <a href="{{ path('app_parking', {'floor': foundSpot.floor|replace({'Level ': ''}) }) }}" class="btn btn-info">
+                View on Map (Floor {{ foundSpot.floor|replace({'Level ': ''}) }})
+            </a>
+        </div>
+    </div>
+    {% endif %} {# End of if foundSpot #}
+
+     <a href="{{ path('app_parking') }}" class="btn btn-secondary mt-3">Back to Parking Map</a>
+
+</div>
+{% endblock %} 

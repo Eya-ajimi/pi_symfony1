@@ -18,19 +18,28 @@ use Symfony\Component\HttpFoundation\Response;
 use Dompdf\Dompdf;
 use Symfony\Component\Routing\Annotation\Route;
 use Knp\Component\Pager\PaginatorInterface;
+use App\Entity\ParkingAssignment; // Add this
+use App\Repository\ParkingAssignmentRepository; // Add this
+use Symfony\Component\Validator\Constraints\NotBlank; // For basic validation
+use Symfony\Component\Validator\Constraints\Regex;    // For basic validation
+use Symfony\Component\Form\Extension\Core\Type\TextType; // For building simple form
+use Symfony\Component\Form\Extension\Core\Type\SubmitType; // For building simple form
 class ParkingController extends AbstractController
 {
     private $placeParkingRepository;
     private $reservationRepository;
     private $entityManager;
+    private $parkingAssignmentRepository;
 
     public function __construct(
         PlaceParkingRepository $placeParkingRepository,
         ReservationRepository $reservationRepository,
+        ParkingAssignmentRepository $parkingAssignmentRepository,
         EntityManagerInterface $entityManager
     ) {
         $this->placeParkingRepository = $placeParkingRepository;
         $this->reservationRepository = $reservationRepository;
+        $this->parkingAssignmentRepository = $parkingAssignmentRepository;
         $this->entityManager = $entityManager;
     }
 
@@ -720,4 +729,168 @@ private function getParkingSpotsData(int $floor): array
     
     return $formattedSpots;
 }
+   // == FIND MY CAR FEATURE ==
+
+    /**
+     * Step 1 (QR Scan): Show form to enter phone number for a specific spot.
+     */
+    #[Route('/parking/scan/{id}', name: 'app_parking_scan_spot_form', methods: ['GET'])]
+    public function scanSpotForm(PlaceParking $spot): Response
+    {
+        // Optional: Check if spot exists (handled by ParamConverter PlaceParking $spot)
+        // if (!$spot) {
+        //     throw $this->createNotFoundException('Parking spot not found.');
+        // }
+
+        // Simple form using Symfony Form Builder (alternative to creating a dedicated FormType)
+        $form = $this->createFormBuilder()
+            ->add('phoneNumber', TextType::class, [
+                'label' => 'Enter your Phone Number',
+                'attr' => ['placeholder' => '+1234567890'],
+                'constraints' => [
+                    new NotBlank(['message' => 'Phone number cannot be empty.']),
+                    new Regex([
+                        // Basic regex - adjust for your specific phone number formats
+                        'pattern' => '/^\+?[0-9\s\-()]{7,20}$/',
+                        'message' => 'Please enter a valid phone number.'
+                    ]),
+                ]
+            ])
+            ->add('save', SubmitType::class, ['label' => 'Save My Spot'])
+            ->setAction($this->generateUrl('app_parking_scan_spot_submit', ['id' => $spot->getId()])) // Point to the POST route
+            ->setMethod('POST')
+            ->getForm();
+
+        return $this->render('parking/scan_form.html.twig', [
+            'spot' => $spot,
+            'form' => $form->createView(),
+        ]);
+    }
+
+    /**
+     * Step 2 (QR Scan): Process phone number submission and save assignment.
+     */
+    #[Route('/parking/scan/{id}', name: 'app_parking_scan_spot_submit', methods: ['POST'])]
+    public function scanSpotSubmit(Request $request, PlaceParking $spot): Response
+    {
+        // Rebuild the simple form to handle the request
+        $form = $this->createFormBuilder()
+             ->add('phoneNumber', TextType::class) // Constraints applied in GET aren't needed here for handling
+             ->add('save', SubmitType::class)
+             ->setAction($this->generateUrl('app_parking_scan_spot_submit', ['id' => $spot->getId()]))
+             ->setMethod('POST')
+             ->getForm();
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $data = $form->getData();
+            $phoneNumber = $data['phoneNumber'];
+
+            $assignment = new ParkingAssignment();
+            $assignment->setPlaceParking($spot);
+            $assignment->setPhoneNumber($phoneNumber);
+            $assignment->setScannedAt(new \DateTime()); // Or rely on PrePersist
+
+            $this->entityManager->persist($assignment);
+            $this->entityManager->flush();
+
+            $this->addFlash('success', sprintf(
+                'Your parking spot %s%s on %s has been saved. Use your phone number to find it later.',
+                $spot->getZone(),
+                $spot->getId(), // Assuming ID is the number shown to user
+                $spot->getFloor()
+            ));
+
+            // Redirect to a confirmation page or back to parking index
+            return $this->redirectToRoute('app_parking', ['floor' => str_replace('Level ', '', $spot->getFloor())]);
+
+        }
+
+        // If form is invalid, re-render the form with errors
+        $this->addFlash('error', 'Invalid phone number submitted. Please try again.');
+         return $this->render('parking/scan_form.html.twig', [
+            'spot' => $spot,
+            'form' => $form->createView(), // Pass the form with errors
+        ]);
+    }
+
+     /**
+     * Step 3 (Find Car): Show form to enter phone number to find the car.
+     * This could be a dedicated page or integrated into another page (e.g., using AJAX).
+     */
+    #[Route('/parking/find-my-car', name: 'app_parking_find_my_car_form', methods: ['GET'])]
+    public function findMyCarForm(): Response
+    {
+         // Simple form using Symfony Form Builder
+        $form = $this->createFormBuilder()
+            ->add('phoneNumber', TextType::class, [
+                'label' => 'Enter your Phone Number to Find Your Car',
+                'attr' => ['placeholder' => '+1234567890'],
+                 'constraints' => [
+                    new NotBlank(['message' => 'Phone number cannot be empty.']),
+                 ]
+            ])
+            ->add('find', SubmitType::class, ['label' => 'Find My Car'])
+            ->setAction($this->generateUrl('app_parking_find_my_car_action')) // Point to the POST route
+            ->setMethod('POST')
+            ->getForm();
+
+        return $this->render('parking/find_my_car_form.html.twig', [
+             'form' => $form->createView(),
+             'foundSpot' => null // Initialize foundSpot as null
+        ]);
+    }
+
+    /**
+     * Step 4 (Find Car): Process phone number and display the latest parked spot.
+     */
+    #[Route('/parking/find-my-car', name: 'app_parking_find_my_car_action', methods: ['POST'])]
+    public function findMyCarAction(Request $request): Response
+    {
+        // Rebuild form to handle request
+        $form = $this->createFormBuilder()
+            ->add('phoneNumber', TextType::class)
+            ->add('find', SubmitType::class)
+            ->setAction($this->generateUrl('app_parking_find_my_car_action'))
+            ->setMethod('POST')
+            ->getForm();
+
+        $form->handleRequest($request);
+        $foundSpot = null; // Initialize
+        $errorMessage = null;
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $data = $form->getData();
+            $phoneNumber = $data['phoneNumber'];
+
+            $latestAssignment = $this->parkingAssignmentRepository->findLatestByPhoneNumber($phoneNumber);
+
+            if ($latestAssignment) {
+                $foundSpot = $latestAssignment->getPlaceParking(); // Get the associated PlaceParking entity
+                 $this->addFlash('success', sprintf(
+                     'Your car was last registered at spot %s%s on %s at %s.',
+                     $foundSpot->getZone(),
+                     $foundSpot->getId(),
+                     $foundSpot->getFloor(),
+                     $latestAssignment->getScannedAt()->format('Y-m-d H:i')
+                 ));
+            } else {
+                 $errorMessage = 'No parking record found for this phone number.';
+                 $this->addFlash('warning', $errorMessage);
+            }
+        } else {
+             $errorMessage = 'Please enter a valid phone number.';
+             $this->addFlash('error', $errorMessage);
+        }
+
+        // Re-render the same form page, displaying the result or errors
+        return $this->render('parking/find_my_car_form.html.twig', [
+            'form' => $form->createView(), // Pass the form (potentially with errors)
+            'foundSpot' => $foundSpot,     // Pass the found spot details (or null)
+            'errorMessage' => $errorMessage // Pass error message if needed
+        ]);
+    }
+
+    // == END FIND MY CAR FEATURE ==
 }

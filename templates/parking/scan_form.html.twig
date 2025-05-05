@@ -1,0 +1,34 @@
+{# templates/parking/scan_form.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Save Parking Spot {{ spot.zone }}{{ spot.id }}{% endblock %}
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('css/scan-form.css') }}">
+{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <h1>Save Your Parking Spot</h1>
+    <p class="lead">You scanned QR code for spot: <span class="spot-highlight">{{ spot.zone }}{{ spot.id }}</span> on <span class="spot-highlight">{{ spot.floor }}</span>.</p>
+    <p>Enter your phone number below to save this location. You can use this number later to find your car if you forget.</p>
+
+    {# Display flash messages if any #}
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label }}" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="card">
+        <div class="card-body">
+            {{ form_start(form) }}
+            {{ form_row(form.phoneNumber) }}
+            {{ form_row(form.save, { 'attr': {'class': 'btn btn-primary mt-3'} }) }}
+            {{ form_end(form) }}
+        </div>
+    </div>
+
+    <a href="{{ path('app_parking') }}" class="btn btn-secondary mt-3">Back to Parking Map</a>
+</div>
+{% endblock %}
