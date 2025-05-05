@@ -1,47 +1,147 @@
 {# templates/parking/find_my_car_form.html.twig #}
 {% extends 'base.html.twig' %}
 
-{% block title %}Find My Car{% endblock %}
+{% block title %}Find My Car | Smart Parking{% endblock %}
 {% block stylesheets %}
-
     <link rel="stylesheet" href="{{ asset('css/find-my-car.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
 {% endblock %}
+
 {% block content %}
 <div class="container mt-5">
-    <h1>Find My Car</h1>
-    <p>Enter the phone number you used when you scanned the QR code at your parking spot.</p>
-
+    <div class="app-header">
+        <h1 class="animate__animated animate__fadeIn"><i class="fas fa-car-side"></i> Find My Car</h1>
+    </div>
     
+    <div class="info-banner">
+        <i class="fas fa-info-circle"></i>
+        <p>Enter the phone number you used when you scanned the QR code at your parking spot.</p>
+    </div>
 
-    <div class="card mb-4">
-         <div class="card-body">
+    <div class="card main-card animate__animated animate__fadeInUp">
+        <div class="card-header">
+            <h2><i class="fas fa-search-location"></i> Locate Your Vehicle</h2>
+        </div>
+        <div class="card-body">
             {{ form_start(form) }}
-            {{ form_row(form.phoneNumber) }}
-            {{ form_row(form.find, { 'attr': {'class': 'btn btn-success mt-3'} }) }}
+            
+            <div class="form-group">
+                {{ form_label(form.phoneNumber) }}
+                {{ form_widget(form.phoneNumber, {'attr': {'class': 'form-control', 'placeholder': 'Enter your phone number', 'autocomplete': 'tel'}}) }}
+                <small class="form-helper-text">Format: 8 digits</small>
+                {{ form_errors(form.phoneNumber) }}
+            </div>
+            
+            {{ form_widget(form.find, { 'attr': {'class': 'btn btn-success mt-3 pulse-btn'}, 'label': 'Find My Car' }) }}
+            
             {{ form_end(form) }}
         </div>
     </div>
 
-    {# Display result ONLY if foundSpot is not null #}
-    {# REMOVED the elseif check for errorMessage here #}
-    {% if foundSpot %}
-    <div class="card border-success">
-        <div class="card-header bg-success text-white">
-            <i class="fas fa-map-marker-alt"></i> Your Car Location
+    {% if foundSpot and latestAssignment %}
+    <div class="card result-card animate__animated animate__fadeInUp">
+        <div class="card-header success-gradient">
+            <i class="fas fa-check-circle pulse"></i> Found Your Car!
         </div>
         <div class="card-body">
-            <h5 class="card-title">Spot: {{ foundSpot.zone }}{{ foundSpot.id }}</h5>
-            <p class="card-text">Floor: {{ foundSpot.floor }}</p>
-            {# Optionally add a link back to the map focused on that floor #}
-            <a href="{{ path('app_parking', {'floor': foundSpot.floor|replace({'Level ': ''}) }) }}" class="btn btn-info">
-                View on Map (Floor {{ foundSpot.floor|replace({'Level ': ''}) }})
-            </a>
+            <div class="spot-info">
+                <div class="spot-badge">{{ foundSpot.zone }}{{ foundSpot.id }}</div>
+                <h5 class="card-title">Parking Spot: {{ foundSpot.zone }}{{ foundSpot.id }}</h5>
+            </div>
+            
+            <div class="location-details">
+                <p class="card-text"><i class="fas fa-building"></i> Floor: {{ foundSpot.floor }}</p>
+                <p class="card-text"><i class="fas fa-clock"></i> Parked at: {{ latestAssignment.scannedAt|date('g:i A') }}</p>
+                <p class="card-text"><i class="fas fa-hourglass-half"></i> Parked for: {{ parkedFor }}</p>
+            </div>
+
+            <div class="directions">
+                <h3><i class="fas fa-directions"></i> Getting to Your Car</h3>
+                <ol class="steps">
+                    <li>Take elevator to Floor {{ foundSpot.floor|replace({'Level ': ''}) }}</li>
+                    <li>Turn right out of elevator</li>
+                    <li>Follow Zone {{ foundSpot.zone }} signs</li>
+                </ol>
+            </div>
+            
+            <div class="action-buttons">
+                <a href="{{ path('app_parking', {'floor': foundSpot.floor|replace({'Level ': ''}) }) }}" class="btn btn-info">
+                    <i class="fas fa-map-marked-alt"></i> View on Map
+                </a>
+            </div>
         </div>
     </div>
-    {% endif %} {# End of if foundSpot #}
+    {% endif %}
 
-     <a href="{{ path('app_parking') }}" class="btn btn-secondary mt-3">Back to Parking Map</a>
+    {% if errorMessage %}
+    <div class="alert alert-warning animate__animated animate__fadeInUp">
+        <i class="fas fa-exclamation-triangle"></i> {{ errorMessage }}
+    </div>
+    {% endif %}
 
+    <div class="bottom-actions">
+        <a href="{{ path('app_parking') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Parking Map
+        </a>
+        <a href="#" class="btn btn-outline help-btn">
+            <i class="fas fa-question-circle"></i> Need Help?
+        </a>
+    </div>
+    
+    <div class="app-footer">
+        <p><i class="fas fa-shield-alt"></i> Your data is secure and will not be shared</p>
+    </div>
 </div>
-{% endblock %} 
+
+<div class="modal-overlay" id="helpModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-question-circle"></i> Help Center</h3>
+            <button class="close-modal"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="help-item">
+                <h4><i class="fas fa-phone"></i> Can't remember your phone number?</h4>
+                <p>Visit the parking attendant booth at Level 1 with your ticket.</p>
+            </div>
+            <div class="help-item">
+                <h4><i class="fas fa-car-crash"></i> Car not where expected?</h4>
+                <p>Call security at 58999080 for immediate assistance.</p>
+            </div>
+            <div class="help-item">
+                <h4><i class="fas fa-qrcode"></i> How does the system work?</h4>
+                <p>When parking, scan the QR code at your spot and enter your phone number to register your location.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Help modal
+        const helpBtn = document.querySelector('.help-btn');
+        const modalOverlay = document.getElementById('helpModal');
+        const closeModal = document.querySelector('.close-modal');
+        
+        if (helpBtn && modalOverlay && closeModal) {
+            helpBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                modalOverlay.classList.add('show');
+            });
+            
+            closeModal.addEventListener('click', function() {
+                modalOverlay.classList.remove('show');
+            });
+            
+            window.addEventListener('click', function(e) {
+                if (e.target === modalOverlay) {
+                    modalOverlay.classList.remove('show');
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

@@ -822,23 +822,22 @@ private function getParkingSpotsData(int $floor): array
     #[Route('/parking/find-my-car', name: 'app_parking_find_my_car_form', methods: ['GET'])]
     public function findMyCarForm(): Response
     {
-         // Simple form using Symfony Form Builder
         $form = $this->createFormBuilder()
             ->add('phoneNumber', TextType::class, [
-                'label' => 'Enter your Phone Number to Find Your Car',
-                'attr' => ['placeholder' => '+1234567890'],
-                 'constraints' => [
+                'constraints' => [
                     new NotBlank(['message' => 'Phone number cannot be empty.']),
-                 ]
+                    new Regex(['pattern' => '/^[0-9]{8}$/', 'message' => 'Please enter a valid 8-digit phone number.'])
+                ]
             ])
-            ->add('find', SubmitType::class, ['label' => 'Find My Car'])
-            ->setAction($this->generateUrl('app_parking_find_my_car_action')) // Point to the POST route
-            ->setMethod('POST')
+            ->add('find', SubmitType::class)
             ->getForm();
-
+    
         return $this->render('parking/find_my_car_form.html.twig', [
-             'form' => $form->createView(),
-             'foundSpot' => null // Initialize foundSpot as null
+            'form' => $form->createView(),
+            'foundSpot' => null,
+            'latestAssignment' => null,
+            'parkedFor' => null,
+            'errorMessage' => null // Initialize as null for GET requests
         ]);
     }
 
@@ -848,49 +847,55 @@ private function getParkingSpotsData(int $floor): array
     #[Route('/parking/find-my-car', name: 'app_parking_find_my_car_action', methods: ['POST'])]
     public function findMyCarAction(Request $request): Response
     {
-        // Rebuild form to handle request
         $form = $this->createFormBuilder()
             ->add('phoneNumber', TextType::class)
             ->add('find', SubmitType::class)
-            ->setAction($this->generateUrl('app_parking_find_my_car_action'))
-            ->setMethod('POST')
             ->getForm();
-
+    
         $form->handleRequest($request);
-        $foundSpot = null; // Initialize
         $errorMessage = null;
-
+        $foundSpot = null;
+        $latestAssignment = null;
+        $parkedFor = null;
+    
         if ($form->isSubmitted() && $form->isValid()) {
-            $data = $form->getData();
-            $phoneNumber = $data['phoneNumber'];
-
+            $phoneNumber = $form->get('phoneNumber')->getData();
             $latestAssignment = $this->parkingAssignmentRepository->findLatestByPhoneNumber($phoneNumber);
-
+    
             if ($latestAssignment) {
-                $foundSpot = $latestAssignment->getPlaceParking(); // Get the associated PlaceParking entity
-                 $this->addFlash('success', sprintf(
-                     'Your car was last registered at spot %s%s on %s at %s.',
-                     $foundSpot->getZone(),
-                     $foundSpot->getId(),
-                     $foundSpot->getFloor(),
-                     $latestAssignment->getScannedAt()->format('Y-m-d H:i')
-                 ));
+                $foundSpot = $latestAssignment->getPlaceParking();
+                $now = new \DateTime('now', new \DateTimeZone('Africa/Tunis'));
+                $scannedAt = clone $latestAssignment->getScannedAt();
+                $scannedAt->setTimezone(new \DateTimeZone('Africa/Tunis'));
+                $interval = $scannedAt->diff($now);
+                
+                // Format duration
+                $parkedFor = $this->formatDuration($interval);
             } else {
-                 $errorMessage = 'No parking record found for this phone number.';
-                 $this->addFlash('warning', $errorMessage);
+                $errorMessage = 'No parking record found for this phone number.';
             }
-        } else {
-             $errorMessage = 'Please enter a valid phone number.';
-             $this->addFlash('error', $errorMessage);
+        } elseif ($form->isSubmitted()) {
+            $errorMessage = 'Please enter a valid 8-digit phone number.';
         }
-
-        // Re-render the same form page, displaying the result or errors
+    
         return $this->render('parking/find_my_car_form.html.twig', [
-            'form' => $form->createView(), // Pass the form (potentially with errors)
-            'foundSpot' => $foundSpot,     // Pass the found spot details (or null)
-            'errorMessage' => $errorMessage // Pass error message if needed
+            'form' => $form->createView(),
+            'foundSpot' => $foundSpot,
+            'latestAssignment' => $latestAssignment,
+            'parkedFor' => $parkedFor,
+            'errorMessage' => $errorMessage
         ]);
     }
+    
+    private function formatDuration(\DateInterval $interval): string
+    {
+        $parts = [];
+        if ($interval->d > 0) $parts[] = $interval->d . ' day' . ($interval->d > 1 ? 's' : '');
+        if ($interval->h > 0) $parts[] = $interval->h . ' hour' . ($interval->h > 1 ? 's' : '');
+        if ($interval->i > 0 || empty($parts)) $parts[] = $interval->i . ' minute' . ($interval->i != 1 ? 's' : '');
+        return implode(' ', $parts);
+    }
+    
 
     // == END FIND MY CAR FEATURE ==
 }

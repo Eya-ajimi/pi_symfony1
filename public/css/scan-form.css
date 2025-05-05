@@ -1,360 +1,468 @@
-/* Save Parking Spot Form Styling */
+/* Save Parking Spot Form Styling - Enhanced Version with Fixed Spacing and Alignment */
 :root {
     --primary-color: #3498db;
+    --primary-dark: #2980b9;
     --secondary-color: #2ecc71;
+    --secondary-dark: #27ae60;
     --accent-color: #f39c12;
+    --accent-dark: #e67e22;
     --danger-color: #e74c3c;
     --light-gray: #f8f9fa;
     --dark-gray: #343a40;
-    --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    --card-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+    --text-color: #2c3e50;
+    --card-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    --hover-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+    --soft-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
   }
   
   /* Base styling */
   body {
     background-color: #f9f9f9;
     font-family: 'Roboto', 'Segoe UI', sans-serif;
+    color: var(--text-color);
+    line-height: 1.6;
   }
   
   /* Container enhancements */
   .container.mt-5 {
-    max-width: 800px;
-    margin: 0 auto;
-    padding-bottom: 3rem;
-    position: relative;
-  }
-  
-  /* Header with parking icon */
-  h1 {
-    color: var(--primary-color);
-    font-weight: 700;
-    margin-bottom: 1.5rem;
-    font-size: 2.5rem;
-    padding-bottom: 0.8rem;
-    border-bottom: 3px solid var(--primary-color);
-    position: relative;
-    display: flex;
-    align-items: center;
-  }
-  
-  h1:before {
-    content: "\f540"; /* Font Awesome parking icon */
-    font-family: "Font Awesome 5 Free";
-    font-weight: 900;
-    margin-right: 15px;
-    font-size: 2rem;
-    color: var(--primary-color);
-  }
-  
-  /* Lead text styling with badge-like appearance */
-  p.lead {
-    font-size: 1.25rem;
-    color: var(--dark-gray);
-    margin-bottom: 1rem;
-    position: relative;
-    padding-left: 28px;
-    line-height: 1.6;
-  }
-  
-  p.lead:before {
-    content: "\f3c5"; /* Font Awesome map-marker-alt icon */
-    font-family: "Font Awesome 5 Free";
-    font-weight: 900;
-    position: absolute;
-    left: 0;
-    color: var(--accent-color);
-  }
-  
-  p.lead strong {
-    background-color: rgba(52, 152, 219, 0.1);
-    padding: 2px 8px;
-    border-radius: 4px;
-    color: var(--primary-color);
-    font-weight: 700;
-  }
-  
-  /* Second paragraph styling */
-  .container > p:not(.lead) {
-    font-size: 1.1rem;
-    color: var(--dark-gray);
-    margin-bottom: 1.5rem;
-    position: relative;
-    padding-left: 28px;
-    line-height: 1.6;
-  }
-  
-  .container > p:not(.lead):before {
-    content: "\f05a"; /* Font Awesome info icon */
-    font-family: "Font Awesome 5 Free";
-    font-weight: 900;
-    position: absolute;
-    left: 0;
-    color: var(--accent-color);
-  }
-  
-  /* Main Form Card */
-  .card {
-    border-radius: 12px;
-    box-shadow: var(--card-shadow);
-    margin-bottom: 2rem;
-    border: none;
-    transition: all 0.3s ease;
-    overflow: hidden;
-  }
-  
-  .card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.12);
-  }
-  
-  .card-body {
-    padding: 2.5rem;
-    background: linear-gradient(to bottom right, white, #f9f9ff);
-  }
-  
-  /* Form card header */
-  .card .card-body:before {
-    content: "\f095"; /* Font Awesome phone icon */
-    font-family: "Font Awesome 5 Free";
-    font-weight: 900;
-    font-size: 1.5rem;
-    color: var(--primary-color);
-    display: block;
-    margin-bottom: 1.5rem;
-    text-align: center;
-  }
-  
-  /* Form Elements */
-  .form-control {
-    border-radius: 8px;
-    border: 2px solid #e0e0e0;
-    padding: 12px 15px 12px 45px; /* Space for icon */
-    font-size: 1.1rem;
-    transition: all 0.3s ease;
-    position: relative;
-    background-color: #fff;
-  }
-  
-  .form-control:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.25rem rgba(52, 152, 219, 0.25);
-    outline: none;
-    background-color: #f8fdff;
-  }
-  
-  /* Phone input with icon */
-  .form-group {
-    position: relative;
-  }
-  
-  .form-group:before {
-    content: "\f095"; /* Font Awesome phone icon */
-    font-family: "Font Awesome 5 Free";
-    font-weight: 900;
-    position: absolute;
-    left: 15px;
-    top: 40px;
-    color: #95a5a6;
-    z-index: 1;
-  }
-  
-  /* Style form label */
-  .form-label {
-    font-weight: 600;
-    color: var(--dark-gray);
-    margin-bottom: 0.8rem;
-    font-size: 1.05rem;
-    display: flex;
-    align-items: center;
-  }
-  
-  /* Buttons */
-  .btn {
-    border-radius: 8px;
-    padding: 12px 24px;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    transition: all 0.3s;
+    max-width: 700px;
+    margin: 3rem auto 4rem; /* Increased top margin for better spacing */
+    padding: 0 1.5rem 3rem;
     position: relative;
     overflow: hidden;
-    display: inline-flex;
+  }
+  
+  /* Decorative elements */
+  .decoration-circle {
+    position: absolute;
+    border-radius: 50%;
+    z-index: -1;
+  }
+  
+  .circle-1 {
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(52, 152, 219, 0.08) 0%, rgba(52, 152, 219, 0) 70%);
+    top: -150px;
+    right: -100px;
+  }
+  
+  .circle-2 {
+    width: 250px;
+    height: 250px;
+    background: radial-gradient(circle, rgba(46, 204, 113, 0.08) 0%, rgba(46, 204, 113, 0) 70%);
+    bottom: -100px;
+    left: -100px;
+  }
+  
+  /* Parking Header with icon badge */
+  .parking-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 2.5rem; /* Increased for better separation */
+    position: relative;
+  }
+  
+  .icon-badge {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
     align-items: center;
     justify-content: center;
+    margin-right: 1.5rem;
+    box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+    flex-shrink: 0;
   }
   
-  .btn:after {
+  .icon-badge i {
+    color: white;
+    font-size: 1.8rem;
+  }
+  
+  h1 {
+    color: var(--dark-gray);
+    font-weight: 700;
+    margin: 0;
+    font-size: 2.2rem;
+    line-height: 1.2;
+    position: relative;
+    flex-grow: 1;
+  }
+  
+  h1::after {
     content: "";
     position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 5px;
-    height: 5px;
-    background: rgba(255, 255, 255, 0.5);
-    opacity: 0;
-    border-radius: 100%;
-    transform: scale(1, 1) translate(-50%);
-    transform-origin: 50% 50%;
+    left: 0;
+    bottom: -10px;
+    width: 50px; /* Slightly wider for better balance */
+    height: 4px;
+    background: var(--primary-color);
+    border-radius: 2px;
   }
   
-  .btn:hover:after {
-    animation: ripple 1s ease-out;
+  /* Spot information card */
+  .spot-info {
+    margin-bottom: 2.5rem; /* Increased spacing */
   }
   
-  @keyframes ripple {
-    0% {
-      transform: scale(0, 0);
-      opacity: 0.5;
-    }
-    20% {
-      transform: scale(25, 25);
-      opacity: 0.5;
-    }
-    100% {
-      opacity: 0;
-      transform: scale(40, 40);
-    }
+  .spot-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: var(--soft-shadow);
+    padding: 1.75rem; /* Increased padding for better content spacing */
+    display: flex;
+    align-items: center;
+    transition: all 0.3s ease;
+    border-left: 5px solid var(--secondary-color);
   }
   
-  .btn-primary {
-    background-color: var(--primary-color);
-    border: none;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+  .spot-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--card-shadow);
   }
   
-  .btn-primary:before {
-    content: "\f0c7"; /* Font Awesome save icon */
-    font-family: "Font Awesome 5 Free";
-    font-weight: 900;
-    margin-right: 10px;
+  .spot-icon {
+    background: linear-gradient(135deg, var(--secondary-color), var(--secondary-dark));
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1.5rem;
+    flex-shrink: 0;
   }
   
-  .btn-primary:hover {
-    background-color: #2980b9;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+  .spot-icon i {
+    color: white;
+    font-size: 1.4rem;
   }
   
-  .btn-secondary {
-    background-color: #95a5a6;
-    border: none;
-    text-transform: uppercase;
+  .spot-details {
+    flex-grow: 1;
   }
   
-  .btn-secondary:before {
-    content: "\f053"; /* Font Awesome arrow-left icon */
-    font-family: "Font Awesome 5 Free";
-    font-weight: 900;
-    margin-right: 10px;
+  .spot-details h2 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin: 0 0 0.75rem; /* Slightly increased spacing */
+    color: var(--dark-gray);
   }
   
-  .btn-secondary:hover {
-    background-color: #7f8c8d;
-    box-shadow: 0 5px 15px rgba(127, 140, 141, 0.4);
+  .spot-number {
+    background: linear-gradient(120deg, var(--secondary-color), var(--primary-color));
+    color: white;
+    padding: 0.3rem 0.85rem; /* Better padding for the badge */
+    border-radius: 20px;
+    font-size: 1.2rem;
+    margin-left: 0.5rem;
+    display: inline-block; /* Ensures proper alignment with text */
+    vertical-align: middle;
+  }
+  
+  .floor-number {
+    font-weight: 600;
+    color: var(--primary-color);
+  }
+  
+  .spot-timestamp {
+    margin-top: 0.85rem; /* Increased spacing from content above */
+    font-size: 0.9rem;
+    color: #6c757d;
+  }
+  
+  .spot-timestamp i {
+    margin-right: 0.5rem;
+  }
+  
+  /* Instruction panel */
+  .instruction-panel {
+    background-color: rgba(243, 156, 18, 0.1);
+    border-radius: 10px;
+    padding: 1.4rem 1.75rem; /* Increased padding for better content spacing */
+    margin-bottom: 2.5rem; /* Increased bottom margin */
+    display: flex;
+    align-items: center;
+    border-left: 3px solid var(--accent-color);
+  }
+  
+  .instruction-icon {
+    color: var(--accent-color);
+    font-size: 1.5rem;
+    margin-right: 1.25rem; /* Increased spacing between icon and text */
+    flex-shrink: 0;
+  }
+  
+  .instruction-panel p {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--dark-gray);
+    line-height: 1.5; /* Better line height for readability */
   }
   
   /* Alert Messages */
   .alert {
-    border-radius: 8px;
-    padding: 1rem 1rem 1rem 3rem;
-    margin-bottom: 1.5rem;
+    border-radius: 10px;
+    padding: 1.25rem 1.25rem 1.25rem 3.5rem;
+    margin-bottom: 1.75rem; /* Increased spacing */
     font-weight: 500;
-    border-left: 5px solid;
     position: relative;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--soft-shadow);
+    border: none;
   }
   
   .alert:before {
     font-family: "Font Awesome 5 Free";
     font-weight: 900;
     position: absolute;
-    left: 1rem;
-    top: 1rem;
+    left: 1.25rem;
+    top: 1.25rem;
+    font-size: 1.25rem;
   }
   
   .alert-success {
     background-color: rgba(46, 204, 113, 0.1);
-    border-left-color: var(--secondary-color);
-    color: #27ae60;
+    color: var(--secondary-dark);
+    border-left: 4px solid var(--secondary-color);
   }
   
   .alert-success:before {
     content: "\f058"; /* Font Awesome check-circle icon */
-    color: #27ae60;
+    color: var(--secondary-color);
   }
   
   .alert-danger {
     background-color: rgba(231, 76, 60, 0.1);
-    border-left-color: var(--danger-color);
-    color: #c0392b;
+    color: var(--danger-color);
+    border-left: 4px solid var(--danger-color);
   }
   
   .alert-danger:before {
     content: "\f057"; /* Font Awesome times-circle icon */
-    color: #c0392b;
+    color: var(--danger-color);
   }
   
   .alert-warning {
     background-color: rgba(243, 156, 18, 0.1);
-    border-left-color: var(--accent-color);
-    color: #d35400;
+    color: var(--accent-dark);
+    border-left: 4px solid var(--accent-color);
   }
   
   .alert-warning:before {
     content: "\f071"; /* Font Awesome exclamation-triangle icon */
-    color: #d35400;
+    color: var(--accent-color);
   }
   
-  /* Specific styling for phone number field */
-  #form_phoneNumber {
+  .animate-alert {
+    animation: slideInLeft 0.5s ease-out;
+  }
+  
+  @keyframes slideInLeft {
+    from {
+      transform: translateX(-30px);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  
+  /* Main Form Card */
+  .form-card {
+    border-radius: 16px;
+    box-shadow: var(--card-shadow);
+    margin-bottom: 2.5rem; /* Increased spacing */
+    border: none;
+    transition: all 0.3s ease;
+    overflow: hidden;
+    background: white;
+  }
+  
+  .form-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--hover-shadow);
+  }
+  
+  .card-body {
+    padding: 2.25rem; /* Increased padding for better content spacing */
+  }
+  
+  /* Form header */
+  .form-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.75rem; /* Increased spacing */
+    padding-bottom: 1.25rem; /* Increased padding */
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
+  
+  .form-header i {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    margin-right: 1.25rem; /* Increased spacing */
+  }
+  
+  .form-header h3 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--dark-gray);
+  }
+  
+  /* Form Elements */
+  .form-group {
+    margin-bottom: 1.75rem; /* Increased spacing between form elements */
+  }
+  
+  .form-label {
+    font-weight: 600;
+    color: var(--dark-gray);
+    margin-bottom: 0.9rem; /* Increased spacing */
+    font-size: 1rem;
+    display: block;
+  }
+  
+  .form-control {
+    border-radius: 10px;
+    border: 2px solid #e0e0e0;
+    padding: 0.9rem 1rem 0.9rem 3rem; /* Better vertical padding */
     font-size: 1.1rem;
-    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    width: 100%;
+    color: var(--dark-gray);
+    background-color: var(--light-gray);
   }
   
-  /* Style for helper text if necessary */
+  .form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
+    outline: none;
+    background-color: white;
+  }
+  
+  /* Phone input with icon */
+  .phone-input {
+    position: relative;
+  }
+  
+  .phone-input::before {
+    content: "\f3cd"; /* Font Awesome mobile-alt icon */
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    position: absolute;
+    left: 1.1rem; /* Adjusted for better alignment */
+    top: 2.8rem; /* Adjusted for better vertical alignment with input field */
+    color: #95a5a6;
+    font-size: 1.2rem;
+  }
+  
   .form-text {
     color: #6c757d;
-    font-size: 0.875rem;
-    margin-top: 0.5rem;
-    padding-left: 45px;
+    font-size: 0.85rem;
+    margin-top: 0.6rem; /* Slightly increased spacing */
+    padding-left: 0.5rem;
+    font-style: italic;
   }
   
-  /* Add highlight effects on input focus */
-  .form-control:focus + .form-text {
-    color: var(--primary-color);
+  /* Form Actions */
+  .form-actions {
+    margin-top: 2.25rem; /* Increased spacing */
   }
   
-  /* Responsive adjustments */
-  @media (max-width: 768px) {
-    .container.mt-5 {
-      padding: 0 1rem 2rem;
-    }
-    
-    h1 {
-      font-size: 1.8rem;
-    }
-    
-    h1:before {
-      font-size: 1.5rem;
-    }
-    
-    .card-body {
-      padding: 1.5rem;
-    }
-    
-    .btn {
-      width: 100%;
-      margin-bottom: 0.8rem;
-    }
-    
-    .form-control {
-      font-size: 1rem;
-    }
+  /* Buttons */
+  .btn {
+    border-radius: 10px;
+    padding: 0.9rem 1.75rem; /* Increased padding for better button sizing */
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    position: relative;
+    overflow: hidden;
+  }
   
-    p.lead, .container > p:not(.lead) {
-      font-size: 1rem;
-      padding-left: 24px;
-    }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    border: none;
+    color: white;
+    box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+  }
+  
+  .btn-primary:hover {
+    background: linear-gradient(135deg, #2b87c4, #246a99);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4);
+  }
+  
+  .btn-primary:active, .btn-clicked {
+    transform: translateY(1px) scale(0.98);
+    box-shadow: 0 2px 10px rgba(52, 152, 219, 0.3);
+  }
+  
+  .save-btn {
+    min-width: 180px;
+    position: relative;
+    padding-left: 2.75rem; /* Increased left padding for better icon placement */
+  }
+  
+  .save-btn::before {
+    content: "\f0c7"; /* Font Awesome save icon */
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    position: absolute;
+    left: 1.5rem;
+    font-size: 1rem;
+  }
+  
+  .btn-outline-secondary {
+    color: var(--dark-gray);
+    border: 2px solid #cbd0d5;
+    background: transparent;
+    transition: all 0.3s;
+  }
+  
+  .btn-outline-secondary:hover {
+    background-color: #f8f9fa;
+    border-color: #95a5a6;
+    color: var(--dark-gray);
+  }
+  
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+  }
+  
+  .back-btn i {
+    margin-right: 0.6rem; /* Slightly increased spacing */
+  }
+  
+  /* Navigation Footer */
+  .navigation-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 2.5rem; /* Increased top margin */
+    flex-wrap: wrap;
+  }
+  
+  .help-tip {
+    display: flex;
+    align-items: center;
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin-top: 0; /* Reset margin top for better alignment */
+  }
+  
+  .help-tip i {
+    color: var(--accent-color);
+    margin-right: 0.6rem; /* Slightly increased spacing */
+    font-size: 1.1rem;
   }
   
   /* Animations */
@@ -363,80 +471,126 @@
     to { opacity: 1; transform: translateY(0); }
   }
   
-  .card {
-    animation: fadeIn 0.5s ease-out;
-  }
-  
-  /* Background decoration */
-  .container.mt-5:before {
-    content: "";
-    position: absolute;
-    width: 200px;
-    height: 200px;
-    background: var(--primary-color);
-    opacity: 0.05;
-    border-radius: 50%;
-    top: -100px;
-    right: -100px;
-    z-index: -1;
-  }
-  
-  .container.mt-5:after {
-    content: "";
-    position: absolute;
-    width: 150px;
-    height: 150px;
-    background: var(--secondary-color);
-    opacity: 0.05;
-    border-radius: 50%;
-    bottom: -50px;
-    left: -75px;
-    z-index: -1;
+  .form-card, .spot-card {
+    animation: fadeIn 0.6s ease-out;
   }
   
   /* Pulsing effect for the save button */
-  @keyframes pulse {
+  @keyframes subtle-pulse {
     0% {
-      box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.7);
-    }
-    70% {
-      box-shadow: 0 0 0 10px rgba(52, 152, 219, 0);
-    }
-    100% {
-      box-shadow: 0 0 0 0 rgba(52, 152, 219, 0);
-    }
-  }
-  
-  .btn-primary {
-    animation: pulse 2s infinite;
-  }
-  
-  /* Confirmation success icon animation */
-  @keyframes checkmark {
-    0% {
-      transform: scale(0);
-      opacity: 0;
+      box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
     }
     50% {
-      transform: scale(1.2);
+      box-shadow: 0 5px 20px rgba(52, 152, 219, 0.5);
     }
     100% {
-      transform: scale(1);
-      opacity: 1;
+      box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
     }
   }
   
-  .alert-success:before {
-    animation: checkmark 0.5s ease-in-out;
+  .save-btn {
+    animation: subtle-pulse 2s infinite;
   }
   
-  /* Parking spot info highlight */
-  .spot-highlight {
-    display: inline-block;
-    background: linear-gradient(120deg, rgba(52, 152, 219, 0.1), rgba(46, 204, 113, 0.1));
-    border-radius: 4px;
-    padding: 2px 8px;
-    margin: 0 2px;
-    color: var(--primary-color);
-    font-weight: 700;
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .container.mt-5 {
+      padding: 0 1.25rem 2.5rem; /* Increased padding */
+      margin-top: 1.5rem; /* Increased top margin */
+    }
+    
+    .parking-header {
+      flex-direction: column;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    
+    .icon-badge {
+      margin-right: 0;
+      margin-bottom: 1.25rem; /* Increased spacing */
+    }
+    
+    h1 {
+      font-size: 1.8rem;
+    }
+    
+    h1::after {
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: -12px; /* Adjusted position */
+    }
+    
+    .spot-card {
+      flex-direction: column;
+      text-align: center;
+      padding: 1.5rem;
+    }
+    
+    .spot-icon {
+      margin-right: 0;
+      margin-bottom: 1.25rem; /* Increased spacing */
+    }
+    
+    .spot-details h2 {
+      margin-bottom: 1rem; /* Increased spacing */
+    }
+    
+    .instruction-panel {
+      flex-direction: column;
+      text-align: center;
+      padding: 1.5rem;
+    }
+    
+    .instruction-icon {
+      margin-right: 0;
+      margin-bottom: 1rem; /* Increased spacing */
+    }
+    
+    .card-body {
+      padding: 1.5rem;
+    }
+    
+    .form-header {
+      flex-direction: column;
+      text-align: center;
+    }
+    
+    .form-header i {
+      margin-right: 0;
+      margin-bottom: 0.75rem;
+    }
+    
+    .btn {
+      width: 100%;
+    }
+    
+    .navigation-footer {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 1.25rem; /* Added gap between elements */
+    }
+    
+    .help-tip {
+      margin-top: 0.5rem;
+      justify-content: center;
+    }
+  }
+  
+  /* Fix for very small screens */
+  @media (max-width: 480px) {
+    .spot-number {
+      display: inline-block;
+      margin-top: 0.5rem;
+      margin-left: 0;
+    }
+    
+    .form-control {
+      font-size: 1rem;
+      padding: 0.8rem 1rem 0.8rem 2.75rem;
+    }
+    
+    .phone-input::before {
+      top: 2.65rem;
+      left: 1rem;
+    }
   }
