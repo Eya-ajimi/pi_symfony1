@@ -680,4 +680,44 @@ public function exportStatisticsToPdf(ReservationRepository $reservationReposito
         ]
     );
 }
+#[Route('/parking/mqtt-updates', name: 'app_parking_mqtt_updates')]
+public function mqttUpdates(Request $request): JsonResponse
+{
+    // This endpoint will be called via AJAX to get updates
+    $floor = $request->query->get('floor', 1);
+    $floorValue = 'Level ' . $floor;
+    
+    $spots = $this->placeParkingRepository->findBy(['floor' => $floorValue]);
+    
+    $formattedSpots = [];
+    foreach ($spots as $spot) {
+        $formattedSpots[] = [
+            'id' => $spot->getId(),
+            'status' => $spot->getStatut(),
+            'zone' => $spot->getZone()
+        ];
+    }
+    
+    return $this->json([
+        'spots' => $formattedSpots,
+        'timestamp' => time()
+    ]);
+}
+
+private function getParkingSpotsData(int $floor): array
+{
+    $floorValue = 'Level ' . $floor;
+    $spots = $this->placeParkingRepository->findBy(['floor' => $floorValue]);
+    
+    $formattedSpots = [];
+    foreach ($spots as $spot) {
+        $formattedSpots[$spot->getId()] = [
+            'id' => $spot->getId(),
+            'status' => $spot->getStatut(),
+            'zone' => $spot->getZone()
+        ];
+    }
+    
+    return $formattedSpots;
+}
 }

@@ -104,3 +104,83 @@
     </div>
 </div>
 {% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const floorSelect = document.getElementById('floorSelect');
+            let currentFloor = floorSelect.value;
+            
+            // Function to update parking spots
+            function updateParkingSpots(data) {
+                data.spots.forEach(function(spot) {
+                    const spotElements = document.querySelectorAll('.spot-number');
+                    spotElements.forEach(element => {
+                        if (element.textContent === spot.zone + spot.id) {
+                            const parentDiv = element.closest('.parking-spot');
+                            
+                            // Remove all status classes
+                            parentDiv.classList.remove('green', 'red', 'blue');
+                            
+                            // Add appropriate class based on status
+                            if (spot.status === 'free') {
+                                parentDiv.classList.add('green');
+                                // Convert back to link if it's free
+                                if (parentDiv.tagName !== 'A') {
+                                    const newLink = document.createElement('a');
+                                    newLink.href = `/parking/reserve/${spot.id}`;
+                                    newLink.className = parentDiv.className;
+                                    newLink.innerHTML = parentDiv.innerHTML;
+                                    parentDiv.parentNode.replaceChild(newLink, parentDiv);
+                                }
+                            } else {
+                                parentDiv.classList.add(spot.status === 'reserved' ? 'blue' : 'red');
+                                // Convert to div if it's not free
+                                if (parentDiv.tagName === 'A') {
+                                    const newDiv = document.createElement('div');
+                                    newDiv.className = parentDiv.className;
+                                    newDiv.innerHTML = parentDiv.innerHTML;
+                                    parentDiv.parentNode.replaceChild(newDiv, parentDiv);
+                                }
+                            }
+                        }
+                    });
+                });
+                
+                // Update stats display
+                if (data.stats) {
+                    const availableElement = document.querySelector('.stat-value');
+                    if (availableElement) {
+                        availableElement.textContent = data.stats.available;
+                    }
+                    
+                    const occupancyElement = document.querySelector('.stat-value:nth-of-type(2)');
+                    if (occupancyElement) {
+                        occupancyElement.textContent = data.stats.occupancy_rate + '%';
+                    }
+                }
+            }
+
+            // Function to fetch updates
+            function fetchUpdates() {
+                fetch(`/parking/mqtt-updates?floor=${currentFloor}`)
+                    .then(response => response.json())
+                    .then(updateParkingSpots)
+                    .catch(error => console.error('Error fetching updates:', error));
+            }
+
+            // Start polling (every 2 seconds)
+            setInterval(fetchUpdates, 2000);
+            
+            // Handle floor changes
+            floorSelect.addEventListener('change', function() {
+                currentFloor = this.value;
+                fetchUpdates(); // Immediately fetch new floor data
+            });
+            
+            // Initial fetch
+            fetchUpdates();
+        });
+    </script>
+{% endblock %}
