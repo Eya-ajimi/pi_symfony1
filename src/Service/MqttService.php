@@ -13,7 +13,7 @@ class MqttService
     private $mqttServer;
     private $mqttPort;
     
-    public function __construct(LoggerInterface $logger, string $mqttServer = '192.168.118.112', int $mqttPort = 1883)
+    public function __construct(LoggerInterface $logger, string $mqttServer = ' 172.20.10.4', int $mqttPort = 1883)
     {
         $this->logger = $logger;
         $this->mqttServer = $mqttServer;

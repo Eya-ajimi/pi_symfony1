@@ -59,27 +59,43 @@ class ParkingController extends AbstractController
         $this->entityManager->flush();
     }
     private function checkExpiredReservations(): void
-{
-    $expiredReservations = $this->reservationRepository->findExpiredReservations();
-    
-    foreach ($expiredReservations as $reservation) {
-        // Update reservation status
-        $reservation->setStatut('expired');
+    {
+        $now = new \DateTime();
         
-        // Free up the parking spot
-        $spot = $reservation->getPlaceParking();
-        if ($spot) {
-            $spot->setStatut('free');
-            $this->entityManager->persist($spot);
+        // Check active reservations that should be expired
+        $activeReservations = $this->reservationRepository->findBy(['statut' => 'active']);
+        
+        foreach ($activeReservations as $reservation) {
+            // If reservation end time has passed
+            if ($reservation->getDateExpiration() < $now) {
+                $reservation->setStatut('expired');
+                $spot = $reservation->getPlaceParking();
+                if ($spot) {
+                    $spot->setStatut('free');
+                    $this->entityManager->persist($spot);
+                }
+                $this->entityManager->persist($reservation);
+            }
+            // If reservation is currently active (between start and end time)
+            elseif ($reservation->getDateReservation() <= $now && $reservation->getDateExpiration() >= $now) {
+                $spot = $reservation->getPlaceParking();
+                if ($spot && $spot->getStatut() !== 'reserved') {
+                    $spot->setStatut('reserved');
+                    $this->entityManager->persist($spot);
+                }
+            }
+            // If reservation is in the future
+            elseif ($reservation->getDateReservation() > $now) {
+                $spot = $reservation->getPlaceParking();
+                if ($spot && $spot->getStatut() === 'reserved') {
+                    $spot->setStatut('free');
+                    $this->entityManager->persist($spot);
+                }
+            }
         }
-        
-        $this->entityManager->persist($reservation);
-    }
-
-    if (count($expiredReservations) > 0) {
+    
         $this->entityManager->flush();
     }
-}
     #[Route('/parking', name: 'app_parking')]
     public function index(Request $request): Response
     {
@@ -145,11 +161,6 @@ class ParkingController extends AbstractController
     ): Response {
         $user = $this->getUser();
         $currentUser = $user->getId();
-    
-        if ($spot->getStatut() !== 'free') {
-            $this->addFlash('error', 'This spot is not available for reservation');
-            return $this->redirectToRoute('app_parking');
-        }
     
         $reservation = new Reservation();
         $reservation->setPlaceParking($spot);
@@ -220,10 +231,9 @@ class ParkingController extends AbstractController
                     // Set the final price
                     $reservation->setPrice($totalPrice);
                     $reservation->setStatut('active');
-                    $spot->setStatut('reserved');
+                    // Don't set spot as reserved here - it will be handled by checkExpiredReservations
     
                     $this->entityManager->persist($reservation);
-                    $this->entityManager->persist($spot);
                     $this->entityManager->flush();
     
                     // Send SMS confirmation

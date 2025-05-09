@@ -1,10 +1,8 @@
-{# templates/parking/park.html.twig #}
 {% extends 'base.html.twig' %}
 
 {% block title %}Smart Parking | InnoMall{% endblock %}
 
 {% block stylesheets %}
-
     <link rel="stylesheet" href="{{ asset('css/parking.css') }}">
 {% endblock %}
 
@@ -37,7 +35,7 @@
                         <i class="fas fa-eye"></i> <span>My Reservations</span>
                     </a>
                     <a href="{{ path('app_parking_find_my_car_form') }}" class="action-btn secondary-btn">
-                        <i class="fas fa-search-location"></i> {# Using a search/location icon #}
+                        <i class="fas fa-search-location"></i>
                         <span>Find My Car</span>
                     </a>
                 </div>
@@ -69,49 +67,43 @@
                 <h2>Parking Map - Level {{ floor }}</h2>
                 
                 <div class="legend">
-    <div class="legend-item">
-        <div class="legend-color green"></div>
-        <span>Free</span>
-    </div>
-    <div class="legend-item">
-        <div class="legend-color red"></div>
-        <span>Taken</span>
-    </div>
-    <div class="legend-item">
-        <div class="legend-color blue"></div>
-        <span>Reserved</span>
-    </div>
-</div>
+                    <div class="legend-item">
+                        <div class="legend-color green"></div>
+                        <span>Free</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color red"></div>
+                        <span>Taken</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color blue"></div>
+                        <span>Reserved</span>
+                    </div>
+                </div>
             </div>
             
             <!-- Unified Parking Area -->
             <div class="parking-area">
-    {% for spot in parking_spots %}
-        {% if spot.statut == 'free' %}
-            <a href="{{ path('app_parking_reserve', {'id': spot.id}) }}" class="parking-spot green">
-        {% elseif spot.statut == 'reserved' %}
-            <div class="parking-spot blue">
-        {% else %}
-            <div class="parking-spot red">
-        {% endif %}
-                <div class="spot-number">{{ spot.zone }}{{ spot.id }}</div>
-                <div class="spot-type">Standard</div>
-                {% if spot.statut == 'taken' %}
-    <i class="fas fa-car-alt vehicle-icon"></i>
-{% elseif spot.statut == 'reserved' %}
-    <i class="fas fa-calendar-check vehicle-icon"></i>
-{% else %}
-    <i class="fas fa-square-parking vehicle-icon"></i>
-{% endif %}
-        {% if spot.statut == 'free' %}
-            </a>
-        {% else %}
+                {% for spot in parking_spots %}
+                    <a href="{{ path('app_parking_reserve', {'id': spot.id}) }}" class="parking-spot 
+                        {% if spot.statut == 'free' %}green
+                        {% elseif spot.statut == 'reserved' %}blue
+                        {% else %}red
+                        {% endif %}">
+                        <div class="spot-number">{{ spot.zone }}{{ spot.id }}</div>
+                        <div class="spot-type">Standard</div>
+                        {% if spot.statut == 'taken' %}
+                            <i class="fas fa-car-alt vehicle-icon"></i>
+                        {% elseif spot.statut == 'reserved' %}
+                            <i class="fas fa-calendar-check vehicle-icon"></i>
+                        {% else %}
+                            <i class="fas fa-square-parking vehicle-icon"></i>
+                        {% endif %}
+                    </a>
+                {% else %}
+                    <div class="no-spots">No parking spots found for this floor</div>
+                {% endfor %}
             </div>
-        {% endif %}
-    {% else %}
-        <div class="no-spots">No parking spots found for this floor</div>
-    {% endfor %}
-</div>
         </div>
     </div>
 </div>
@@ -130,42 +122,29 @@
                     const spotElements = document.querySelectorAll('.spot-number');
                     spotElements.forEach(element => {
                         if (element.textContent === spot.zone + spot.id) {
-    const parentDiv = element.closest('.parking-spot');
-    
-    // Remove all status classes
-    parentDiv.classList.remove('green', 'red', 'blue');
-    
-    // Add appropriate class based on status
-    if (spot.status === 'free') {
-        parentDiv.classList.add('green');
-        // Convert back to link if it's free
-        if (parentDiv.tagName !== 'A') {
-            const newLink = document.createElement('a');
-            newLink.href = `/parking/reserve/${spot.id}`;
-            newLink.className = parentDiv.className;
-            newLink.innerHTML = parentDiv.innerHTML;
-            parentDiv.parentNode.replaceChild(newLink, parentDiv);
-        }
-    } else if (spot.status === 'reserved') {
-        parentDiv.classList.add('blue');
-        // Convert to div if it's reserved
-        if (parentDiv.tagName === 'A') {
-            const newDiv = document.createElement('div');
-            newDiv.className = parentDiv.className;
-            newDiv.innerHTML = parentDiv.innerHTML;
-            parentDiv.parentNode.replaceChild(newDiv, parentDiv);
-        }
-    } else {
-        parentDiv.classList.add('red');
-        // Convert to div if it's taken
-        if (parentDiv.tagName === 'A') {
-            const newDiv = document.createElement('div');
-            newDiv.className = parentDiv.className;
-            newDiv.innerHTML = parentDiv.innerHTML;
-            parentDiv.parentNode.replaceChild(newDiv, parentDiv);
-        }
-    }
-}
+                            const parentDiv = element.closest('.parking-spot');
+                            
+                            // Remove all status classes
+                            parentDiv.classList.remove('green', 'red', 'blue');
+                            
+                            // Add appropriate class based on status
+                            if (spot.status === 'free') {
+                                parentDiv.classList.add('green');
+                            } else if (spot.status === 'reserved') {
+                                parentDiv.classList.add('blue');
+                            } else {
+                                parentDiv.classList.add('red');
+                            }
+                            
+                            // Ensure it remains a clickable link
+                            if (parentDiv.tagName !== 'A') {
+                                const newLink = document.createElement('a');
+                                newLink.href = `/parking/reserve/${spot.id}`;
+                                newLink.className = parentDiv.className;
+                                newLink.innerHTML = parentDiv.innerHTML;
+                                parentDiv.parentNode.replaceChild(newLink, parentDiv);
+                            }
+                        }
                     });
                 });
                 
