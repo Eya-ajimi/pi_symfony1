@@ -46,9 +46,13 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(name: "telephone", type: "string", length: 15, nullable: true)]
     private ?string $telephone = null;
 
-    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
-    private \DateTimeImmutable $dateInscription;
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+private ?\DateTimeImmutable $dateInscription = null;
 
+public function getDateInscription(): ?\DateTimeImmutable
+{
+    return $this->dateInscription;
+}
     #[ORM\Column(name: "statut", type: "string", length: 50)]
     private string $statut = 'actif';
 
@@ -408,10 +412,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getDateInscription(): \DateTimeImmutable
-    {
-        return $this->dateInscription;
-    }
+    
 
     public function setDateInscription(\DateTimeInterface $dateInscription): self
     {

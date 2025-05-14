@@ -38,7 +38,7 @@ class MqttListenerCommand extends Command
     {
         $output->writeln('Starting MQTT listener...');
         
-        $mqtt = new \Bluerhinos\phpMQTT(' 172.20.10.4', 1883, 'SymfonyParkingListener');
+        $mqtt = new \Bluerhinos\phpMQTT(' 192.168.1.104', 1883, 'SymfonyParkingListener');
         
         if (!$mqtt->connect(true, null, null, null)) {
             $output->writeln('Could not connect to MQTT broker');

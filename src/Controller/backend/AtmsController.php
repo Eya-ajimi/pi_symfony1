@@ -77,44 +77,48 @@ final class AtmsController extends AbstractController
 
 
     #[Route('/admin/atm/edit/{id}', name: 'edit_atm')]
-public function editAtm(
-    int $id,
-    Request $request,
-    EntityManagerInterface $em,
-    AtmRepository $atmRepository,
-    PaginatorInterface $paginator
-): Response {
-    $atm = $atmRepository->find($id);
-    if (!$atm) {
-        throw $this->createNotFoundException('ATM not found');
-    }
-
-    $form = $this->createForm(AtmType::class, $atm);
-    $form->handleRequest($request);
-
-    if ($form->isSubmitted() && $form->isValid()) {
-        $em->flush();
-        $this->addFlash('success', 'ATM updated successfully!');
-        return $this->redirectToRoute('app_atms');
-    }
-
-
-
-    $pagination = $paginator->paginate(
-        $atmRepository->createQueryBuilder('a'),
-        $request->query->getInt('page', 1),
-        2 // Show only 2 ATMs per page for testing
-    );
-    $atms = $atmRepository->findAll();
-
-    return $this->render('backend/atms.html.twig', [
-        'atmForm' => $form->createView(),
-        'atms' => $atms,
-        'editingAtmId' => $atm->getId(), // FIXED: use the correct key
-        'pagination' => $pagination,
-    ]);
+    public function editAtm(
+        int $id,
+        Request $request,
+        EntityManagerInterface $em,
+        AtmRepository $atmRepository,
+        PaginatorInterface $paginator
+    ): Response {
+        $atm = $atmRepository->find($id);
+        if (!$atm) {
+            throw $this->createNotFoundException('ATM not found');
+        }
     
-}
+        $form = $this->createForm(AtmType::class, $atm);
+        $form->handleRequest($request);
+    
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em->flush();
+            $this->addFlash('success', 'ATM updated successfully!');
+            return $this->redirectToRoute('app_atms');
+        }
+    
+        $pagination = $paginator->paginate(
+            $atmRepository->createQueryBuilder('a'),
+            $request->query->getInt('page', 1),
+            2
+        );
+        
+        // Add these calculations
+        $activeAtms = $atmRepository->count(['status' => 'active']);
+        $inactiveAtms = $atmRepository->count(['status' => 'inactive']);
+        $totalAtms = $activeAtms + $inactiveAtms;
+    
+        return $this->render('backend/atms.html.twig', [
+            'atmForm' => $form->createView(),
+            'atms' => $atmRepository->findAll(),
+            'editingAtmId' => $atm->getId(),
+            'pagination' => $pagination,
+            'activeAtms' => $activeAtms,
+            'inactiveAtms' => $inactiveAtms,
+            'totalAtms' => $totalAtms
+        ]);
+    }
 
 #[Route('/admin/atm/delete/{id}', name: 'delete_atm')]
 public function deleteAtm(

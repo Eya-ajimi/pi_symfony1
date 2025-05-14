@@ -25,7 +25,7 @@ final class PointsController extends AbstractController
         }
 
         $currentPoints = $user->getPoints();
-        $maxPoints = 420;
+        $maxPoints = 2000;
         $progressPercentage = min(100, ($currentPoints / $maxPoints) * 100);
         
         // Handle reward claim
@@ -83,7 +83,7 @@ final class PointsController extends AbstractController
     {
         if ($currentPoints < 200) return "200 points - Small Gift";
         if ($currentPoints < 400) return "400 points - Medium Reward";
-        if ($currentPoints < 420) return "420 points - Premium Reward";
+        if ($currentPoints < 2000) return "2000 points - Premium Reward";
         return "Max level reached!";
     }
 }
