@@ -52,9 +52,12 @@
 ---
 
 ### 🅿️ Parking Intelligent
-- Réservation de place via interface
-- Réception d’un **SMS de confirmation** (Twilio)
-- Intégration d’une logique **IoT simulée**
+- Réservation intuitive via interface graphique
+- Confirmations instantanées par Email et SMS (Twilio)
+- Monitoring temps réel avec capteurs IoT
+- Services additionnels : lavage auto (3 options)
+- Fonction "Find My Car" pour localisation
+- Gestion automatique des expirations
 
 ---
 
